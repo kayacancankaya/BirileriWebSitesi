@@ -1,0 +1,118 @@
+﻿@page
+@model LoginModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Giriş Yap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+<section class="page-title" style="background-image:url('@Url.Content("~/images/background/9.jpg")')">
+    <div class="auto-container">
+        <h1>Giriş</h1>
+        <ul class="page-breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+            <li>Giriş</li>
+        </ul>
+    </div>
+</section>
+
+
+<!--Login Section-->
+<section class="login-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <h2>Giriş</h2>
+
+                <!-- Login Form -->
+                <div class="login-form">
+                    <!--Login Form-->
+                     <form id="account" method="post">
+                         <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                        <div class="form-group">
+                            <label asp-for="Input.Email" class="form-label">Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                             <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="isim@ornek.com" />
+                            
+                         </div>
+                         <div class="form-group">
+                            <label asp-for="Input.Password" class="form-label">Şifre</label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                             <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="şifre" />
+                             
+                         </div>
+                        <div class="clearfix">
+                            <div class="pull-left">
+                                <div class="form-group check-box">
+                                    <label asp-for="Input.RememberMe" class="form-label">
+                                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                                        Beni Hatırla...
+                                    </label>
+                                    
+                                </div>
+                            </div>
+                            <div class="pull-right">
+                                <div class="form-group no-margin">
+                                    <button id="login-submit" type="submit" class="theme-btn btn-style-one">GİRİŞ</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <a id="forgot-password" asp-page="./ForgotPassword">Şifrenizi Mi Unuttunuz?</a>
+                        </div>
+                        <div class="form-group">
+                            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Yeni Kayıt</a>
+                        </div>
+                        @* <div class="form-group">
+                            <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Email Doğrulamayı Yeniden Gönder</a>
+                        </div> *@
+                     </form>     
+
+                </div>
+                <!--End Login Form -->
+
+            </div>
+            <!--Login Different Service-->
+            @{
+               if ((Model.ExternalLogins?.Count ?? 0) > 0)
+               {
+                    <div class="column col-lg-6 col-md-12 col-sm-12">
+                        <h2>Başka Bir Hesabın İle Giriş Yap</h2>
+
+                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                            <div>
+                                <p>
+                                   
+                                    @foreach (var provider in Model.ExternalLogins!)
+                                    {
+                                        string iconClass = provider.Name.ToLower() switch
+                                        {
+                                            "google" => "fa fa-google",
+                                            "facebook" => "fa fa-facebook-f",
+                                            "twitter" => "fa fa-twitter",
+                                            "microsoft" => "fa-brands fa-microsoft",
+                                            _ => "fa fa-sign-in-alt" // Default icon for unknown providers
+                                        };
+
+                                        <button type="submit" class="theme-btn btn-style-one" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızla giriş yapın.">
+                                            <i class="@iconClass me-2"></i> @provider.DisplayName
+                                        </button>
+                                    }
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+<!--End Login Section-->
+

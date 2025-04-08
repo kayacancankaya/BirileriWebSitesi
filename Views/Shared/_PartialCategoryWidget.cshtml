@@ -1,0 +1,21 @@
+﻿@model IEnumerable<BirileriWebSitesi.Models.Catalog>
+
+<div class="sidebar-widget sidebar-blog-category">
+    <div class="sidebar-title">
+        <h2>Kategoriler</h2>
+        <div class="separater"></div>
+    </div>
+
+    <span class="alert-text"></span>
+    <ul class="cat-list">
+
+        <li class="clearfix filter-by-catalog-list active-category"><a class="filter-by-catalog " data-id="0">Tümü</a></li>
+        @foreach(Catalog item in Model)
+        {
+            <li class="clearfix filter-by-catalog-list"><a class="filter-by-catalog" data-id="@item.Id">@item.CatalogName</a></li>
+
+        }
+    </ul>
+</div>
+
+<input type="hidden" value="0" id="catalog-id" />

@@ -1,0 +1,106 @@
+﻿@page
+@model RegisterModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Kayıt Ol">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+<section class="page-title" style="background-image:url('@Url.Content("~/images/background/9.jpg")')">
+    <div class="auto-container">
+        <h1>Giriş</h1>
+        <ul class="page-breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+            <li>Kayıt Ol</li>
+        </ul>
+    </div>
+</section>
+
+
+<!--Login Section-->
+<section class="login-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <!--Register via Email-->
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                
+                <!-- Register Form -->
+                <div class="login-form">
+                    <!--Register Form-->
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <h2>Yeni Hesap Oluştur</h2>
+                        <hr />
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                        <div class="form-group">
+                            <label class="form-label" asp-for="Input.Email">Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="isim@ornek.com" />
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Input.Password">Password</label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="şifre" />
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="şifreyi doğrula" />
+                            
+                        </div>
+                        <div class="pull-right">
+                            <div class="form-group no-margin">
+                                <button id="registerSubmit" type="submit" class="theme-btn btn-style-one">KAYIT</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!--End Login Form -->
+
+            </div>
+            <!--Login Different Service-->
+            @{
+                if ((Model.ExternalLogins?.Count ?? 0) > 0)
+                {
+                    <div class="column col-lg-6 col-md-12 col-sm-12">
+                        <h2>Başka Bir Hesabın İle Giriş Yap</h2>
+
+                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                            <div>
+                                <p>
+
+                                    @foreach (var provider in Model.ExternalLogins!)
+                                    {
+                                        string iconClass = provider.Name.ToLower() switch
+                                        {
+                                            "google" => "fa fa-google",
+                                            "facebook" => "fa fa-facebook-f",
+                                            "twitter" => "fa fa-twitter",
+                                            "microsoft" => "fa-brands fa-microsoft",
+                                            _ => "fa fa-sign-in-alt" // Default icon for unknown providers
+                                        };
+
+                                        <button type="submit" class="theme-btn btn-style-one" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızla giriş yapın.">
+                                            <i class="@iconClass me-2"></i> @provider.DisplayName
+                                        </button>
+                                    }
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+
+@section AdditionalScripts {
+    <partial name="_ValidationScriptsPartial" />
+}

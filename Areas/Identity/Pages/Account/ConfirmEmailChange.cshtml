@@ -1,0 +1,28 @@
+﻿@page
+@model ConfirmEmailChangeModel
+@{
+    ViewData["Title"] = "Email Değişikliğini Onayla";
+}
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml"; // Ensure Identity uses your layout
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+<section class="login-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <h1>@ViewData["Title"]</h1>
+            <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+        </div>
+    </div>
+</section>

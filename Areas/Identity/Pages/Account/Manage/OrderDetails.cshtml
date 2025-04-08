@@ -1,0 +1,76 @@
+﻿@page "{id:int}"
+@model BirileriWebSitesi.Areas.Identity.Pages.Account.Manage.OrderDetailsModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml"; 
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+
+@Html.Partial("_ManageNav")
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <h2>Sipariş Detayı</h2>
+
+                @if (Model.Order == null)
+                {
+                    <p>Bu sipariş bulunamadı.</p>
+                }
+                else
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>Sipariş No: @Model.Order.Id</h4>
+                            <p><strong>Tarih:</strong> @Model.Order.OrderDate.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Toplam Tutar:</strong> @Model.Order.TotalAmount.ToString("C") ₺</p>
+                            <p><strong>Durum:</strong> @Model.Order.Status</p>
+                        </div>
+                    </div>
+
+                    <h3>Ürünler</h3>
+                    @if (Model.Order.OrderItems == null) 
+                    {
+                        <p>Bu siparişe ait ürün bulunamadı.</p>
+                    }
+                    else if (!Model.Order.OrderItems.Any())
+                    {
+                        <p>Bu siparişe ait ürün bulunamadı.</p>
+                    }
+    
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ürün Adı</th>
+                                    <th>Miktar</th>
+                                    <th>Birim Fiyat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Order.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.ProductVariant.ProductName</td>
+                                        <td>@item.Units</td>
+                                        <td>@item.UnitPrice.ToString("C") ₺</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    <a asp-page="./Orders">Geri</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>

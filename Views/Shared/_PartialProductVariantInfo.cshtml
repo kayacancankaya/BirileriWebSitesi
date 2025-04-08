@@ -1,0 +1,12 @@
+﻿@model BirileriWebSitesi.Models.ViewModels.ProductDetailedVariantInfoViewModel
+
+    <h4 id="variant-name">@Model.VariantName</h4>
+    <input type="hidden" id="variant-code" value="@Model.VariantCode"/>
+    <div class="rating">
+        <span class="fa fa-star"></span>
+        <span class="fa fa-star"></span>
+        <span class="fa fa-star"></span>
+        <span class="fa fa-star"></span>
+        <span class="fa fa-star"></span>
+    </div>
+<div class="item-price"><span id="variant-price">@Model.VariantPrice</span> ₺</div>

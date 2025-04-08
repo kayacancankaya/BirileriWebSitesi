@@ -1,0 +1,64 @@
+﻿@page
+@model EmailModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+
+@Html.Partial("_ManageNav")
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <h3>Email</h3>
+                <partial name="_StatusMessage" for="StatusMessage" />
+                <div class="row">
+                    <div>
+                        <form id="email-form" method="post">
+                            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+                            @if (Model.IsEmailConfirmed)
+                            {
+                                <div class="form-floating mb-3 input-group">
+                                    <label asp-for="Email" class="form-label"></label>
+                                    <input asp-for="Email" class="form-control" placeholder="Lütfen mail adresinizi giriniz." disabled />
+                                        <div class="input-group-append">
+                                            <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
+                                        </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <label asp-for="Email" class="form-label"></label>
+
+                                    <input asp-for="Email" class="form-control" placeholder="Lütfen mail adresinizi giriniz." disabled />
+                                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Doğrulama Maili Gönder</button>
+                                </div>
+                            }
+                            <div class="form-floating mb-3">
+                                <label asp-for="Input.NewEmail" class="form-label"></label>
+                                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
+                                <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+                            </div>
+                            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="w-100 btn btn-lg btn-primary">Email Değiştir</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+         </div>
+    </div>
+</section>
+@section AdditionalScripts {
+    <partial name="_ValidationScriptsPartial" />
+}

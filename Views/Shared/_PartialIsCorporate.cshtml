@@ -1,0 +1,39 @@
+﻿@model BirileriWebSitesi.Models.OrderAggregate.Address
+
+@if(!Model.IsCorporate)
+{
+    <div class="row clearfix">
+        <!--Form Group-->
+        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+            <div class="field-label">İsim <sup>*</sup></div>
+            <input type="text" id="billing-first-name" value="@Model.FirstName" placeholder="İsim Giriniz...">
+        </div>
+
+        <!--Form Group-->
+        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+            <div class="field-label">Soy İsim <sup>*</sup> </div>
+            <input type="text" id="billing-last-name" value="@Model.LastName" placeholder="Soy İsim Giriniz...">
+        </div>
+    </div>
+
+}
+else
+{
+    <div class="row clearfix">
+        <!--Form Group-->
+        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+            <div class="field-label">Firma İsmi - Şahıs Şirketi İsim Soy İsim <sup>*</sup></div>
+            <input type="text" id="corporate-name" value="@Model.CorporateName" placeholder="Firma İsmi Giriniz...">
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+            <div class="field-label">Vergi No</div>
+            <input type="text" id="vat" value="@Model.VATnumber" placeholder="Vergi No Giriniz...">
+        </div>
+        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+            <div class="field-label">Vergi Dairesi</div>
+            <input type="text" id="vat-state" value="@Model.VATstate" placeholder="Vergi Dairesi Giriniz...">
+        </div>
+    </div>
+}

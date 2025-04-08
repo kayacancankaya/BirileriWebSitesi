@@ -1,0 +1,113 @@
+﻿@model BirileriWebSitesi.Models.BasketAggregate.Basket
+@section Title {
+    <meta name="title" content="Hakkında">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+
+
+
+<!--Cart Section-->
+<section class="cart-section" id="cart-content">
+    @Html.Partial("_PartialCart",Model)
+</section>
+<!--End Cart Section-->
+@section AdditionalScripts{
+    <script>
+        $(document).ready(function (){
+
+            $(".dropdown").removeClass("current");
+            $(".cart").addClass("current");
+            initializeQuantitySpinner();
+            $(document).on("click", ".remove-btn", function () {
+                var productCode = $(this).data("productcode");
+                var button = $(this);
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/RemoveCartItem",
+                    data: {
+                        productCode: productCode,
+                    },
+                    async:true,
+                    success: function (response) {
+                        $("#cart-content").html(response);
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(xhr.responseText);
+                    }
+                });
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/InitializeCartNumber",
+                    async: true,
+                    success: function (response) {
+                        let currentItem = response.message;
+                        $(".cart .cart-count").text(currentItem);
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(xhr.responseText);
+
+                    }
+                });
+            });
+            $(document).on("click", ".bootstrap-touchspin", function () {
+                var productCode = $(this).closest("td").find(".quantity-spinner").data("productcode");
+                var quantity = $(this).closest("td").find(".quantity-spinner").val();
+                console.log(productCode)
+                console.log(quantity)
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/CartItemAmountChanged",
+                    data: {
+                        productCode: productCode,
+                        quantity: quantity
+                    },
+                    async: true,
+                    success: function (response) {
+                        $("#cart-content").html(response);
+                        initializeQuantitySpinner();
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+        });
+        function initializeQuantitySpinner() {
+            if ($('.quantity-spinner').length) {
+            $(".quantity-spinner").TouchSpin({
+                min: 1,
+                max: 999999,
+                step: 1,
+                verticalbuttons: true,
+            });
+            }
+
+            $(".bootstrap-touchspin-down").text("-");
+            $(".bootstrap-touchspin-down").css({
+                "color": "black",
+                "text-align": "center",
+                "display": "flex",
+                "align-items": "center",
+                "justify-content": "center",
+            });
+
+            $(".bootstrap-touchspin-up").text("+");
+            $(".bootstrap-touchspin-up").css({
+                "color": "black",
+                "text-align": "center",
+                "display": "flex",
+                "align-items": "center",
+                "justify-content": "center",
+            });
+        };
+    </script>
+}

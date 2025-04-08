@@ -1,0 +1,122 @@
+﻿@model BirileriWebSitesi.Models.BasketAggregate.Basket
+@if(Model.Items.Count > 0)
+{
+    decimal itemTotal = 0;
+    <div class="auto-container">
+
+        <!--Cart Outer-->
+        <div class="cart-outer">
+            <div class="table-outer">
+
+                <table class="cart-table">
+                    <thead class="cart-header">
+                        <tr>
+                            <th>Önizleme</th>
+                            <th class="prod-column">Ürün</th>
+                            <th class="price">Fiyat</th>
+                            <th>Miktar</th>
+                            <th>Toplam</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            itemTotal = item.Quantity * item.UnitPrice;
+                            <tr>
+                                <td class="prod-column">
+                                    <div class="column-box">
+                                        <figure class="prod-thumb">
+                                            <a asp-controller="Home" asp-action="ProductDetailed" asp-productCode="@item.ProductCode">
+                                                <img src="@Url.Content(string.Format("~/images/resource/products/{0}/1.jpg", item.ImagePath))" alt="@item.ProductName">
+                                            </a>
+                                        </figure>
+                                    </div>
+                                </td>
+                                <td><h4 class="prod-title">@item.ProductName</h4></td>
+                                <td class="sub-total">@item.UnitPrice</td>
+                                <td class="qty"><div class="item-quantity" style="color:black"><input style="color:black" data-productCode="@item.ProductCode" class="quantity-spinner" type="text" value="@item.Quantity" name="quantity"></div></td>
+                                <td class="total">@itemTotal</td>
+                                <td><span class="alert-text"></span><a data-productcode="@item.ProductCode" class="remove-btn"><span class="fa fa-remove"></span></a></td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+
+            @* <div class="cart-options clearfix">
+                 <div class="pull-left">
+            <div class="apply-coupon clearfix">
+            <div class="form-group clearfix">
+            <input type="text" name="coupon-code" value="" placeholder="Coupon Code">
+            </div>
+            <div class="form-group clearfix">
+            <button type="button" class="theme-btn coupon-btn">Apply Coupon</button>
+            </div>
+            </div>
+            </div> 
+
+                 <div class="pull-right">
+                    <button type="button" class="theme-btn cart-btn update-cart">SEPETİ GÜNCELLE</button>
+                </div> 
+
+            </div> *@
+        </div>
+
+        <div class="row clearfix" style="margin-top:30px;">
+            @*
+        <div class="column pull-left col-lg-5 col-md-6 col-sm-12">
+        <div class="shipping-block">
+        <div class="inner-box">
+        <h3>Free Shipping</h3>
+        <h4>Calculate Shipping</h4>
+
+        <!-- Shipping Form -->
+        <div class="shipping-form">
+        <!--Shipping Form-->
+        <form method="post" action="https://expert-themes.com/html/global-industry/contact.html">
+        <div class="row clearfix">
+        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+        <select class="custom-select-box">
+        <option>Pakistan</option>
+        <option>By Order</option>
+        <option>By Price</option>
+        </select>
+        </div>
+        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+        <input type="text" name="text" placeholder="Postcode / ZIP" required>
+        </div>
+        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+        <input type="text" name="text" placeholder="State / County" required>
+        </div>
+        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+        <button class="theme-btn totals-btn" type="submit" name="submit-form">Update Totals</button>
+        </div>
+        </div>
+        </form>
+        </div>
+        </div>
+        </div>
+        </div> *@
+
+            <div class="column pull-right col-lg-6 col-md-6 col-sm-12">
+                <!--Totals Table-->
+                <ul class="totals-table">
+                    <li class="clearfix total"><span class="col">Toplam</span><span class="col ">@Model.TotalAmount ₺</span></li>
+                    <li class="text-right"><a class="theme-btn proceed-btn" asp-controller="Home" asp-action="CheckOut" style="cursor:pointer;">ALIŞVERİRŞİ TAMAMLA</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+}
+else
+{
+    <div class="auto-container">
+        <p>Sepetiniz Boş, <a type="button" asp-controller="Home" asp-action="Shop">alışverişe devam edin</a></p>
+    </div>
+}

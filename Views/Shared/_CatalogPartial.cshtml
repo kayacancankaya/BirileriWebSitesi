@@ -1,0 +1,53 @@
+﻿@model IEnumerable<BirileriWebSitesi.Models.Catalog>
+<!--Catalogs Section-->
+<section class="services-section">
+    <div class="auto-container">
+        <!--Catalog Title-->
+        <div class="sec-title centered">
+            <h2>Kataloglar</h2>
+            <div class="separater"></div>
+            <div class="text">Hizmet verdiğimiz faaliyet alanlarındaki kataloglarımızı inceleyebilirsiniz.</div>
+        </div>
+        <div class="row clearfix">
+            @foreach (Catalog item in Model)
+            {
+                string imagePath = string.Format("~/images/resource/{0}.jpg", item.CatalogName).Replace(" ", "");
+                string pdfPath = string.Format("~/pdfs/{0}.pdf", item.CatalogName).Replace(" ", "");
+
+                // Kategorilere özel ikonları belirleme
+                string iconClass = item.CatalogName switch
+                {
+                    "Spor Malzemeleri" => "flaticon-dumbbell",
+                    "Ofis ve Kırtasiye Ürünleri" => "flaticon-pencil-case",
+                    "Pet Shop Ürünleri" => "flaticon-pawprint",
+                    "Ev Gereçleri" => "flaticon-house",
+                    "Elektronik Ürünler" => "flaticon-smartphone",
+                    "Oyuncak & Hobi Ürünleri" => "flaticon-toys",
+                    _ => "flaticon-box" // Varsayılan ikon
+                };
+
+                <!--Catalog Block-->
+                <div class="services-block col-lg-4 col-md-6 col-sm-12">
+                    <div class="inner-box">
+                        <div class="upper-box">
+                            <span class="icon @iconClass"></span>
+                            <h3><a href="@Url.Action("OpenPdf", "Home", new { filePath = pdfPath })" target="_blank">@item.CatalogName</a></h3>
+                        </div>
+                        <div class="lower-box">
+                            <div class="image">
+                                <img src="@Url.Content(imagePath)" alt="@item.CatalogName" />
+                                <div class="overlay-box">
+                                    <div class="text">@item.CatalogDescription</div>
+                                    <a asp-controller="Home" asp-action="Shop" class="link-btn"><span class="fa fa-link"></span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+        </div>
+    </div>
+</section>
+<!--End Catalogs Section-->

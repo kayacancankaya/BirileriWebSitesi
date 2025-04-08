@@ -1,0 +1,53 @@
+﻿@page
+@model ExternalLoginModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Giriş Yap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+
+
+<!--Register Section-->
+<section class="login-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <!--Register Email-->
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <h1>Başka Hesap İle Oturum Aç</h1>
+                <h2 id="external-login-title">@Model.ProviderDisplayName Hesabı ile Oturum Aç.</h2>
+                <hr />
+
+                <p id="external-login-description" class="text-info">
+                     <strong>@Model.ProviderDisplayName</strong> tarafından başarıyla doğrulandınız.
+                    Giriş yapmak için lütfen aşağıdaki formu doldurunuz.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                            <div class="form-floating mb-3">
+                                <label asp-for="Input.Email" class="form-label"></label>
+                                <input asp-for="Input.Email" class="form-control" autocomplete="email" placeholder="Lütfen Mail Adresinizi Giriniz." style="min-width: 500px;"/>
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Kayıt Ol</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section AdditionalScripts {
+    <partial name="_ValidationScriptsPartial" />
+}

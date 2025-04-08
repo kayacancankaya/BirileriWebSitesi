@@ -1,0 +1,34 @@
+﻿@page
+@model DownloadPersonalDataModel
+@{
+    ViewData["Title"] = "Bilgilerinizi İndirin";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Giriş Yap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <h3>@ViewData["Title"]</h3>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@section AdditionalScripts {
+    <partial name="_ValidationScriptsPartial" />
+}

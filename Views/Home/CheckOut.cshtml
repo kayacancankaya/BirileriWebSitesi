@@ -1,0 +1,543 @@
+﻿@model BirileriWebSitesi.Models.OrderAggregate.Order
+@{
+    bool isCorporate = false;
+}
+@section Title {
+    <meta name="title" content="Hakkında">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+@section CSS{
+    <style>
+        @@media (min-width: 992px) { 
+            #is-corporate-main-div {
+                margin-top: 50px;
+                margin-left: 20px;
+            }
+        }
+
+        .exp-date-row {
+            display: flex;
+            flex-wrap: wrap; /* optional: wrap on small screens */
+        }
+        .credit-card-info {
+            margin-top: 20px;
+        }
+
+        .no-arrow::-webkit-outer-spin-button,
+        .no-arrow::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .no-arrow {
+            -moz-appearance: textfield;
+        }
+
+    </style>
+}
+@Html.AntiForgeryToken()
+<input name="__RequestVerificationToken" type="hidden" value="TOKEN_VALUE" />
+<!--CheckOut Page-->
+<div class="checkout-page">
+    <div class="auto-container">
+       
+        <!--Checkout Details-->
+        <div class="checkout-form">
+
+            <div class="row clearfix">
+                <!--Ship to Address-->
+                <div class="column col-lg-6 col-md-12 col-sm-12">
+                    
+                    <div class="checkout-title">
+                        <h2>Kargo Bilgileri</h2>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <input type="checkbox" id="is-billing-same" value="true"
+                            @(Model.ShipToAddress.IsBillingSame ? "checked=\"checked\"" : "")>        
+                            <label for="is-billing-same">Fatura adresi kargo adresi ile aynı</label>
+                        </div>
+
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <input type="checkbox" id="is-corporate" value="true"
+                            @(Model.BillingAddress.IsCorporate ? "checked=\"checked\"" : "")>
+                            <label for="is-corporate">Kurumsal Fatura</label>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">İsim <sup>*</sup></div>
+                            <input type="text" id="first-name" value="@Model.ShipToAddress.FirstName" placeholder="İsminizi Giriniz...">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                        <div class="field-label">Soy İsim <sup>*</sup></div>
+                        <input type="text" id="last-name" value="@Model.ShipToAddress.LastName" placeholder="Soy İsim Giriniz...">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Email Adresi <sup>*</sup></div>
+                        <input type="text" id="email" value="@Model.ShipToAddress.EmailAddress" placeholder="Email Adresi Giriniz">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Telefon</div>
+                            <input type="text" id="phone" value="@Model.ShipToAddress.Phone" placeholder="Telefon Numarası Giriniz">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                            <div class="field-label">Adres <sup>*</sup></div>
+                            <input type="text" id="address-detailed" value="@Model.ShipToAddress.AddressDetailed" placeholder="Açık Adres">
+                        </div>
+
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                            <div class="field-label">Şehir <sup>*</sup></div>
+                            <input type="text" id="city" value="@Model.ShipToAddress.City" placeholder="Şehir">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">İlçe <sup>*</sup></div>
+                            <input type="text" id="state" value="@Model.ShipToAddress.State" placeholder="İlçe">
+                        </div>
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Mahalle <sup>*</sup></div>
+                            <input type="text" id="street" value="@Model.ShipToAddress.Street" placeholder="Mahalle">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Posta Kodu</div>
+                        <input type="text" id="zip" value="@Model.ShipToAddress.ZipCode" placeholder="Posta Kodu">
+                        </div>
+
+                    </div>
+                </div>
+                
+                <!--Billing Address-->
+                <div class="column col-lg-6 col-md-12 col-sm-12 " id="billing-address-div">
+                    <div class="checkout-title">
+                        <h2>Fatura Bilgileri</h2>
+                    </div>
+                    
+                    <div class="row clearfix" id="is-corporate-main-div" >
+                        <div id="is-corporate-div">
+                            @Html.Partial("_PartialIsCorporate",Model.BillingAddress)
+                        </div>
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Email Adresi <sup>*</sup></div>
+                            <input type="text" id="billing-email" value="@Model.BillingAddress.EmailAddress" placeholder="Email Adresi Giriniz">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Telefon</div>
+                            <input type="text" id="billing-phone" value="@Model.BillingAddress.Phone" placeholder="Telefon Numarası Giriniz">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                            <div class="field-label">Adres <sup>*</sup></div>
+                            <input type="text" id="billing-address-detailed" value="@Model.BillingAddress.AddressDetailed" placeholder="Açık Adres">
+                        </div>
+
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                            <div class="field-label">Şehir <sup>*</sup></div>
+                            <input type="text" id="billing-city" value="@Model.BillingAddress.City" placeholder="Şehir">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">İlçe <sup>*</sup></div>
+                            <input type="text" id="billing-state" value="@Model.BillingAddress.State" placeholder="İlçe">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Mahalle <sup>*</sup></div>
+                            <input type="text" id="billing-street" value="@Model.BillingAddress.Street" placeholder="Mahalle">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Posta Kodu </div>
+                            <input type="text" id="billing-zip" value="@Model.BillingAddress.ZipCode" placeholder="Posta Kodu">
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+                
+            <!--Notes-->
+            <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                <div class="field-label">Not</div>
+                <textarea id="other-notes" placeholder="Gönderiye ait var ise özel notlarınızı yazınız..."></textarea>
+            </div>
+            <!--Update user info-->
+            <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                <div class="field-label">Varsayılan Adres Yap</div>
+                <input type="checkbox" id="update-user-info" value="true"
+                @(Model.UpdateUserInfo ? "checked=\"checked\"" : "")>
+            </div>
+        </div>
+        <!--End Checkout Details-->
+        <!--Order Box-->
+        <div class="order-box">
+            <h2>Siparişiniz</h2>
+            <div class="title-box clearfix">
+                <div class="col">ÜRÜN</div>
+                <div class="col">TOPLAM</div>
+            </div>
+            <ul>
+
+                @foreach(var item in Model.OrderItems)
+                {
+                    decimal subTotal = item.UnitPrice * item.Units;
+                    <li class="clearfix order-item">
+                        <input type="hidden" class="product-code" value="@item.ProductCode" />
+                        Ürün Adı:<strong><span class="product-name">@item.ProductVariant.ProductName </span> / Miktar: <span class="quantity">@item.Units</span>
+                        </strong>
+                    </li>
+                    <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
+                }
+                <li class="clearfix">KARGO ÜCRETİ<span class="free">ÜCRETSİZ</span></li>
+                <li class="clearfix">TOPLAM<span>@Model.TotalAmount ₺</span></li>
+            </ul>
+        </div>
+        <!--End Order Box-->
+        <!--Payment Box-->
+        <div class="payment-box">
+            <div class="upper-box">
+
+                <!--Payment Options-->
+                <div class="payment-options">
+                    <ul>
+                        <li>
+                            <div class="radio-option">
+                                <input type="radio" name="payment-group" id="payment-2" checked>
+                                <label for="payment-2"><strong>Banka Transferi</strong><span class="small-text" id="payment-2-text">Banka Havalesi ile ödeme yapın. Ödemenizin açıklamalar kısmına sipariş numaranızı eklemenizi önemle rica ederiz. Ödemeniz bankaya ulaştıktan sonra ürünleriniz kargoya hazırlanacaktır.</span></label>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="radio-option">
+                                <input type="radio" name="payment-group" id="payment-1">
+                                <label for="payment-1"><strong>Kredi Kartı</strong></label>
+                            </div>
+
+                            <!--Credit Card-->
+                            <div id="credit-card-info" class="credit-card-info" style="display: none;">
+                                <h3>Kredi Kartı Bilgileri</h3>
+                    
+                                <!-- Credit Card Fields  -->
+                                    <div class="form-group col-lg-6 col-md-6 col-sm-12" >
+                                        <div class="field-label">Kart Numarası:</div>
+                                        <input type="number" id="credit-card-number" class="no-arrow" style="width:300px;" placeholder="Kart Numarası" class="pl-1">
+                                    </div>
+                                    <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                                        <div class="field-label">Son Kullanma Tarihi:</div>
+                                        <div class="exp-date-row">
+                                            <input type="number" id="expiry-date-month" style="max-width:30px; max-height:24px" class="pl-1 no-arrow" placeholder="AA">
+                                            <p class="ml-2 mr-2" style="justify-content:center;">/</p>
+                                            <input type="number" id="expiry-date-year" style="max-width:30px;max-height:24px" class="pl-1 no-arrow" placeholder="YY">
+                                        </div>
+                                    </div>
+                                <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                                        <div class="field-label">CVV:</div>
+                                        <input style="max-width:40px;" class="no-arrow" type="number" id="cvv" placeholder="CVV">
+                                    </div>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+            <div class="lower-box text-right">
+                <span class="alert-text"></span>
+                <a id="place-order" class="theme-btn order-btn">Sipariş Oluştur</a>
+            </div>
+        </div>
+        <!--End Payment Box-->
+
+    </div>
+</div>
+<!--End CheckOut Page-->
+@section AdditionalScripts {
+    <script>
+        $(document).ready(function (){
+
+            $(".dropdown").removeClass("current");
+            $(".cart").addClass("current");
+            var isBillingSame = $("#is-billing-same").is(":checked"); 
+            if (isBillingSame) {
+                $("#billing-address-div").css("display", "none");
+            }
+            $(document).on("change", "#is-billing-same", function () {
+                var isBillingSame = $(this).is(":checked");
+            
+                if (isBillingSame) {
+                    $("#billing-address-div").css("display", "none");
+                }   
+                else{
+                    $("#billing-address-div").css("display", "block");
+                }
+
+            })
+            $(document).on("change", "#is-corporate", function () {
+                var firstName = $("#billing-first-name").val();
+                var lastName = $("#billing-last-name").val();
+                var corporateName = $("#corporate").val();
+                var vATNumber = $("#vat").val();
+                var vATState = $("#vat-state").val();
+                var isCorporate = $(this).is(":checked");
+                if (isCorporate) {
+                    $("#is-billing-same").prop("checked", false);
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/_PartialIsCorporate",
+                    data: {
+                        firstName : firstName,
+                        lastName : lastName,
+                        corporateName : corporateName,
+                        vATNumber : vATNumber,
+                        vATState : vATState,
+                        isCorporate : isCorporate,
+                    },
+                    success: function (result) {
+                        $("#is-corporate-div").html(result);
+                    }
+                })
+            });
+            $(document).on("change", "#payment-1", function () {
+                if (this.checked) {
+                    $("#credit-card-info").css("display","block");
+                    $("#payment-2-text").css("display","none");
+                } else {
+                    $("#is-corporate-div").style.display = 'none';
+                    $("#payment-2-text").css("display","block");
+                }
+            });
+            $(document).on("change", "#payment-2", function () {
+                if (this.checked) {
+                    $("#credit-card-info").css("display","none");
+                    $("#payment-2-text").css("display","block");
+                } else {
+                    $("#is-corporate-div").style.display = 'block';
+                    $("#payment-2-text").css("display","none");
+                }
+            });
+            $(document).on("click", "#place-order", function (e) {
+
+                e.preventDefault();
+                var button = $(this);
+                let requiredFields = ["first-name", "last-name", "email", "city", "state", "address-detailed", "street"];
+                var isBillingSame = $("#is-billing-same").is(":checked");
+                var isCorporate = $("#is-corporate").is(":checked");
+                if (!isBillingSame)
+                {
+                    if (isCorporate) {
+                        requiredFields.push("corporate-name", "vat", "vat-state");
+                    } else {
+                        requiredFields.push("billing-first-name", "billing-last-name");
+                    }
+                    requiredFields.push("billing-email", "billing-city", "billing-state", "billing-address-detailed", "billing-street")
+
+                }
+                var isCreditCardPayment = $("#payment-1").is(":checked");
+                if(isCreditCardPayment)
+                {
+                    requiredFields.push("credit-card-number", "expiry-date-month", "expiry-date-year", "cvv");
+                    var creditCardNumber = $("#credit-card-number").val();
+                    var expiryMonth = $("#expiry-date-month").val() ;
+                    var expiryYear = $("#expiry-date-year").val();
+                    var expiryDate = $("#expiry-date-month").val() + "/" + $("#expiry-date-year").val();
+                    var cvv = $("#cvv").val();
+                }
+                let isValid = true;
+
+                // if fields are filled
+                requiredFields.forEach(function (id) {
+                    let input = document.getElementById(id);
+                    if (input && input.value.trim() === "") {
+                        isValid = false;
+                        input.style.border = "1px solid red"; // Highlight empty fields
+                    } else {
+                        input.style.border = ""; // Reset style
+                    }
+                });
+                if (!isValid) {
+                    e.preventDefault();
+                    showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
+                    return;
+                }
+                // Check card payment
+                if(isCreditCardPayment)
+                {
+                    if (!isValidCardNumber(creditCardNumber)) {
+                        e.preventDefault();
+                        showAlert(button,"Geçersiz kart numarası.","danger");
+                        return;
+                    }
+
+                    if (!isValidExpiry(expiryMonth, expiryYear)) {
+                        e.preventDefault();
+                        showAlert(button,"Geçersiz son kullanma tarihi.","danger");
+                        return;
+                    }
+                    
+                    if (!isValidCVV(cvv)) {
+                        e.preventDefault();
+                        showAlert(button,"Geçersiz CVV.","danger");
+                        return;
+                    }
+                }
+                // Disable button and show loading
+                $("#place-order").text("İşlem Yapılıyor...").prop("disabled", true);
+
+                // Gather checkout data
+                var shipToAddress = {
+                    FirstName: $("#first-name").val(),
+                    LastName: $("#last-name").val(),
+                    EmailAddress: $("#email").val(),
+                    Phone: $("#phone").val(),
+                    AddressDetailed: $("#address-detailed").val(),
+                    City: $("#city").val(),
+                    State: $("#state").val(),
+                    Street: $("#street").val(),
+                    ZipCode: $("#zip").val(),
+                    IsBillingSame: $("#is-billing-same").is(":checked"),
+                    IsBilling: false,
+                };
+
+                var billingAddress = {};
+                if (shipToAddress.IsBillingSame) {
+                    billingAddress = { 
+                        FirstName: $("#first-name").val(),
+                        LastName: $("#last-name").val(),
+                        EmailAddress: $("#email").val(),
+                        Phone: $("#phone").val(),
+                        AddressDetailed: $("#address-detailed").val(),
+                        City: $("#city").val(),
+                        State: $("#state").val(),
+                        Street: $("#street").val(),
+                        ZipCode: $("#zip").val(),
+                        IsBillingSame: $("#is-billing-same").is(":checked"),
+                        IsBilling: true
+                    };
+                }
+                else
+                {
+                    billingAddress = {
+                        CorporateName : $("#corporate-name").val(),
+                        VATnumber : parseInt($("#vat").val()),
+                        VATState : $("#vat-state").val(),
+                        FirstName : $("#billing-first-name").val(),
+                        LastName : $("#billing-last-name").val(),
+                        EmailAddress: $("#billing-email").val(),
+                        Phone: $("#billing-phone").val(),
+                        AddressDetailed: $("#billing-address-detailed").val(),
+                        City: $("#billing-city").val(),
+                        State: $("#billing-state").val(),
+                        Street: $("#billing-street").val(),
+                        ZipCode: $("#billing-zip").val(),
+                        IsCorporate: $("#is-corporate").is(":checked"),
+                        IsBilling: true
+                    };
+                };
+                var orderItems = [];
+                $(".order-item").each(function () {
+                    var item = {
+                        ProductCode: $(this).find(".product-code").val(),
+                        UnitPrice: parseFloat($(this).find(".unit-price").text().replace("₺", "").trim()),
+                        Units: parseInt($(this).find(".quantity").text().trim())
+                    };
+                    orderItems.push(item);
+                });
+                 
+                var paymentMethod = $("input[name='payment-group']:checked").attr("id");
+                var notes = $("#other-notes").val();
+                var updateUserInfo = $("#update-user-info").is(":checked");
+                // Send AJAX request
+                $.ajax({
+                    url: "/Home/PlaceOrder",
+                    type: "POST",
+                    contentType: "application/json",
+                    async: true,
+                    data: JSON.stringify({
+                        ShipToAddress: shipToAddress,
+                        BillingAddress: billingAddress,
+                        OrderItems: orderItems,
+                        PaymentMethod: paymentMethod,
+                        Notes: notes,
+                        UpdateUserInfo: updateUserInfo
+                    }),
+                    //headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert(button,response.message,"success");
+                            window.location.href = "/Home"; // Redirect to confirmation page
+                        } else {
+                            showAlert(button, response.message, "error");
+                            $("#place-order").text("Sipariş Oluştur").prop("disabled", false);
+                        }
+                    },
+                    error: function (response) {
+                        showAlert(button, response.message, "error");
+                        $("#place-order").text("Sipariş Oluştur").prop("disabled", false);
+                    }
+                });
+
+            });
+        });
+                function isValidCardNumber(number) {
+            let sum = 0;
+            let shouldDouble = false;
+            for (let i = number.length - 1; i >= 0; i--) {
+                let digit = parseInt(number.charAt(i));
+
+                if (shouldDouble) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+
+                sum += digit;
+                shouldDouble = !shouldDouble;
+            }
+            return sum % 10 === 0;
+        }
+                   function isValidExpiry(month, year) {
+            if (month < 1 || month > 12) return false;
+
+            const now = new Date();
+            const inputMonth = parseInt(month);
+            const inputYear = parseInt(`20${year.length === 2 ? year : year.slice(-2)}`);
+
+            const expiryDate = new Date(inputYear, inputMonth, 0);
+            if(expiryDate< now) return false;
+            return true;
+        }
+
+            function isValidCVV(cvv) {
+            return /^\d{3,4}$/.test(cvv);
+        }
+    </script>
+}

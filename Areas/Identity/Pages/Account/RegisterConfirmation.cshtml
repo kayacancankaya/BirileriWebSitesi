@@ -1,0 +1,44 @@
+﻿@page
+@model RegisterConfirmationModel
+
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+<section class="login-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+
+                <h1>Kayıt Onayla</h1>
+                @{
+                    if (@Model.DisplayConfirmAccountLink)
+                    {
+                <p>
+                    This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+                    Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
+                </p>
+                    }
+                    else
+                    {
+                <p>
+                        Lütfen onay için e-postanızı kontrol ediniz.
+                </p>
+                    }
+                }
+
+
+            </div>
+        </div>
+    </div>
+</section>

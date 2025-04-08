@@ -1,0 +1,42 @@
+﻿@page
+@model LogoutModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@section Title {
+    <meta name="title" content="Oturumu Sonlandır">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+
+
+<section class="manage-section" style="margin-top:40px;">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <header>
+                    <h1>Oturumu Sonlandır</h1>
+                    @{
+                        if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                                <button type="submit" class="nav-link btn btn-link text-dark">Buraya Tıklayarak Oturumunuzu Kapatabilirsiniz.</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <p>Başarılı bir şekilde oturumunuzu sonlandırdınız.</p>
+                        }
+                    }
+                </header>
+
+
+            </div>
+        </div>
+    </div>
+</section>

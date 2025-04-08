@@ -1,0 +1,77 @@
+﻿@page
+@model ExternalLoginsModel
+@{
+    ViewData["Title"] = "Dış Bağlantılarınız Yönetin";
+    ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
+}
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml"; // Ensure Identity uses your layout
+}
+
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+@Html.Partial("_ManageNav")
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                    <partial name="_StatusMessage" for="StatusMessage" />
+                    @if (Model.CurrentLogins?.Count > 0)
+                    {
+                        <h3>Kayıtlı Girişler</h3>
+                        <table class="table">
+                            <tbody>
+                                @foreach (var login in Model.CurrentLogins)
+                                {
+                                    <tr>
+                                        <td id="@($"login-provider-{login.LoginProvider}")">@login.ProviderDisplayName</td>
+                                        <td>
+                                            @if (Model.ShowRemoveButton)
+                                            {
+                                                <form id="@($"remove-login-{login.LoginProvider}")" asp-page-handler="RemoveLogin" method="post">
+                                                    <div>
+                                                        <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
+                                                        <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
+                                                        <button type="submit" class="btn btn-primary" title="Bu oturumu @login.ProviderDisplayName hesabımdan">Çıkar</button>
+                                                    </div>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                @: &nbsp;
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @if (Model.OtherLogins?.Count > 0)
+                    {
+                        <h4>Başka bir hesabınız ile oturum açın.</h4>
+                        <hr />
+                        <form id="link-login-form" asp-page-handler="LinkLogin" method="post" class="form-horizontal">
+                            <div id="socialLoginList">
+                                <p>
+                                    @foreach (var provider in Model.OtherLogins)
+                                    {
+                                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızı kullanarak oturum açın.">@provider.DisplayName</button>
+                                    }
+                                </p>
+                            </div>
+                        </form>
+                    }
+
+            </div>
+        </div>
+    </div>
+</section>

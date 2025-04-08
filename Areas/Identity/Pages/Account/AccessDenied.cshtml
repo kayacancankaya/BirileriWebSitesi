@@ -1,0 +1,31 @@
+﻿@page
+@model AccessDeniedModel
+@{
+    ViewData["Title"] = "Erişim Engenllendi";
+}
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml"; // Ensure Identity uses your layout
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+<section class="login-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <header>
+                    <h1 class="text-danger">@ViewData["Title"]</h1>
+                    <p class="text-danger">Bu kaynağa erişim yetkiniz bulunmamaktadır.</p>
+                </header>
+            </div>
+        </div>
+    </div>
+</section>

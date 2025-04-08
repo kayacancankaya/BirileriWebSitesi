@@ -1,0 +1,100 @@
+﻿@model BirileriWebSitesi.Models.ViewModels.ProductCardViewModel
+
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@{
+    string? userId = string.Empty;
+    if (User.Identity.IsAuthenticated)
+    {
+        userId = UserManager.GetUserId(User);
+    }
+    else
+    {
+        userId = "0";
+    }
+}
+@if(Model.products.Count() > 0)
+{
+    ProductVariant firstVariant = new();
+    <div class="row clearfix">
+        <!--Shop Item-->
+        @foreach (Product item in Model.products)
+        {
+            firstVariant = item.ProductVariants.FirstOrDefault();
+            decimal discountedPrice = firstVariant.Discounts.FirstOrDefault() == null ? decimal.Zero : firstVariant.Discounts.FirstOrDefault().DiscountAmount;
+            decimal actualPrice = firstVariant.Price;
+            if (firstVariant.Discounts != null)
+            {
+                if (firstVariant.Discounts.Any())
+                {
+                    if (firstVariant.Discounts.Select(d => d.DiscountType).FirstOrDefault() == "Percentage")
+                        discountedPrice = firstVariant.Price * discountedPrice;
+                    actualPrice = discountedPrice;
+                }
+            }
+
+            <div class="shop-item col-lg-4 col-md-6 col-sm-12">
+                <div class="inner-box">
+                    <div class="image">
+                        <img src="@Url.Content(string.Format("~/images/resource/products/{0}/1.jpg", item.ProductCode))" alt="@item.ProductName" />
+                        <div class="overlay-box">
+                            <ul class="cart-option">
+                                <li><a asp-controller="Home" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode"><span class="fa fa-link"></span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="lower-content">
+                        <h3> <a asp-controller="Home" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">@item.ProductName</a></h3>
+                        <div class="price">
+                            @if (item.Discounts.Any())
+                            {
+                                <span class="discount actual-price">@discountedPrice</span>
+                                <span> @firstVariant.Price ₺ </span>
+                            }
+                            else
+                            {
+                                <span class="actual-price">@firstVariant.Price ₺</span>
+                            }
+                            <span style="color:black">/ adet</span> <br />
+                            <span style="color:black">Minimum Sipariş Adedi</span>
+                            <span class="min-order">@item.MinOrder</span>
+                        </div>
+
+                        <div class="clearfix">
+                            <div class="pull-left">
+                                
+                                    <input type="hidden" class="user-id" value="@userId" />
+                                    <input type="hidden" class="product-code" value="@firstVariant.ProductCode" />
+                                    <input type="hidden" class="price" value="@actualPrice" />
+                                    <input type="hidden" class="quantity" value="@item.MinOrder" />
+                                    <span class="alert-text"></span>
+                                    <a class="add-cart add-to-cart" type="button" style="background-color:transparent">
+                                        <span class="fa fa-cart-plus"></span>Sepete Ekle
+                                    </a>
+                            </div>
+                            <div class="pull-right">
+                                <!--Rating-->
+                                <div class="rating">
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+}
+else
+{
+    <p>Aramanıza Ait Sonuç Bulunamadı.</p>
+    <a asp-controller="Home" asp-action="Shop">Alışverişe Devam Edin</a>
+}
+
+@Html.Partial("_PartialPaginationWidget", Model.pagination)

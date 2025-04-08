@@ -1,0 +1,41 @@
+﻿@using BirileriWebSitesi.Data
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@inject ApplicationDbContext Context
+@{
+    var userId = UserManager.GetUserId(User);
+    bool hasOrders = false;
+    if (!string.IsNullOrEmpty(userId))
+    {
+        hasOrders = await Context.Orders.AnyAsync(o => o.BuyerId == userId);
+    }
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<section class="manage-nav-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profil</a></li>
+                    @if(hasOrders)
+                    {
+                        <li class="nav-item"><a class="nav-link @ManageNavPages.OrdersNavClass(ViewContext)" id="orders" asp-page="./Orders">Sipariş Bilgileri</a></li>
+                    }
+                    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email Güncelle</a></li>
+                    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Şifre İşlemleri</a></li>
+                    @if (hasExternalLogins)
+                    {
+                        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">Dış Kaynak Oturumları</a></li>
+                    }
+                    @* <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li> *@
+                    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Hesap Bilgileri</a></li>
+                    <li class="nav-item"><a class="nav-link @ManageNavPages.LogoutNavClass(ViewContext)" id="logout" asp-page="/Account/Logout">Çıkış Yap</a></li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,57 @@
+﻿@page
+@model BirileriWebSitesi.Areas.Identity.Pages.Account.Manage.OrdersModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml"; 
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+@Html.Partial("_ManageNav")
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-6 col-md-12 col-sm-12">
+
+                <h2>Siparişlerim</h2>
+
+                @if (Model.Orders == null || !Model.Orders.Any())
+                {
+                    <p>Henüz siparişiniz bulunmamaktadır.</p>
+                }
+                else
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Tarih</th>
+                                <th>Toplam Tutar</th>
+                                <th>Durum</th>
+                                <th>Detay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.Orders)
+                            {
+                                <tr>
+                                    <td>@order.Id</td>
+                                    <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@order.TotalAmount.ToString("C") ₺</td>
+                                    <td>@order.Status</td>
+                                    <td><a asp-page="./OrderDetails" asp-route-id="@order.Id">Sipariş Detayı</a> </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</section>

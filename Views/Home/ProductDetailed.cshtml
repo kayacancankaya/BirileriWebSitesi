@@ -1,0 +1,302 @@
+﻿@model BirileriWebSitesi.Models.ViewModels.ProductDetailedViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@{
+    string? userId = string.Empty;
+    if (User.Identity.IsAuthenticated)
+    {
+        userId = UserManager.GetUserId(User);
+    }
+    else
+    {
+        userId = "0";
+    }
+}
+@section Title {
+    <meta name="title" content=@Model.Product.MetaTitle>
+}
+@section Description {
+    <meta name="description" content=@Model.Product.MetaDescription>
+}
+@section Keywords {
+    <meta name="keywords" content=@Model.Product.MetaKeywords>
+}
+@section CSS {
+    <style>
+        .product-variants {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f9f9f9;
+        }
+
+    .product-variants h5 {
+        margin-bottom: 10px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .variant-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .variant-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .variant-title {
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .variant-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .variant-button {
+        padding: 6px 12px;
+        font-size: 14px;
+        border: 1px solid #007bff;
+        background: white;
+        color: #007bff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .variant-button:hover,
+    .variant-button.active {
+        background: #007bff;
+        color: white;
+    }
+    </style>
+}
+@{
+     int counter = 0;
+}
+<input type="hidden" id="product-code" value="@Model.Product.ProductCode" />
+<input type="hidden" id="product-name" value="@Model.Product.ProductName" />
+<input type="hidden" id="variant-name" value="" />
+<!--Product Container-->
+<div class="sidebar-page-container">
+    <div class="auto-container">
+        <div class="row clearfix">
+
+            <!--Content Side-->
+            <div class="content-side col-lg-9 col-md-8 col-sm-12">
+                <div class="shop-single">
+                    <div class="product-details">
+
+                        <!--Basic Details-->
+                        <div class="basic-details">
+                            <div class="row clearfix">
+                                <div class="image-column col-lg-6 col-md-12 col-sm-12" id="variant-image">
+                                    @Html.Partial("_PartialProductVariantImage", Model.ProductVariantImage)
+                                </div>
+                                <div class="info-column col-lg-6 col-md-12 col-sm-12">
+
+                                    <div class="details-header" id="variant-info">
+                                        @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
+                                    </div>
+                                    <!--variant list-->
+                                    <div class="product-variants">
+                                        <h5>Varyasyonlar</h5>
+                                        <div class="variant-container">
+                                            @foreach (var globalVariant in Model.GlobalVariants)
+                                            {
+                                                counter = 0;
+                                                <div class="variant-group" data-global-key="@globalVariant.Key">
+                                                    <input type="hidden" class="global-variant-key" value="@globalVariant.Key" />
+                                                    <span class="variant-title">@globalVariant.Value</span>
+                                                    <div class="variant-options">
+                                                        @{
+                                                            Dictionary<string,string> variantAttributes = Model.VariantAttributes
+                                                            .Where(k => k.Key.StartsWith(globalVariant.Key))
+                                                            .ToDictionary(d=>d.Key,d=>d.Value);
+                                                        }
+                                                        @foreach (var item in variantAttributes)
+                                                        {
+                                                            @if(counter==0)
+                                                            {
+                                                                <span class="alert-text"></span>
+                                                                <button class="variant-button active" data-key="@item.Key" data-value="@item.Value">@item.Value</button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="alert-text"></span>
+                                                                <button class="variant-button" data-key="@item.Key" data-value="@item.Value">@item.Value</button>
+                                                            }
+                                                            counter++;   
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div class="other-options clearfix">
+                                        @* <div class="item-quantity"><input class="quantity-spinner" type="text" value="1" name="quantity"></div> *@
+                                        <input type="hidden" class="user-id" value="@userId" />
+                                        <span class="alert-text"></span>
+                                        <button type="button" class="theme-btn btn-style-one add-to-cart" style="margin-top:20px;">Sepete Ekle</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Basic Details-->
+                        
+                            <!--Product Info Tabs-->
+                            <div class="product-info-tabs">
+                                <!--Product Tabs-->
+                                <div class="prod-tabs tabs-box">
+
+                                    <!--Tab Btns-->
+                                    <ul class="tab-btns tab-buttons clearfix">
+                                        <li data-tab="#prod-details" class="tab-btn">AÇIKLAMA</li>
+                                    </ul>
+
+                                    <!--Tabs Container-->
+                                    <div class="tabs-content">
+
+                                        <!--Tab-->
+                                        <div class="tab" id="prod-details">
+                                            <div class="content">
+                                                @Model.Product.ProductDescription
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!--End Product Info Tabs-->
+                           
+
+                    </div>
+                </div>
+            </div>
+
+            <!--Sidebar Side-->
+            <div class="sidebar-side col-lg-3 col-md-4 col-sm-12">
+                <aside class="sidebar">
+
+
+                    @Html.Partial("_PartialPopularProductsWidget", Model.PopularProducts)
+                    @Html.Partial("_PartialRelatedProductsWidget", Model.RelatedProducts)
+
+                </aside>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!--End Sidebar Page Container-->
+@section AdditionalScripts {
+
+    <script>
+        $(document).ready(function () {
+            $(".dropdown").removeClass("current");
+            $(".shop").addClass("current");
+            if ($('.quantity-spinner').length) {
+                $(".quantity-spinner").TouchSpin({
+                    min: 1,
+                    max: 100,
+                    step: 1,
+                    verticalbuttons: true,
+                    buttondown_txt: '-',
+                    buttonup_txt: '+'
+                });
+            }
+            $(document).on("click", ".variant-button", function () {
+                var selectedVar = $(this).text().trim();
+                // Remove active class from siblings and add it to the clicked button
+                $(this).siblings().removeClass("active");
+                $(this).addClass("active");
+                var button = $(this);
+                // Collect all selected variant attributes
+                var variantAttributes = {};
+
+                $(".variant-group").each(function () {
+                    var globalVariantKey = $(this).find(".variant-button.active").data("key"); // Fixed here
+                    var activeVariant = $(this).find(".variant-button.active").text().trim();
+
+                    if (globalVariantKey && activeVariant) {
+                        variantAttributes[globalVariantKey] = activeVariant;
+                    }
+                });
+
+                console.log("Selected Variants:", variantAttributes); // Debugging
+
+                var productCode = $("#product-code").val();
+                var productName = $("#product-name").val();
+                $.ajax({
+                    type: "GET",
+                    url: "/Home/GetPartialViewsForProductVariant",
+                    data: {
+                        productCode: productCode,
+                        productName: productName,
+                        variantAttributes: variantAttributes
+                    },
+                    success: function (response) {
+                        $("#variant-image").html(response.imagePartial);  
+                        $("#variant-info").html(response.infoPartial);   
+                    },
+                    error: function (xhr) {
+
+                    try {
+                        // Try parsing JSON response
+                        var response = JSON.parse(xhr.responseText);
+                        showAlert(button,response.message, "danger");
+                    } catch (e) {
+                        showAlert(button,"Beklenmeyen Bir Hata Oluştu.Lütfen Tekrar Deneyiniz...", "danger");
+                    }
+                }
+
+                });
+            });
+
+            $(document).on("click", ".add-to-cart", function () {
+                var userId = $(this).closest('.clearfix').find('.user-id').val();
+                var productCode = $('#variant-code').val();
+                var price = $('#variant-price').text();
+                var quantity = 1;
+
+
+                var button = $(this);
+                console.log(productCode);
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/AddToCart",
+                    data: {
+                        userId: userId,
+                        productCode: productCode,
+                        price: price,
+                        quantity: quantity
+                    },
+                    success: function (response) {
+
+                        showAlert(button, response.message, "success");
+                        let currentItem = response.totalProduct;
+                        console.log(currentItem);
+                        $(".cart .cart-count").text(currentItem);
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(xhr.responseText);
+
+                        showAlert(button, response.message, "danger");
+                    }
+                });
+            });
+        });
+
+    </script>
+}

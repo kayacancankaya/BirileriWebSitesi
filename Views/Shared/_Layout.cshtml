@@ -1,0 +1,681 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<!-- Mirrored from expert-themes.com/html/global-industry/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 20 Jan 2025 11:54:23 GMT -->
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    @RenderSection("Title", required: true);
+    @RenderSection("Description", required: true)
+    @RenderSection("Keywords", required: true)
+    <!-- Stylesheets -->
+    <link href="~/css/bootstrap.css" rel="stylesheet">
+    <link href="~/plugins/revolution/css/settings.css" rel="stylesheet" type="text/css"><!-- REVOLUTION SETTINGS STYLES -->
+    <link href="~/plugins/revolution/css/layers.css" rel="stylesheet" type="text/css"><!-- REVOLUTION LAYERS STYLES -->
+    <link href="~/plugins/revolution/css/navigation.css" rel="stylesheet" type="text/css"><!-- REVOLUTION NAVIGATION STYLES -->
+    <link href="~/css/style.css" rel="stylesheet">
+    <link href="~/css/responsive.css" rel="stylesheet">
+
+    <!--Color Switcher Mockup-->
+    <link href="~/css/color-switcher-design.css" rel="stylesheet">
+
+    <!--Color Themes-->
+    <link id="theme-color-file" href="~/css/color-themes/default-theme.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="~/images/favicon.png" type="image/x-icon">
+    <link rel="icon" href="~/images/favicon.png" type="image/x-icon">
+    @RenderSection("CSS", required: false)
+    <style>
+        <!-- alert modal -->
+        .modal {
+            display: none;
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .alertParagraph {
+            margin: 0px;
+            10px;
+            0px;
+            0px;
+            padding-left: 50px;
+            padding-top: 10px;
+        }
+        <!-- alert div -->
+        .alert-text {
+            position: absolute; /* Make it float above other elements */
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            display: none; /* Initially hidden */
+            white-space: nowrap; /* Prevents text from breaking */
+            top: -35px; /* Adjust the position above input */
+            left: 0; /* Adjust to align properly */
+            z-index: 1000; /* Ensure it appears on top */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .manage-nav-section{
+            margin-top: 60px;
+            margin-bottom: 30px;
+        }
+        .manage-section{
+            margin-top: 0px;;
+            margin-bottom: 30px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        <!--cart-->
+        .cart-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart-icon {
+            font-size: 24px;
+            margin-right: 5px;
+        }
+
+        .cart-count {
+            background-color: red;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 5px;
+            right: -5px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+
+            .btn:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+        .count-display {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .active-category{
+            color: #ffb200;
+            background-color: #333333;
+        }
+        
+
+ 
+    </style>
+    <!-- Responsive -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <!--[if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script><![endif]-->
+    <!--[if lt IE 9]><script src="js/respond.js"></script><![endif]-->
+</head>
+
+<body>
+    
+    <div class="header-top">
+        <div class="auto-container">
+            <div class="clearfix">
+                <!--Top Left-->
+                <div class="logo top-left pull-left " >
+                    <a asp-controller="Home" asp-action="Index" class="img-responsive"><img src="~/images/logo-small.png" alt="logo" title="brand-logo"></a>
+                </div>
+                <!--Top Right-->
+                <div class="top-right pull-right ">
+                    <ul class="social-nav">
+                        @* <ul class="clearfix"> *@
+                        <li>Büyük Fikirleri Harika Ürünlere Dönüştürelim.</li>
+                        <li><span class="fa fa-phone"></span>+90 537 3138899</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page-wrapper">
+
+        <!-- Preloader -->
+        <div class="preloader"></div>
+
+        <!-- Main Header-->
+        <header class="main-header">
+
+            <!--Header Lower-->
+            <div class="header-lower">
+
+                <div class="auto-container">
+                    <div class="nav-outer clearfix">
+                        <!-- Main Menu -->
+                        <nav class="main-menu navbar-expand-md">
+                            <div class="navbar-header">
+                                <!-- Toggle Button -->
+                                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                </button>
+                            </div>
+                            <div class="navbar-collapse collapse clearfix" id="navbarSupportedContent1">
+                                <ul class="navigation clearfix">
+                                    <li class="dropdown main-page">
+                                        <a asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                                    </li>
+                                    <li class="dropdown shop">
+                                        <a asp-controller="Home" asp-action="Shop">Mağaza</a>
+                                    </li>
+                                    <li class="dropdown blog">
+                                        <a asp-controller="Home" asp-action="Blog">Blog</a>
+                                    </li>
+                                    <li class="dropdown account">
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Manage/Index">Hesap</a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Login">GİRİŞ YAP</a>
+                                        }
+                                    </li>
+                                    <li class="dropdown about">
+                                        <a asp-controller="Home" asp-action="About">Hakkında</a>
+                                    </li>
+                                    <li class="dropdown cart">
+                                        <a asp-controller="Home" asp-action="Cart">
+                                            <div class="cart-container">
+                                            <span class="cart-icon">🛒</span>
+                                            <span class="cart-count" id="itemCount">0</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </nav>
+                        <!-- Main Menu End-->
+                        <div class="outer-box clearfix">
+                            <div class="advisor-box">
+                                <a href="#" class="theme-btn advisor-btn"><span>İletişim</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--End Header Lower-->
+            <!--Sticky Header-->
+            <div class="sticky-header">
+                <div class="auto-container clearfix">
+                    <!--Logo-->
+                    <div class="logo pull-left">
+                        <a asp-controller="Home" asp-action="Index" class="img-responsive"><img src="~/images/logo-small.png" alt="logo" title="brand-logo"></a>
+                    </div>
+
+                    <!--Right Col-->
+                    <div class="right-col pull-right">
+                        <!-- Main Menu -->
+                        <nav class="main-menu navbar-expand-md">
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1" aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+
+                            <div class="navbar-collapse collapse clearfix" id="navbarSupportedContent1">
+                                <ul class="navigation clearfix">
+                                    <li class="dropdown main-page">
+                                        <a asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                                    </li>
+                                    <li class="dropdown shop">
+                                        <a asp-controller="Home" asp-action="Shop">Mağaza</a>
+                                    </li>
+                                    <li class="dropdown blog">
+                                        <a asp-controller="Home" asp-action="Blog">Blog</a>
+                                    </li>
+                                    <li class="dropdown account">
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Manage/Index">Hesap</a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Login">GİRİŞ YAP</a>
+                                        }
+                                    </li>
+                                    <li class="dropdown about">
+                                        <a asp-controller="Home" asp-action="About">Hakkında</a>
+                                    </li>
+                                    <li class="dropdown cart">
+                                        <a asp-controller="Home" asp-action="Cart">
+                                            <div class="cart-container">
+                                                <span class="cart-icon">🛒</span>
+                                                <span class="cart-count" id="cartCount">0</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav><!-- Main Menu End-->
+                    </div>
+
+                </div>
+            </div>
+            <!--End Sticky Header-->
+
+        </header>
+        
+        <!--End Main Header -->
+        @RenderBody()
+        <footer class="main-footer" style="background-image:url(~/images/background/5.jpg)">
+            <div class="auto-container">
+
+                <!--Widgets Section-->
+                <div class="widgets-section">
+                    <div class="row clearfix">
+
+                        <!--big column-->
+                        <div class="big-column col-lg-6 col-md-12 col-sm-12">
+                            <div class="row clearfix">
+
+                                <!--Footer Column-->
+                                <div class="footer-column col-lg-7 col-md-6 col-sm-12">
+                                    <div class="footer-widget logo-widget">
+                                        <div class="logo">
+                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="" /></a>
+                                        </div>
+                                        <div class="text">Over 24 years experience and knowledge international standards, technologicaly changes our industrial systems, we are dedicated to provides the best solutions to our valued customers there are many variations solutions.</div>
+                                    </div>
+                                </div>
+
+                                <!--Footer Column-->
+                                <div class="footer-column col-lg-5 col-md-6 col-sm-12">
+                                    <div class="footer-widget links-widget">
+                                        <div class="footer-title">
+                                            <h2>Services</h2>
+                                        </div>
+                                        <ul class="footer-lists">
+                                            <li><a href="#">Agricultural Processing</a></li>
+                                            <li><a href="#">Chemical Research</a></li>
+                                            <li><a href="#">Material Engineering</a></li>
+                                            <li><a href="#">Mechanical Engineering</a></li>
+                                            <li><a href="#">Petroleum and Gas</a></li>
+                                            <li><a href="#">Power and Energy</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!--big column-->
+                        <div class="big-column col-lg-6 col-md-12 col-sm-12">
+                            <div class="row clearfix">
+
+                                <!--Footer Column-->
+                                <div class="footer-column col-lg-6 col-md-6 col-sm-12">
+                                    <div class="footer-widget news-widget">
+                                        <div class="footer-title">
+                                            <h2>Son Gönderiler</h2>
+                                        </div>
+                                        <div class="widget-content">
+
+                                            <article class="post">
+                                                <figure class="post-thumb"><a href="news-detail.html"><img src="~/images/resource/news-thumb-1.jpg" alt=""></a></figure>
+                                                <div class="text"><a href="news-detail.html">Modernizing the Grid</a></div>
+                                                <ul class="post-info">
+                                                    <li><span class="icon fa fa-calendar"></span>Oct 23, 2023</li>
+                                                    <li><span class="icon fa fa-comment-o"></span>25</li>
+                                                </ul>
+                                            </article>
+
+                                            <article class="post">
+                                                <figure class="post-thumb"><a href="news-detail.html"><img src="images/resource/news-thumb-2.jpg" alt=""></a></figure>
+                                                <div class="text"><a href="news-detail.html">Successful Engineering</a></div>
+                                                <ul class="post-info">
+                                                    <li><span class="icon fa fa-calendar"></span>Oct 23, 2023</li>
+                                                    <li><span class="icon fa fa-comment-o"></span>16</li>
+                                                </ul>
+                                            </article>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--Footer Column-->
+                                <div class="footer-column col-lg-6 col-md-6 col-sm-12">
+                                    <div class="footer-widget subscribe-widget">
+                                        <div class="footer-title">
+                                            <h2>Abone Olun</h2>
+                                        </div>
+                                        <div class="widget-content">
+                                            <div class="text">Bugün kaydolarak özel tekliflerden haberdar olun.</div>
+                                            <div class="subscribe-form">
+                                                
+                                                    
+                                                    <div class="form-group">
+                                                        <span class="alert-text" ></span>
+                                                        <input type="email" name="email" class="subscribe-input" value="" placeholder="Email Adresi" required>
+                                                        <button type="submit" class="theme-btn subscribe-btn"><span class="fa fa-send"></span></button>
+                                                    </div>
+
+                                            </div>
+                                            @* <ul class="social-icon-two">
+                                                <li class="follow">Follow us :</li>
+                                                <li><a href="#"><span class="fa fa-facebook"></span></a></li>
+                                                <li><a href="#"><span class="fa fa-twitter"></span></a></li>
+                                                <li><a href="#"><span class="fa fa-google-plus"></span></a></li>
+                                                <li><a href="#"><span class="fa fa-pinterest-p"></span></a></li>
+                                                <li><a href="#"><span class="fa fa-dribbble"></span></a></li>
+                                            </ul> *@
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="footer-bottom">
+                <div class="auto-container">
+                    <div class="copyright">&copy; Copyright @DateTime.Now.Year. Tüm Hakları Saklıdır. 
+                        <a href="https://smartifyyb.com/">
+                            <img src="~/images/smartify.png" alt="Smartify Logo">
+                        </a>
+                        tarafından tasarlandı.
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!--End Main Footer-->
+
+    </div>
+    <!--End pagewrapper-->
+    <!--Scroll to top-->
+    <div class="scroll-to-top scroll-to-target" data-target="html"><span class="icon fa fa-angle-double-up"></span></div>
+
+    <!-- Color Palate / Color Switcher -->
+   @*  <div class="color-palate">
+        <div class="color-trigger">
+            <i class="fa fa-gear"></i>
+        </div>
+        <div class="color-palate-head">
+            <h6>RENGİNİ Seç</h6>
+        </div>
+        <div class="various-color clearfix">
+            <div class="colors-list">
+                <span class="palate default-color active" data-theme-file="~/css/color-themes/default-theme.css"></span>
+                <span class="palate teal-color" data-theme-file="~/css/color-themes/teal-theme.css"></span>
+                <span class="palate green-color" data-theme-file="~/css/color-themes/green-theme.css"></span>
+                <span class="palate aqua-color" data-theme-file="~/css/color-themes/aqua-theme.css"></span>
+                <span class="palate pink-color" data-theme-file="~/css/color-themes/pink-theme.css"></span>
+                <span class="palate orange-color" data-theme-file="~/css/color-themes/orange-theme.css"></span>
+                <span class="palate lime-color" data-theme-file="~/css/color-themes/lime-theme.css"></span>
+                <span class="palate red-color" data-theme-file="~/css/color-themes/red-theme.css"></span>
+            </div>
+        </div>
+
+        <ul class="rtl-version option-box"> <li class="rtl">RTL Version</li> <li>LTR Version</li> </ul>
+
+        <div class="palate-foo">
+            <span>Yazı rengini değiştirebilirsiniz.</span>
+        </div>
+
+    </div> *@
+    <!-- /.End Of Color Palate -->
+    <!-- - - - - - - - - - - - - - Alerts - - - - - - - - - - - - - - - - -->
+
+    <div class="alert alert-success hidden modal " id="SuccessDiv">
+        <button type="button" class="close" data-dismiss="alert"></button>
+        <p class="alertParagraph" id="SuccessP"></p>
+    </div>
+    <div class="alert alert-info hidden modal" tabindex="-1" role="dialog" id="InfoDiv">
+        <button type="button" class="close" data-dismiss="alert"></button>
+        <p class="alertParagraph" id="InfoP"></p>
+    </div>
+    <div class="alert alert-warning hidden modal" tabindex="-1" role="dialog" id="WarningDiv">
+        <button type="button" class="close" data-dismiss="alert"></button>
+        <p class="alertParagraph" id="WarningP"></p>
+    </div>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <input type="hidden" id="tempErrorMessage" value="@TempData["ErrorMessage"]" />
+    }
+    <div class="alert alert-error hidden modal" tabindex="-1" role="dialog" id="ErrorDiv">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <p class="alertParagraph" id="ErrorP"></p>
+    </div>
+
+    <!-- - - - - - - - - - - - - - Alerts ends - - - - - - - - - - - - - - - - -->
+    
+
+    <input type="hidden" value="0" id="currentState" />
+    <input type="hidden" value="0" id="cart-counter" />
+    
+    <script src="~/js/jquery.js"></script>
+    <!--Revolution Slider-->
+    <script src="~/plugins/revolution/js/jquery.themepunch.revolution.min.js"></script>
+    <script src="~/plugins/revolution/js/jquery.themepunch.tools.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.actions.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.carousel.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.kenburn.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.layeranimation.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.migration.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.navigation.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.parallax.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.slideanims.min.js"></script>
+    <script src="~/plugins/revolution/js/extensions/revolution.extension.video.min.js"></script>
+    <script src="~/js/main-slider-script.js"></script>
+
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/bootstrap.min.js"></script>
+    <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="~/js/jquery.fancybox.js"></script>
+    <script src="~/js/owl.js"></script>
+    <script src="~/js/wow.js"></script>
+    <script src="~/js/appear.js"></script>
+    <script src="~/js/isotope.js"></script>
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="~/js/jquery.bootstrap-touchspin.js"></script>
+    <script src="~/js/script.js"></script>
+  @*   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script> *@
+    @* <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+ *@
+    <!--Google Map APi Key-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCIJ_QKHN-bi6_1C9f5eYE3pZs1zhQIo5o"></script>
+    <script src="~/js/map-script.js"></script>
+    <!--End Google Map APi-->
+    <!--Color Switcher-->
+    <script src="~/js/color-settings.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let count = 0;
+           
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/InitializeCartNumber",
+                    async: true,
+                    success: function (response) {
+                        let currentItem = response.message;
+                        $(".cart .cart-count").text(currentItem);
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(xhr.responseText);
+
+                    }
+                });
+            
+            
+
+
+            $("#increase").click(function () {
+                count++;
+
+                updateCart();
+            });
+
+            $("#decrease").click(function () {
+                if (count > 0) {
+                    count--;
+                    updateCart();
+                }
+            });
+            $(document).on("click", ".subscribe-btn", function () {
+                var emailAddress = $(this).siblings(".subscribe-input").val();
+                var button = $(this);
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/Subscribe",
+                    data: {
+                        emailAddress: emailAddress,
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert(button, response.message, "success");  // Show success message
+                        } else {
+                            showAlert(button, response.message, "danger");  // Show error message
+                        }
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+                    console.log(xhr.responseText);
+
+                    showAlert(response.message, "danger");
+                    }
+                });
+            });
+
+            $(document).on("click", ".send-contact-us", function () {
+                var emailAddress = $("#contact-us-email-address").val();
+                var username = $("#contact-us-username").val();
+                var phone = $("#contact-us-phone").val();
+                var subject = $("#contact-us-subject").val();
+                var message = $("#contact-us-message").val();
+                var button = $(this);
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/SendEmail",
+                    data: {
+                        emailAddress: emailAddress,
+                        username: username,
+                        phone: phone,
+                        subject: subject,
+                        message: message,
+                    },
+                    async: true,
+                    success: function (response) {
+                        if (response.success) {
+                             showAlert(button,response.message, "success");  // Show success message
+                        } else {
+                            showAlert(button, response.message, "danger");  // Show error message
+                        }
+                    },
+                    error: function () {
+                        console.log("hata");
+                        showAlert("Sunucu hatası! Lütfen daha sonra tekrar deneyin.", "danger");
+                    }
+                });
+            });
+        });
+        
+        function showAlert(button, message, type) {
+            var alertText = button.prevAll(".alert-text").first(); // Find closest alert-text
+
+            if (alertText.length === 0) {
+                console.warn("No alert-text found for this button.");
+                return;
+            }
+
+            alertText.text(message)
+                .removeClass("alert-success alert-danger")
+                .addClass(type === "success" ? "alert-success" : "alert-danger");
+
+            // Show the alert as a popup without moving elements
+            alertText.css({ opacity: "1", display: "inline-block" }).fadeIn(300);
+
+            setTimeout(() => {
+                alertText.css("opacity", "0"); // Fade out smoothly
+                setTimeout(() => alertText.hide(), 300);
+            }, 4000);
+        }
+
+        function updateCart() {
+            $("#cartCount").text(count);
+            $("#itemCount").text(count);
+            $("#decrease").prop("disabled", count === 0);
+        }
+        function getCookie(name) {
+            var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            if (match) {
+                return decodeURIComponent(match[2]);
+            } else {
+                return null;
+            }
+        }
+        function getAntiForgeryToken() {
+            return $('input[name="__RequestVerificationToken"]').val();
+        }
+    </script>
+    @RenderSection("AdditionalScripts", required: false)
+
+</body>
+
+<!-- Mirrored from expert-themes.com/html/global-industry/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 20 Jan 2025 11:54:50 GMT -->
+</html>
