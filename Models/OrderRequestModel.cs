@@ -4,11 +4,11 @@ namespace BirileriWebSitesi.Models
 {
     public class OrderRequestModel
     {
-        public Address ShipToAddress { get; set; }
-        public Address BillingAddress { get; set; }
-        public List<OrderItem> OrderItems { get; set; }
-        public string PaymentMethod { get; set; }
-        public string Notes { get; set; }
-        public bool UpdateUserInfo { get; set; }
+        public AddressDTO? ShipToAddress { get; set; }
+        public AddressDTO? BillingAddress { get; set; }
+        public List<OrderDTO> OrderItems { get; set; } 
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+        public bool UpdateUserInfo { get; set; } = false;
     }
 }

@@ -226,15 +226,11 @@ namespace BirileriWebSitesi.Controllers
         }
         [Authorize]
         [HttpPost]
-
         public async Task<IActionResult> PlaceOrder([FromBody] OrderRequestModel model)
         {
             try
             {
-                Request.Body.Position = 0;
-                using var reader = new StreamReader(Request.Body);
-                string rawBody = await reader.ReadToEndAsync();
-                _logger.LogInformation("RAW JSON BODY: " + rawBody);
+
                 string? buyerID = _userManager.GetUserId(User);
                     
                 if (string.IsNullOrEmpty(buyerID))
@@ -252,11 +248,52 @@ namespace BirileriWebSitesi.Controllers
                     return BadRequest(new { success = false, message = "Ödeme Bilgileri Bulunamadý." });
                 if(string.IsNullOrEmpty(model.Notes))
                     model.Notes = string.Empty;
+                Address ShipToAddress = new();
+                ShipToAddress.UserId = buyerID;
+                ShipToAddress.FirstName = model.ShipToAddress.FirstName;
+                ShipToAddress.LastName = model.ShipToAddress.LastName;
+                ShipToAddress.CorporateName = model.ShipToAddress.CorporateName;
+                ShipToAddress.EmailAddress = model.ShipToAddress.EmailAddress;
+                ShipToAddress.Phone = model.ShipToAddress.Phone;
+                ShipToAddress.AddressDetailed = model.ShipToAddress.AddressDetailed;    
+                ShipToAddress.Street = model.ShipToAddress.Street;
+                ShipToAddress.City = model.ShipToAddress.City;
+                ShipToAddress.State = model.ShipToAddress.State;
+                ShipToAddress.Country = model.ShipToAddress.Country;
+                ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
+                ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
+                ShipToAddress.IsBillingSame = model.ShipToAddress.IsBillingSame == null ? false : true;
+                Address BillingAddress = new();
+                BillingAddress.UserId = buyerID;
+                BillingAddress.FirstName = model.BillingAddress.FirstName;
+                BillingAddress.LastName = model.BillingAddress.LastName;
+                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
+                BillingAddress.EmailAddress = model.BillingAddress.EmailAddress;
+                BillingAddress.Phone = model.BillingAddress.Phone;
+                BillingAddress.AddressDetailed = model.BillingAddress.AddressDetailed;
+                BillingAddress.Street = model.BillingAddress.Street;
+                BillingAddress.City = model.BillingAddress.City;
+                BillingAddress.State = model.BillingAddress.State;
+                BillingAddress.Country = model.BillingAddress.Country;
+                BillingAddress.ZipCode = model.BillingAddress.ZipCode;
+                BillingAddress.IsBilling = model.BillingAddress.IsBilling;
+                BillingAddress.IsBillingSame = model.BillingAddress.IsBillingSame == null ? false : true;
+                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
+                BillingAddress.VATnumber = model.BillingAddress.VATnumber;
+                BillingAddress.VATstate = model.BillingAddress.VATstate;
+                BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
 
-                model.ShipToAddress.UserId = buyerID;
-                model.BillingAddress.UserId = buyerID;
+                List<OrderItem> orderItems = new();
+                foreach (var item in model.OrderItems)
+                {
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice);
+                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
+                    orderItem.ProductVariant = product;
+                    orderItems.Add(orderItem);
 
-                Order order = new(buyerID, model.ShipToAddress, model.BillingAddress, model.OrderItems, true,model.UpdateUserInfo);
+                }
+
+                Order order = new(buyerID, ShipToAddress, BillingAddress,orderItems, true,model.UpdateUserInfo);
 
                 if (order == null )
                     return BadRequest(new { success = false, message = "Uygun Olmayan Veri." });

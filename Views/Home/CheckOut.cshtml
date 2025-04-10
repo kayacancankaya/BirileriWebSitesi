@@ -413,10 +413,12 @@
                 // Disable button and show loading
                 $("#place-order").text("İşlem Yapılıyor...").prop("disabled", true);
 
+
                 // Gather checkout data
                 var shipToAddress = {
                     FirstName: $("#first-name").val(),
                     LastName: $("#last-name").val(),
+                    CorporateName: "",
                     EmailAddress: $("#email").val(),
                     Phone: $("#phone").val(),
                     AddressDetailed: $("#address-detailed").val(),
@@ -424,8 +426,12 @@
                     State: $("#state").val(),
                     Street: $("#street").val(),
                     ZipCode: $("#zip").val(),
-                    IsBillingSame: $("#is-billing-same").is(":checked"),
                     IsBilling: false,
+                    IsBillingSame: $("#is-billing-same").is(":checked"),
+                     IsCorporate:false,
+                    Country: "Türkiye",
+                    VATnumber :"",
+                    VATState :"",
                 };
 
                 var billingAddress = {};
@@ -433,6 +439,7 @@
                     billingAddress = { 
                         FirstName: $("#first-name").val(),
                         LastName: $("#last-name").val(),
+                        CorporateName:"",
                         EmailAddress: $("#email").val(),
                         Phone: $("#phone").val(),
                         AddressDetailed: $("#address-detailed").val(),
@@ -440,18 +447,20 @@
                         State: $("#state").val(),
                         Street: $("#street").val(),
                         ZipCode: $("#zip").val(),
+                        IsBilling: true,
                         IsBillingSame: $("#is-billing-same").is(":checked"),
-                        IsBilling: true
+                        IsCorporate:false,
+                        Country: "Türkiye",
+                        VATnumber:"",
+                        VATState:"",
                     };
                 }
                 else
                 {
                     billingAddress = {
-                        CorporateName : $("#corporate-name").val(),
-                        VATnumber : parseInt($("#vat").val()),
-                        VATState : $("#vat-state").val(),
                         FirstName : $("#billing-first-name").val(),
                         LastName : $("#billing-last-name").val(),
+                        CorporateName : $("#corporate-name").val(),
                         EmailAddress: $("#billing-email").val(),
                         Phone: $("#billing-phone").val(),
                         AddressDetailed: $("#billing-address-detailed").val(),
@@ -459,8 +468,12 @@
                         State: $("#billing-state").val(),
                         Street: $("#billing-street").val(),
                         ZipCode: $("#billing-zip").val(),
+                        IsBilling: true,
+                        IsBillingSame: $("#is-billing-same").is(":checked"),
                         IsCorporate: $("#is-corporate").is(":checked"),
-                        IsBilling: true
+                        Country: "Türkiye",
+                        VATnumber : parseInt($("#vat").val()),
+                        VATState : $("#vat-state").val(),
                     };
                 };
                 var orderItems = [];
@@ -476,20 +489,24 @@
                 var paymentMethod = $("input[name='payment-group']:checked").attr("id");
                 var notes = $("#other-notes").val();
                 var updateUserInfo = $("#update-user-info").is(":checked");
+                var data = {
+                    ShipToAddress: shipToAddress,
+                    BillingAddress: billingAddress,
+                    OrderItems: orderItems,
+                    PaymentMethod: paymentMethod,
+                    Notes: notes,
+                    UpdateUserInfo: updateUserInfo
+                };
+                console.log(JSON.stringify(data));
                 // Send AJAX request
                 $.ajax({
                     url: "/Home/PlaceOrder",
                     type: "POST",
                     contentType: "application/json",
+                    dataType: "JSON",
                     async: true,
-                    data: JSON.stringify({
-                        ShipToAddress: shipToAddress,
-                        BillingAddress: billingAddress,
-                        OrderItems: orderItems,
-                        PaymentMethod: paymentMethod,
-                        Notes: notes,
-                        UpdateUserInfo: updateUserInfo
-                    }),
+                    data: JSON.stringify(data),
+                    
                     //headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     success: function (response) {
                         if (response.success) {
