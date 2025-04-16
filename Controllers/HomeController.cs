@@ -4,6 +4,7 @@ using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.BasketAggregate;
 using BirileriWebSitesi.Models.OrderAggregate;
 using BirileriWebSitesi.Models.ViewModels;
+using BirileriWebSitesi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Globalization;
 namespace BirileriWebSitesi.Controllers
 {
     public class HomeController : Controller
@@ -230,7 +232,15 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .Select(x => new { x.Key, x.Value.Errors })
+                        .ToList();
 
+                    return BadRequest(new { success = false, message = "Model binding failed", errors });
+                }
                 string? buyerID = _userManager.GetUserId(User);
                     
                 if (string.IsNullOrEmpty(buyerID))
@@ -319,6 +329,26 @@ namespace BirileriWebSitesi.Controllers
                 return StatusCode(500, new { success = false, message = "Hata ile Karþýlaþýldý. Lütfen Tekrar Deneyiniz." });
             }
         }
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CheckInstallment([FromBody] BinRequestDTO model)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(model.BinNumber))
+                    return BadRequest(new { success = false, message = "Kart Numarasý Boþ Olamaz." });
+
+                List<string> installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
+
+                return Ok(new { installments = installmentInfo });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return StatusCode(500, new { success = false, message = "Hata ile Karþýlaþýldý. Lütfen Tekrar Deneyiniz." });
+            }
+        }
+
         //-------------checkout ends -------------//
         public async Task<IActionResult> Cart()
         {

@@ -7,6 +7,7 @@ using Iyzipay.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using static BirileriWebSitesi.Models.Enums.AprrovalStatus;
 using Address = BirileriWebSitesi.Models.OrderAggregate.Address;
 
@@ -61,6 +62,8 @@ namespace BirileriWebSitesi.Services
                         return "Fatura Adresi İsim Bulunamadı.";
                     if (string.IsNullOrEmpty(order.BillingAddress.LastName))
                         return "Fatura Adresi Soy İsim Bulunamadı.";
+                    order.BillingAddress.CorporateName = string.Empty;
+                    order.BillingAddress.VATnumber = 0;
                 }
                 else
                 {
@@ -70,6 +73,8 @@ namespace BirileriWebSitesi.Services
                         return "Vergi Dairesi Bulunamadı.";
                     if (order.BillingAddress.VATnumber == 0)
                         return "Vergi Numarası Bulunamadı.";
+                    order.BillingAddress.FirstName = string.Empty;
+                    order.BillingAddress.LastName = string.Empty;
                 }
                 if (string.IsNullOrEmpty(order.BillingAddress.EmailAddress))
                     return "Fatura Adresi Email Bulunamadı.";
@@ -91,14 +96,20 @@ namespace BirileriWebSitesi.Services
                 foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
                 {
                     item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    item.ProductVariant.Product = await _context.Products.Where(p => p.ProductCode == item.ProductVariant.BaseProduct).FirstOrDefaultAsync();
+                    item.ProductVariant.Product = await _context.Products.Where(p => p.ProductCode == item.ProductVariant.BaseProduct)
+                                                                             .Include(c=>c.Catalog)
+                                                                            .FirstOrDefaultAsync();
                 }
 
                 Payment payment = await IyziPay(order);
+
                 if(payment.Status == "success")
                     order.Status = (int)ApprovalStatus.Approved;
                 else
                     order.Status = (int)ApprovalStatus.Failed;
+
+                if(!string.IsNullOrEmpty(payment.ErrorMessage))
+                    return payment.ErrorMessage.ToString();
 
                 _context.Add(order);
 
@@ -144,8 +155,16 @@ namespace BirileriWebSitesi.Services
 
                 Buyer buyer = new Buyer();
                 buyer.Id = order.BuyerId;
-                buyer.Name = order.BillingAddress.FirstName;
-                buyer.Surname = order.BillingAddress.LastName;
+                if (order.BillingAddress.IsCorporate)
+                {
+                    buyer.Name = order.BillingAddress.CorporateName;
+                    buyer.Surname = order.BillingAddress.VATstate;
+                }
+                else
+                {
+                    buyer.Name = order.BillingAddress.FirstName;
+                    buyer.Surname = order.BillingAddress.LastName;
+                }
                 buyer.GsmNumber = order.BillingAddress.Phone;
                 buyer.Email = order.BillingAddress.EmailAddress;
                 buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString();
@@ -167,25 +186,32 @@ namespace BirileriWebSitesi.Services
                 request.ShippingAddress = shippingAddress;
 
                 Iyzipay.Model.Address billingAddress = new Iyzipay.Model.Address();
-                billingAddress.ContactName = string.Format("{0} {1}", order.BillingAddress.FirstName, order.BillingAddress.LastName); ;
+                if(order.BillingAddress.IsCorporate)
+                    billingAddress.ContactName = order.BillingAddress.CorporateName;
+                else
+                    billingAddress.ContactName = order.BillingAddress.FirstName + " " + order.BillingAddress.LastName;
+
                 billingAddress.City = order.BillingAddress.City;
                 billingAddress.Country = order.BillingAddress.Country;
                 billingAddress.Description = order.BillingAddress.AddressDetailed;
                 billingAddress.ZipCode = order.BillingAddress.ZipCode;
                 request.BillingAddress = billingAddress;
 
-                List<BasketItem> basketItems = new List<BasketItem>();
+                List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
                 foreach(var item in order.OrderItems)
                 {
-                    BasketItem basketItem = new BasketItem();
+                    Iyzipay.Model.BasketItem basketItem = new BasketItem();
                     basketItem.Id = item.ProductCode;
                     basketItem.Name = item.ProductVariant.ProductName;
                     basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
                     basketItem.Category2 = string.Empty;
                     basketItem.ItemType = BasketItemType.PHYSICAL.ToString(); 
-                    basketItem.Price = item.UnitPrice.ToString();
+                    basketItem.Price = (item.UnitPrice * item.Units).ToString();
                     basketItems.Add(basketItem);
                 }
+
+                request.BasketItems = basketItems;
+
                 Payment payment = await Payment.Create(request, options);
                 return payment;
             }
@@ -195,6 +221,33 @@ namespace BirileriWebSitesi.Services
                 _logger.LogError(ex, ex.Message.ToString());
                 return null;
             }
+        }
+
+        public async Task<List<InstallmentDetail>> GetInstallmentInfoAsync(string binNumber, decimal price)
+        {
+            Options options = new Options();
+            options.ApiKey = "sandbox-bIx3IhgRc3bjqFAisIx1x56q6M9cf3X8";
+            options.SecretKey = "sandbox-TrRZHZlnbS3Z8Mc8Q28K6ito1Cdk1vLP";
+            options.BaseUrl = "https://sandbox-api.iyzipay.com";
+
+            var request = new RetrieveInstallmentInfoRequest
+            {
+                Locale = Locale.TR.ToString(),
+                ConversationId = Guid.NewGuid().ToString(),
+                BinNumber = binNumber,
+                Price = price.ToString("F2", CultureInfo.InvariantCulture)
+            };
+
+            var result = await InstallmentInfo.Retrieve(request, options);
+
+            var installmentDetails = result.InstallmentDetails.FirstOrDefault();
+            var validInstallments = installmentDetails?.InstallmentPrices
+                .Select(ip => new { ip.InstallmentNumber })
+                .ToList();
+            if (validInstallments == null || !validInstallments.Any())
+                return new List<string>();
+
+            return validInstallments.Select(i => i.InstallmentNumber.ToString()).ToList();
         }
     }
 }
