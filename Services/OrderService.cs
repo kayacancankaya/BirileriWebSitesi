@@ -51,9 +51,6 @@ namespace BirileriWebSitesi.Services
                 if(string.IsNullOrEmpty(order.ShipToAddress.Street))
                     return "Gönderilecek Adres Mahalle Bilgisi Bulunamadı.";
 
-
-
-
                 if (order.BillingAddress == null)
                     return "Fatura Adresi Bulunamadı.";
                 if(!order.BillingAddress.IsCorporate)
@@ -100,16 +97,20 @@ namespace BirileriWebSitesi.Services
                                                                              .Include(c=>c.Catalog)
                                                                             .FirstOrDefaultAsync();
                 }
+                if (order.PaymentType == 2)
+                {
+                    Payment payment = await IyziPay(order);
 
-                Payment payment = await IyziPay(order);
+                    if (payment.Status == "success")
+                        order.Status = (int)ApprovalStatus.Approved;
+                    else
+                        order.Status = (int)ApprovalStatus.Failed;
 
-                if(payment.Status == "success")
-                    order.Status = (int)ApprovalStatus.Approved;
+                    if (!string.IsNullOrEmpty(payment.ErrorMessage))
+                        return payment.ErrorMessage.ToString();
+                }
                 else
-                    order.Status = (int)ApprovalStatus.Failed;
-
-                if(!string.IsNullOrEmpty(payment.ErrorMessage))
-                    return payment.ErrorMessage.ToString();
+                    order.Status = (int)ApprovalStatus.Pending;
 
                 _context.Add(order);
 
@@ -223,7 +224,7 @@ namespace BirileriWebSitesi.Services
             }
         }
 
-        public async Task<List<InstallmentDetail>> GetInstallmentInfoAsync(string binNumber, decimal price)
+        public async Task<List<string>> GetInstallmentInfoAsync(string binNumber, decimal price)
         {
             Options options = new Options();
             options.ApiKey = "sandbox-bIx3IhgRc3bjqFAisIx1x56q6M9cf3X8";

@@ -1,4 +1,4 @@
-using BirileriWebSitesi.Data;
+Ôªøusing BirileriWebSitesi.Data;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.BasketAggregate;
@@ -53,6 +53,7 @@ namespace BirileriWebSitesi.Controllers
                 TempData["Cookie"] = "not exists";
 			return View();
         }
+        //-------------shop-------------//
         public IActionResult Shop()
         {
             try
@@ -99,257 +100,6 @@ namespace BirileriWebSitesi.Controllers
                 return NotFound();
             }
         }
-        //-------------checkout-------------//
-        [Authorize]
-        public async Task<IActionResult> CheckOut()
-        {
-            try
-            {
-                string? userID = string.Empty;
-                string? email = string.Empty;
-                string? firstName = string.Empty;
-                string? lastName = string.Empty;   
-                string? fullName = string.Empty;    
-                string? phone = string.Empty;
-
-                IdentityUser? user = new();
-                if (User.Identity.IsAuthenticated)
-                {
-                    userID = _userManager.GetUserId(User);
-                    user = await _userManager.Users.Where(i=>i.Id == userID).FirstOrDefaultAsync();
-                }
-                else
-                    return NotFound();
-                
-                bool isInBuyRegion = false;
-                try
-                {
-                    isInBuyRegion = await GetRegionAsync();
-                }
-                catch
-                {
-                    isInBuyRegion = true;
-                }
-
-                Basket basket = await _basketService.GetBasketAsync(userID);
-                List<OrderItem> orderItems = new();
-                foreach (BasketItem item in basket.Items)
-                {
-                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice);
-                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    orderItem.ProductVariant = product;
-                    orderItems.Add(orderItem);
-                }
-
-                Address? shipToAddress = await _context.Addresses.OrderByDescending(i=>i.Id)
-                                                                .Where(i=>i.UserId ==  userID &&
-                                                                          i.IsBilling == false &&
-                                                                          i.SetAsDefault == true)
-                                                                .FirstOrDefaultAsync();
-
-                if (shipToAddress == null)
-                {
-                    email = await _userManager.GetEmailAsync(user);
-                    phone = await _userManager.GetPhoneNumberAsync(user);
-                    fullName = await _userManager.GetUserNameAsync(user);
-                    firstName = GetFirstName(fullName);
-                    lastName = GetLastName(fullName);
-                    shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
-                }
-
-                Address? billingAddress = await _context.Addresses.OrderByDescending(i => i.Id)
-                                                                .Where(i => i.UserId == userID &&
-                                                                          i.IsBilling == true &&
-                                                                          i.SetAsDefault == true)
-                                                                .FirstOrDefaultAsync();
-
-                if (billingAddress == null)
-                {
-                    email = await _userManager.GetEmailAsync(user);
-                    phone = await _userManager.GetPhoneNumberAsync(user);
-                    fullName = await _userManager.GetUserNameAsync(user);
-                    firstName = GetFirstName(fullName);
-                    lastName = GetLastName(fullName);
-                    billingAddress = new(string.Empty,string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, firstName, lastName, email, phone,false, string.Empty);
-                  
-                }
-
-                Order order = new(userID,shipToAddress,billingAddress,orderItems,isInBuyRegion,true);
-                return View(order);
-
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
-        }
-        public IActionResult _PartialIsCorporate(Address address)
-        {
-            try
-            {
-                if(ModelState.IsValid)
-                    return PartialView(address);
-               
-                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
-                return PartialView(address);
-                
-            }
-            catch (Exception)
-            {
-                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
-                return PartialView(emptyAddress);
-            }
-        }
-        [HttpPost]
-        public IActionResult _PartialIsCorporate(string firstName,string lastName,string corporateName,int vATNumber, string vATState,bool isCorporate)
-        {
-            try
-            {
-                
-                if(string.IsNullOrEmpty(firstName))
-                    firstName=string.Empty;
-                if(string.IsNullOrEmpty(lastName))
-                    lastName = string.Empty;
-                if(string.IsNullOrEmpty(corporateName))
-                    corporateName = string.Empty;
-                if(string.IsNullOrEmpty(vATState))
-                    vATState = string.Empty;
-
-                
-                Address address = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, vATNumber, vATState, firstName, lastName, string.Empty, string.Empty, isCorporate, corporateName);
-                return PartialView(address);
-                
-            }
-            catch (Exception)
-            {
-                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
-                return PartialView(emptyAddress);
-            }
-        }
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> PlaceOrder([FromBody] OrderRequestModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .Select(x => new { x.Key, x.Value.Errors })
-                        .ToList();
-
-                    return BadRequest(new { success = false, message = "Model binding failed", errors });
-                }
-                string? buyerID = _userManager.GetUserId(User);
-                    
-                if (string.IsNullOrEmpty(buyerID))
-                    return BadRequest(new { success = false, message = "Kullan˝c˝ Bulunamad˝." });
-
-                if(model.ShipToAddress == null)
-                    return BadRequest(new { success = false, message = "Gˆnderi Bilgilier Bulunamad˝." });
-                if(model.BillingAddress == null)
-                    return BadRequest(new { success = false, message = "Fatura Bilgileri Bulunamad˝." });
-                if(model.OrderItems == null)
-                    return BadRequest(new { success = false, message = "‹r¸n Bilgileri Bulunamad˝." });
-                if(model.OrderItems.Count()<=0)
-                    return BadRequest(new { success = false, message = "‹r¸n Bilgileri Bulunamad˝." });
-                if(string.IsNullOrEmpty(model.PaymentMethod))
-                    return BadRequest(new { success = false, message = "÷deme Bilgileri Bulunamad˝." });
-                if(string.IsNullOrEmpty(model.Notes))
-                    model.Notes = string.Empty;
-                Address ShipToAddress = new();
-                ShipToAddress.UserId = buyerID;
-                ShipToAddress.FirstName = model.ShipToAddress.FirstName;
-                ShipToAddress.LastName = model.ShipToAddress.LastName;
-                ShipToAddress.CorporateName = model.ShipToAddress.CorporateName;
-                ShipToAddress.EmailAddress = model.ShipToAddress.EmailAddress;
-                ShipToAddress.Phone = model.ShipToAddress.Phone;
-                ShipToAddress.AddressDetailed = model.ShipToAddress.AddressDetailed;    
-                ShipToAddress.Street = model.ShipToAddress.Street;
-                ShipToAddress.City = model.ShipToAddress.City;
-                ShipToAddress.State = model.ShipToAddress.State;
-                ShipToAddress.Country = model.ShipToAddress.Country;
-                ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
-                ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
-                ShipToAddress.IsBillingSame = model.ShipToAddress.IsBillingSame == null ? false : true;
-                Address BillingAddress = new();
-                BillingAddress.UserId = buyerID;
-                BillingAddress.FirstName = model.BillingAddress.FirstName;
-                BillingAddress.LastName = model.BillingAddress.LastName;
-                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
-                BillingAddress.EmailAddress = model.BillingAddress.EmailAddress;
-                BillingAddress.Phone = model.BillingAddress.Phone;
-                BillingAddress.AddressDetailed = model.BillingAddress.AddressDetailed;
-                BillingAddress.Street = model.BillingAddress.Street;
-                BillingAddress.City = model.BillingAddress.City;
-                BillingAddress.State = model.BillingAddress.State;
-                BillingAddress.Country = model.BillingAddress.Country;
-                BillingAddress.ZipCode = model.BillingAddress.ZipCode;
-                BillingAddress.IsBilling = model.BillingAddress.IsBilling;
-                BillingAddress.IsBillingSame = model.BillingAddress.IsBillingSame == null ? false : true;
-                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
-                BillingAddress.VATnumber = model.BillingAddress.VATnumber;
-                BillingAddress.VATstate = model.BillingAddress.VATstate;
-                BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
-
-                List<OrderItem> orderItems = new();
-                foreach (var item in model.OrderItems)
-                {
-                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice);
-                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    orderItem.ProductVariant = product;
-                    orderItems.Add(orderItem);
-
-                }
-
-                Order order = new(buyerID, ShipToAddress, BillingAddress,orderItems, true,model.UpdateUserInfo);
-
-                if (order == null )
-                    return BadRequest(new { success = false, message = "Uygun Olmayan Veri." });
-
-                //if(order.UpdateUserInfo)
-                //    await _userService.UpdateUserAsync(order, User);
-
-                var result = await _orderService.ProcessOrderAsync(order);
-
-                if (result == "success")
-                {
-                    await _basketService.DeleteBasketAsync(buyerID);
-                    return Ok(new { success = true, message = "Sipari˛ Ba˛ar˝yla ›˛leme Al˝nd˝." });
-                }
-                else
-                {
-                    return StatusCode(500, new { success = false, message = result });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Hata ile Kar˛˝la˛˝ld˝. L¸tfen Tekrar Deneyiniz." });
-            }
-        }
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> CheckInstallment([FromBody] BinRequestDTO model)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(model.BinNumber))
-                    return BadRequest(new { success = false, message = "Kart Numaras˝ Bo˛ Olamaz." });
-
-                List<string> installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
-
-                return Ok(new { installments = installmentInfo });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Hata ile Kar˛˝la˛˝ld˝. L¸tfen Tekrar Deneyiniz." });
-            }
-        }
-
-        //-------------checkout ends -------------//
         public async Task<IActionResult> Cart()
         {
             try
@@ -451,7 +201,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, new { success = false, message = "Filtreleme i˛lemi esnas˝nda hata ile kar˛˝la˛˝ld˝.L¸tfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Filtreleme i√ælemi esnas√Ωnda hata ile kar√æ√Ωla√æ√Ωld√Ω.L√ºtfen daha sonra tekrar deneyiniz." });
             }
         }
         public IActionResult ProductDetailed(string productCode)
@@ -557,7 +307,7 @@ namespace BirileriWebSitesi.Controllers
                 if (string.IsNullOrEmpty(productCode) ||
                     price <= 0 ||
                     quantity <= 0)
-                    return BadRequest("‹r¸n Sepete Eklenirken Hata ›le Kar˛˝la˛˝ld˝.");
+                    return BadRequest("√úr√ºn Sepete Eklenirken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω.");
 
                 //cookie 
                 if (userId == "0")
@@ -566,24 +316,24 @@ namespace BirileriWebSitesi.Controllers
                     if(result.Values.FirstOrDefault() == "HATA")
                     {
                         TempData["TotalProduct"] = 0;
-                        return BadRequest("‹r¸n Sepete Eklenirken Hata ›le Kar˛˝la˛˝ld˝.");
+                        return BadRequest("√úr√ºn Sepete Eklenirken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω.");
                     }
                     totalProduct = result.Keys.FirstOrDefault().ToString();
-                    return Ok(new { message = "‹r¸n Sepete Eklendi", totalProduct });
+                    return Ok(new { message = "√úr√ºn Sepete Eklendi", totalProduct });
                 }
 
                 //db
                 result =  await _basketService.AddItemToBasketAsync(userId, productCode, price, quantity);
-                if (result.Values.FirstOrDefault() == "‹r¸n Sepete Eklenirken Hata ›le Kar˛˝la˛˝ld˝")
+                if (result.Values.FirstOrDefault() == "√úr√ºn Sepete Eklenirken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω")
                 {
-                    return BadRequest("‹r¸n Sepete Eklenirken Hata ›le Kar˛˝la˛˝ld˝.");
+                    return BadRequest("√úr√ºn Sepete Eklenirken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω.");
                 }
                 totalProduct = result.Keys.FirstOrDefault().ToString();
-                return Ok(new { message = "‹r¸n Sepete Eklendi", TotalProduct = totalProduct });
+                return Ok(new { message = "√úr√ºn Sepete Eklendi", TotalProduct = totalProduct });
             }
             catch
             {
-                return BadRequest("‹r¸n Sepete Eklenirken Hata ›le Kar˛˝la˛˝ld˝.");
+                return BadRequest("√úr√ºn Sepete Eklenirken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω.");
             }
         }
         [HttpPost]
@@ -646,7 +396,7 @@ namespace BirileriWebSitesi.Controllers
                     string cart = Request.Cookies["MyCart"];
                     if (string.IsNullOrEmpty(cart))
                     {
-                        message = "Sepet Bulunamad˝";
+                        message = "Sepet Bulunamad√Ω";
                         return BadRequest(new { message });
                     }
 
@@ -655,7 +405,7 @@ namespace BirileriWebSitesi.Controllers
 
                     if (result.Values.FirstOrDefault() == "HATA")
                     {
-                        message = "‹r¸n Sepetten «˝kar˝l˝rken Hata ›le Kar˛˝la˛˝ld˝";
+                        message = "√úr√ºn Sepetten √á√Ωkar√Ωl√Ωrken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω";
                         return BadRequest(new { message });
                     }
                     TempData["message"] = message;
@@ -681,7 +431,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                string message = "‹r¸n Sepetten «˝kar˝l˝rken Hata ›le Kar˛˝la˛˝ld˝";
+                string message = "√úr√ºn Sepetten √á√Ωkar√Ωl√Ωrken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω";
                 return BadRequest(new { message });
             }
         }
@@ -705,7 +455,7 @@ namespace BirileriWebSitesi.Controllers
                     string cart = Request.Cookies["MyCart"];
                     if (string.IsNullOrEmpty(cart))
                     {
-                        message = "Sepet Bulunamad˝";
+                        message = "Sepet Bulunamad√Ω";
                         return BadRequest(new { message });
                     }
 
@@ -720,7 +470,7 @@ namespace BirileriWebSitesi.Controllers
 
                     if (result.Values.FirstOrDefault() == "HATA")
                     {
-                        message = "‹r¸n Sepetten «˝kar˝l˝rken Hata ›le Kar˛˝la˛˝ld˝";
+                        message = "√úr√ºn Sepetten √á√Ωkar√Ωl√Ωrken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω";
                         return BadRequest(new { message });
                     }
 
@@ -747,9 +497,9 @@ namespace BirileriWebSitesi.Controllers
                 //db
                 bool resultDb = await _basketService.RemoveBasketItemAsync(userID,productCode);
                 if(resultDb)
-                    message = "‹r¸n Sepetten «˝kar˝ld˝";
+                    message = "√úr√ºn Sepetten √á√Ωkar√Ωld√Ω";
                 else
-                    message = "‹r¸n Sepetten «˝kar˝l˝rken Hata ›le Kar˛˝la˛˝ld˝";
+                    message = "√úr√ºn Sepetten √á√Ωkar√Ωl√Ωrken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω";
                 totalProductCount = await _basketService.CountTotalBasketItems(userID);
                 TempData["message"] = message;
                 Basket basket = await _basketService.GetBasketAsync(userID);
@@ -757,7 +507,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                string message = "‹r¸n Sepetten «˝kar˝l˝rken Hata ›le Kar˛˝la˛˝ld˝";
+                string message = "√úr√ºn Sepetten √á√Ωkar√Ωl√Ωrken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω";
                 return BadRequest(new { message });
             }
         }
@@ -767,9 +517,9 @@ namespace BirileriWebSitesi.Controllers
             {
 
                 if (products == null)
-                    return Ok(new { success = false, message = "‹r¸n Bulunamad˝." });
+                    return Ok(new { success = false, message = "√úr√ºn Bulunamad√Ω." });
                 if (!products.Any())
-                    return Ok(new { success = false, message = "‹r¸n Bulunamad˝." });
+                    return Ok(new { success = false, message = "√úr√ºn Bulunamad√Ω." });
 
 
                 return PartialView("_PartialProductCard", products);
@@ -777,7 +527,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return Ok(new { success = false, message = "‹r¸n Listelenirken Hata ›le Kar˛˝la˛˝ld˝." });
+                return Ok(new { success = false, message = "√úr√ºn Listelenirken Hata √ùle Kar√æ√Ωla√æ√Ωld√Ω." });
             }
         }
         public async Task<IActionResult> GetPartialViewsForProductVariant(string productCode,string productName, Dictionary<string,string> variantAttributes)
@@ -788,7 +538,7 @@ namespace BirileriWebSitesi.Controllers
                     string.IsNullOrEmpty(productName) ||
                     variantAttributes == null)
                 {
-                    return BadRequest(new { success = false, message = "Varyant SeÁenei Bulunamad˝." });
+                    return BadRequest(new { success = false, message = "Varyant Se√ßene√∞i Bulunamad√Ω." });
                 }
                 string variantCode = productCode;
                 string variantName = productName;
@@ -823,76 +573,17 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, message = "Beklenmeyen Bir Hata Olu˛tu"});
+                return BadRequest(new { success = false, message = "Beklenmeyen Bir Hata Olu√ætu"});
             }
-        }
-        public async Task<IActionResult> Subscribe(string emailAddress)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(emailAddress))
-                    return Ok(new { success = false, message = "Email adresi bo˛ olamaz." });
-
-                // Validate email format
-                if (!IsValidEmail(emailAddress))
-                    return Ok(new { success = false, message = "Hatal˝ Email format˝." });
-
-                if (_context.Subscribers.Any(s => s.EmailAddress == emailAddress))
-                    return Ok(new { success = false, message = "Email abone listesinde mevcut." });
-
-                // Save to the database
-                var subscriber = new Subscriber { EmailAddress = emailAddress, SubscribedOn = DateTime.Now };
-                _context.Subscribers.Add(subscriber);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { success = true, message = "Kay˝t Ba˛ar˝l˝!" });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new { success = false, message = "Kay˝t esnas˝nda hata ile kar˛˝la˛˝ld˝. L¸tfen daha sonra tekrar deneyiniz." });
-            }
-        }
-        public async Task<IActionResult> SendEmail(string username,string emailAddress,string phone,string message,string subject)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(username))
-                    return Ok(new { success = false, message = "›sim bo˛ olamaz." });
-                if (string.IsNullOrEmpty(emailAddress))
-                    return Ok(new { success = false, message = "Email adresi bo˛ olamaz." });
-                // Validate email format
-                if (!IsValidEmail(emailAddress))
-                    return Ok(new { success = false, message = "Hatal˝ Email format˝." });
-                if (string.IsNullOrEmpty(message))
-                    return Ok(new { success = false, message = "Mesaj bo˛ olamaz." });
-
-
-                
-
-                return Ok(new { success = true, message = "Kay˝t Ba˛ar˝l˝!" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = "Kay˝t esnas˝nda hata ile kar˛˝la˛˝ld˝.L¸tfen daha sonra tekrar deneyiniz." });
-            }
-        }
-        public IActionResult About()
-        {
-            authCookie = Request.Cookies["AuthToken"];
-            if (authCookie != null)
-                TempData["Cookie"] = "exists";
-            else
-                TempData["Cookie"] = "not exists";
-            return View();
         }
         public async Task<IActionResult> _CatalogPartial()
         {
             try
-            {               
-                IEnumerable<Catalog>catalogs = await _context.Catalogs.ToListAsync();
+            {
+                IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
                 if (catalogs == null)
                     return BadRequest();
-                if(!catalogs.Any())
+                if (!catalogs.Any())
                     return BadRequest();
                 return PartialView("_CatalogPartial", catalogs);
             }
@@ -904,19 +595,8 @@ namespace BirileriWebSitesi.Controllers
         public IActionResult _PartialEcommerceService()
         {
             try
-            {               
-                return PartialView("_PartialEcommerceService");
-            }
-            catch (Exception ex)
             {
-                return BadRequest();
-            }
-        }
-        public IActionResult _PartialContactUs()
-        {
-            try
-            {               
-                return PartialView("_PartialContactUs");
+                return PartialView("_PartialEcommerceService");
             }
             catch (Exception ex)
             {
@@ -937,7 +617,7 @@ namespace BirileriWebSitesi.Controllers
 
                 if (!System.IO.File.Exists(fullPath))
                     return View("NotFound");
-               
+
                 var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
                 return File(stream, "application/pdf");
 
@@ -945,12 +625,358 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception)
             {
 
-                return View("NotFound"); 
+                return View("NotFound");
             }
         }
+
+        //-------------shop ends -------------//
+
+
+
+        //-------------checkout-------------//
+        [Authorize]
+        public async Task<IActionResult> CheckOut()
+        {
+            try
+            {
+                string? userID = string.Empty;
+                string? email = string.Empty;
+                string? firstName = string.Empty;
+                string? lastName = string.Empty;
+                string? fullName = string.Empty;
+                string? phone = string.Empty;
+
+                IdentityUser? user = new();
+                if (User.Identity.IsAuthenticated)
+                {
+                    userID = _userManager.GetUserId(User);
+                    user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
+                }
+                else
+                    return NotFound();
+
+                bool isInBuyRegion = false;
+                try
+                {
+                    isInBuyRegion = await GetRegionAsync();
+                }
+                catch
+                {
+                    isInBuyRegion = true;
+                }
+
+                Basket basket = await _basketService.GetBasketAsync(userID);
+                List<OrderItem> orderItems = new();
+                foreach (BasketItem item in basket.Items)
+                {
+                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice);
+                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
+                    orderItem.ProductVariant = product;
+                    orderItems.Add(orderItem);
+                }
+
+                Address? shipToAddress = await _context.Addresses.OrderByDescending(i => i.Id)
+                                                                .Where(i => i.UserId == userID &&
+                                                                          i.IsBilling == false &&
+                                                                          i.SetAsDefault == true)
+                                                                .FirstOrDefaultAsync();
+
+                if (shipToAddress == null)
+                {
+                    email = await _userManager.GetEmailAsync(user);
+                    phone = await _userManager.GetPhoneNumberAsync(user);
+                    fullName = await _userManager.GetUserNameAsync(user);
+                    firstName = GetFirstName(fullName);
+                    lastName = GetLastName(fullName);
+                    shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
+                }
+
+                Address? billingAddress = await _context.Addresses.OrderByDescending(i => i.Id)
+                                                                .Where(i => i.UserId == userID &&
+                                                                          i.IsBilling == true &&
+                                                                          i.SetAsDefault == true)
+                                                                .FirstOrDefaultAsync();
+
+                if (billingAddress == null)
+                {
+                    email = await _userManager.GetEmailAsync(user);
+                    phone = await _userManager.GetPhoneNumberAsync(user);
+                    fullName = await _userManager.GetUserNameAsync(user);
+                    firstName = GetFirstName(fullName);
+                    lastName = GetLastName(fullName);
+                    billingAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
+
+                }
+
+                Order order = new(userID, shipToAddress, billingAddress, orderItems, isInBuyRegion, true, 1);
+                return View(order);
+
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+        }
+        public IActionResult _PartialIsCorporate(Address address)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                    return PartialView(address);
+
+                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                return PartialView(address);
+
+            }
+            catch (Exception)
+            {
+                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                return PartialView(emptyAddress);
+            }
+        }
+        [HttpPost]
+        public IActionResult _PartialIsCorporate(string firstName, string lastName, string corporateName, int vATNumber, string vATState, bool isCorporate)
+        {
+            try
+            {
+
+                if (string.IsNullOrEmpty(firstName))
+                    firstName = string.Empty;
+                if (string.IsNullOrEmpty(lastName))
+                    lastName = string.Empty;
+                if (string.IsNullOrEmpty(corporateName))
+                    corporateName = string.Empty;
+                if (string.IsNullOrEmpty(vATState))
+                    vATState = string.Empty;
+
+
+                Address address = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, vATNumber, vATState, firstName, lastName, string.Empty, string.Empty, isCorporate, corporateName);
+                return PartialView(address);
+
+            }
+            catch (Exception)
+            {
+                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                return PartialView(emptyAddress);
+            }
+        }
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> PlaceOrder([FromBody] OrderRequestModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .Select(x => new { x.Key, x.Value.Errors })
+                        .ToList();
+
+                    return BadRequest(new { success = false, message = "Model binding failed", errors });
+                }
+                string? buyerID = _userManager.GetUserId(User);
+
+                if (string.IsNullOrEmpty(buyerID))
+                    return BadRequest(new { success = false, message = "Kullan√Ωc√Ω Bulunamad√Ω." });
+
+                if (model.ShipToAddress == null)
+                    return BadRequest(new { success = false, message = "G√∂nderi Bilgilier Bulunamad√Ω." });
+                if (model.BillingAddress == null)
+                    return BadRequest(new { success = false, message = "Fatura Bilgileri Bulunamad√Ω." });
+                if (model.OrderItems == null)
+                    return BadRequest(new { success = false, message = "√úr√ºn Bilgileri Bulunamad√Ω." });
+                if (model.OrderItems.Count() <= 0)
+                    return BadRequest(new { success = false, message = "√úr√ºn Bilgileri Bulunamad√Ω." });
+                if (string.IsNullOrEmpty(model.PaymentMethod))
+                    return BadRequest(new { success = false, message = "√ñdeme Bilgileri Bulunamad√Ω." });
+                if (string.IsNullOrEmpty(model.Notes))
+                    model.Notes = string.Empty;
+                Address ShipToAddress = new();
+                ShipToAddress.UserId = buyerID;
+                ShipToAddress.FirstName = model.ShipToAddress.FirstName;
+                ShipToAddress.LastName = model.ShipToAddress.LastName;
+                ShipToAddress.CorporateName = model.ShipToAddress.CorporateName;
+                ShipToAddress.EmailAddress = model.ShipToAddress.EmailAddress;
+                ShipToAddress.Phone = model.ShipToAddress.Phone;
+                ShipToAddress.AddressDetailed = model.ShipToAddress.AddressDetailed;
+                ShipToAddress.Street = model.ShipToAddress.Street;
+                ShipToAddress.City = model.ShipToAddress.City;
+                ShipToAddress.State = model.ShipToAddress.State;
+                ShipToAddress.Country = model.ShipToAddress.Country;
+                ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
+                ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
+                ShipToAddress.IsBillingSame = model.ShipToAddress.IsBillingSame == null ? false : true;
+                Address BillingAddress = new();
+                BillingAddress.UserId = buyerID;
+                BillingAddress.FirstName = model.BillingAddress.FirstName;
+                BillingAddress.LastName = model.BillingAddress.LastName;
+                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
+                BillingAddress.EmailAddress = model.BillingAddress.EmailAddress;
+                BillingAddress.Phone = model.BillingAddress.Phone;
+                BillingAddress.AddressDetailed = model.BillingAddress.AddressDetailed;
+                BillingAddress.Street = model.BillingAddress.Street;
+                BillingAddress.City = model.BillingAddress.City;
+                BillingAddress.State = model.BillingAddress.State;
+                BillingAddress.Country = model.BillingAddress.Country;
+                BillingAddress.ZipCode = model.BillingAddress.ZipCode;
+                BillingAddress.IsBilling = model.BillingAddress.IsBilling;
+                BillingAddress.IsBillingSame = model.BillingAddress.IsBillingSame == null ? false : true;
+                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
+                BillingAddress.VATnumber = model.BillingAddress.VATnumber;
+                BillingAddress.VATstate = model.BillingAddress.VATstate;
+                BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
+
+                List<OrderItem> orderItems = new();
+                foreach (var item in model.OrderItems)
+                {
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice);
+                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
+                    orderItem.ProductVariant = product;
+                    orderItems.Add(orderItem);
+
+                }
+                int paymentType = 0;
+                if (!Int32.TryParse(model.PaymentMethod, out paymentType))
+                    return StatusCode(500, new { success = false, message = "√ñdeme Y√∂ntemi Bulunamadƒ±." });
+                
+
+                Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, model.UpdateUserInfo, paymentType);
+
+                if (order == null)
+                    return BadRequest(new { success = false, message = "Uygun Olmayan Veri." });
+
+                //if(order.UpdateUserInfo)
+                //    await _userService.UpdateUserAsync(order, User);
+
+                var result = await _orderService.ProcessOrderAsync(order);
+
+                if (result == "success")
+                {
+                    await _basketService.DeleteBasketAsync(buyerID);
+                    return Ok(new { success = true, message = "Sipari√æ Ba√æar√Ωyla √ù√æleme Al√Ωnd√Ω." });
+                }
+                else
+                {
+                    return StatusCode(500, new { success = false, message = result });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return StatusCode(500, new { success = false, message = "Hata ile Kar√æ√Ωla√æ√Ωld√Ω. L√ºtfen Tekrar Deneyiniz." });
+            }
+        }
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CheckInstallment([FromBody] BinRequestDTO model)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(model.BinNumber))
+                    return BadRequest(new { success = false, message = "Kart Numaras√Ω Bo√æ Olamaz." });
+
+                List<string> installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
+
+                return Ok(new { installments = installmentInfo });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return StatusCode(500, new { success = false, message = "Hata ile Kar√æ√Ωla√æ√Ωld√Ω. L√ºtfen Tekrar Deneyiniz." });
+            }
+        }
+
+        //-------------checkout ends -------------//
+
+
+        //-------------mail-------------//
+        public async Task<IActionResult> Subscribe(string emailAddress)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(emailAddress))
+                    return Ok(new { success = false, message = "Email adresi bo√æ olamaz." });
+
+                // Validate email format
+                if (!IsValidEmail(emailAddress))
+                    return Ok(new { success = false, message = "Hatal√Ω Email format√Ω." });
+
+                if (_context.Subscribers.Any(s => s.EmailAddress == emailAddress))
+                    return Ok(new { success = false, message = "Email abone listesinde mevcut." });
+
+                // Save to the database
+                var subscriber = new Subscriber { EmailAddress = emailAddress, SubscribedOn = DateTime.Now };
+                _context.Subscribers.Add(subscriber);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Kay√Ωt Ba√æar√Ωl√Ω!" });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = "Kay√Ωt esnas√Ωnda hata ile kar√æ√Ωla√æ√Ωld√Ω. L√ºtfen daha sonra tekrar deneyiniz." });
+            }
+        }
+        public async Task<IActionResult> SendEmail(string username,string emailAddress,string phone,string message,string subject)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(username))
+                    return Ok(new { success = false, message = "√ùsim bo√æ olamaz." });
+                if (string.IsNullOrEmpty(emailAddress))
+                    return Ok(new { success = false, message = "Email adresi bo√æ olamaz." });
+                // Validate email format
+                if (!IsValidEmail(emailAddress))
+                    return Ok(new { success = false, message = "Hatal√Ω Email format√Ω." });
+                if (string.IsNullOrEmpty(message))
+                    return Ok(new { success = false, message = "Mesaj bo√æ olamaz." });
+
+
+                
+
+                return Ok(new { success = true, message = "Kay√Ωt Ba√æar√Ωl√Ω!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Kay√Ωt esnas√Ωnda hata ile kar√æ√Ωla√æ√Ωld√Ω.L√ºtfen daha sonra tekrar deneyiniz." });
+            }
+        }
+
+        //-------------mail ends-------------//
+
+
+        //-------------other pages -------------//
         public IActionResult Privacy()
         {
             return View();
+        }
+        public IActionResult CookiePolicy()
+        {
+            return View();
+        }
+        public IActionResult IWannaMakeALongDistanceCall()
+        {
+            return View();
+        }
+        public IActionResult About()
+        {
+            authCookie = Request.Cookies["AuthToken"];
+            if (authCookie != null)
+                TempData["Cookie"] = "exists";
+            else
+                TempData["Cookie"] = "not exists";
+            return View();
+        }
+        public IActionResult _PartialContactUs()
+        {
+            try
+            {
+                return PartialView("_PartialContactUs");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -958,6 +984,8 @@ namespace BirileriWebSitesi.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        //-------------other pages ends -------------//
+
         private bool IsValidEmail(string email)
         {
             try
@@ -970,6 +998,7 @@ namespace BirileriWebSitesi.Controllers
                 return false;
             }
         }
+
         private string RenderPartialViewToString(string viewName, object model)
         {
             this.ViewData.Model = model;
@@ -980,7 +1009,7 @@ namespace BirileriWebSitesi.Controllers
 
                 if (viewResult.Success == false)
                 {
-                    throw new Exception($"›lgili sayfa bulunamad˝.");
+                    throw new Exception($"√ùlgili sayfa bulunamad√Ω.");
                 }
 
                 var viewContext = new ViewContext(
@@ -1074,7 +1103,7 @@ namespace BirileriWebSitesi.Controllers
                             exists = true;
                             existingID[1] =  quantity.ToString();
                         }
-                        //eer ilk ¸r¸n ise & ekleme
+                        //e√∞er ilk √ºr√ºn ise & ekleme
                         if (firstItem)
                             updatedExistingID = updatedExistingID + string.Join(";", existingID);
                         else
@@ -1134,7 +1163,7 @@ namespace BirileriWebSitesi.Controllers
                             exists = true;
                             existingID[1] = (Convert.ToDecimal(existingID[1]) + quantity).ToString();
                         }
-                        //eer ilk ¸r¸n ise & ekleme
+                        //e√∞er ilk √ºr√ºn ise & ekleme
                         if (firstItem)
                             updatedExistingID = updatedExistingID + string.Join(";", existingID);
                         else
@@ -1185,7 +1214,7 @@ namespace BirileriWebSitesi.Controllers
                     if (existingID[0] == productCode)
                         found = true;
                     
-                    //eer ilk ¸r¸n ise & ekleme
+                    //e√∞er ilk √ºr√ºn ise & ekleme
                     if (firstItem && !found)
                         removedVersion = removedVersion + string.Join(";", existingID);
                     else if (string.IsNullOrEmpty(removedVersion) && !found)
@@ -1243,7 +1272,6 @@ namespace BirileriWebSitesi.Controllers
                 return result;
             }
         }
-
         public async Task<bool> GetRegionAsync()
         {
             try

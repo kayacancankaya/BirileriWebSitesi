@@ -1,0 +1,166 @@
+﻿@model BirileriWebSitesi.Models.OrderAggregate.Order
+
+   @*  <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        h2 {
+            color: #2a7dad;
+            margin-top: 40px;
+        }
+
+        h3 {
+            margin-top: 30px;
+            color: #444;
+        }
+
+        p, ul, ol, table {
+            margin-bottom: 15px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: #fff;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .section {
+            margin-top: 40px;
+        }
+</style> *@
+
+
+    <h2>ÖN BİLGİLENDİRME FORMU</h2>
+
+    <div class="section">
+        <h3>1. KONU</h3>
+        <p>
+            Bu Ön Bilgilendirme Formu, SATICI'nın ALICI’ya satışını yaptığı ürün/ürünlerin satışı ve teslimi ile ilgili olarak
+            6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerini kapsar.
+            ALICI, bu formu onayladığında sipariş konusu bedeli, varsa kargo ve vergi gibi ek ücretleri ödeme yükümlülüğünü kabul eder.
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>2. SATICI BİLGİLERİ</h3>
+        <p>
+            <strong>Ünvan:</strong> Birileri Dış Ticaret Danışmanlık Sanayi ve Ticaret Limeted Şirketi<br>
+            <strong>Adres:</strong> 1865 sok No 9 D 1 Karşıyaka / İzmir<br>
+            <strong>Telefon:</strong> +90 555 561 45 47<br>
+            <strong>E-posta:</strong> info@birilerigt.com
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>3. ALICI BİLGİLERİ</h3>
+        <p>
+            <strong>Adı Soyadı:</strong> @Model.BillingAddress.IsCorporate ? @Model.BillingAddress.CorporateName : @String.Format("{0} {1}",Model.BillingAddress.FirstName,Model.BillingAddress.LastName) <br>
+            <strong>Teslimat Adresi:</strong> @Model.BillingAddress.AddressDetailed<br>
+            <strong>Telefon:</strong> @Model.BillingAddress.Phone<br>
+            <strong>E-posta:</strong> @Model.BillingAddress.EmailAddress<br>
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>4. SÖZLEŞME KONUSU ÜRÜN/ÜRÜNLER</h3>
+        <table>
+            @foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <th>Ürün Adı</th>
+                    <th>Adet</th>
+                    <th>Taksit</th>
+                    <th>Toplam Tutar</th>
+                </tr>
+                <tr>
+                    <td>@item.ProductVariant.ProductName</td>
+                    <td>@item.Units</td>
+                    <td>@Model.InstallmentAmount</td>
+                    <td>@item.Units * @item.UnitPrice ₺</td>
+                </tr>
+                <tr>
+                    <td colspan="3">KDV</td>
+                    <td>@item.Units * @item.UnitPrice * 0,2 ₺</td>
+                </tr>
+                <tr>
+                    <td colspan="3">Kargo Ücreti</td>
+                    <td>0,00 ₺</td>
+                </tr>
+
+            }
+            <tr>
+                <td colspan="3"><strong>Genel Toplam</strong></td>
+                <td><strong>@Model.TotalAmount ₺</strong></td>
+            </tr>
+           
+        </table>
+        <p>
+            <strong>Kargo Tutarı:</strong> 0,00 TL<br>
+            <strong>Ödeme Şekli:</strong> @Model.Pay<br>
+            <strong>Ödenmiş Toplam Tutar:</strong> 555,70 TL<br>
+            <strong>Teslimat Adresi:</strong> GDADA - İstanbul - Arnavutköy<br>
+            <strong>Fatura Adresi:</strong> GDADA - İstanbul / Arnavutköy<br>
+            <strong>Sipariş Tarihi:</strong> 16.04.25<br>
+            <strong>Teslim Şekli:</strong> Sürat Kargo
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>5. GENEL HÜKÜMLER</h3>
+        <p>
+            ALICI, ürünün temel nitelikleri, fiyatı, ödeme ve teslimat bilgileri konusunda bilgilendirildiğini; bu bilgileri internet sitesinden okuyup, onayladığını kabul eder.
+            Ürün, 30 gün içinde teslim edilir. Teslim edilemediği takdirde ALICI sözleşmeyi feshedebilir.
+            SATICI, ürünü eksiksiz ve mevzuata uygun şekilde teslim etmeyi taahhüt eder. İmkânsızlık durumunda 3 gün içinde ALICI’ya bildirir ve 14 gün içinde bedel iadesi yapılır.
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>6. CAYMA HAKKI</h3>
+        <p>
+            ALICI, ürünün tesliminden itibaren 14 gün içinde cayma hakkını kullanabilir. Cayma hakkı, yazılı bildirimle kullanılmalıdır.
+            Ürün eksiksiz, ambalajlı ve faturası ile birlikte iade edilmelidir. Cayma hakkı kullanılmasına bağlı masraflar SATICI’ya aittir.
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>7. CAYMA HAKKI KULLANILAMAYACAK ÜRÜNLER</h3>
+        <p>
+            Aşağıdaki ürünler için cayma hakkı kullanılamaz:
+        </p>
+        <ul>
+            <li>Kişiye özel hazırlanan ürünler</li>
+            <li>Ambalajı açılmış, hijyenik nedenlerle iadesi uygun olmayan ürünler</li>
+            <li>Çabuk bozulabilen ürünler</li>
+            <li>Karıştırılan ve ayrıştırılamayan ürünler</li>
+            <li>Kopyalanabilir yazılımlar, CD/DVD, vb. ürünler</li>
+            <li>Ambalajı açılmış kozmetik, iç giyim ürünleri</li>
+            <li>İptal edilemez özel üretimler</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>8. GİZLİLİK VE KİŞİSEL VERİLER</h3>
+        <p>
+            ALICI’nın paylaştığı kişisel veriler, SATICI tarafından gizlilik esaslarına uygun olarak işlenir, saklanır ve gerekli durumlarda yasal mercilerle paylaşılır.
+            ALICI, iletişim tercihlerine her zaman itiraz edebilir ve verilerinin silinmesini talep edebilir.
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>DİĞER HUSUSLAR</h3>
+        <p>
+            ALICI, sipariş iptallerinde ödemenin en geç 14 gün içinde geri yapılacağını; kredi kartı iadelerinin banka süreçlerine göre yansımasının değişebileceğini kabul eder.
+            Talep ve şikayetler, ilgili Tüketici Hakem Heyeti'ne veya Tüketici Mahkemesi’ne yapılabilir.
+        </p>
+    </div>

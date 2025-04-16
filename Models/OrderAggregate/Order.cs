@@ -15,7 +15,7 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         #pragma warning disable CS8618 // Required by Entity Framework
         public Order() { }
 
-        public Order(string buyerId,Address shipToAddress,Address billingAddress, List<OrderItem> items, bool isInBuyRegion, bool updateUserInfo)
+        public Order(string buyerId,Address shipToAddress,Address billingAddress, List<OrderItem> items, bool isInBuyRegion, bool updateUserInfo, int paymentType)
         {
             BuyerId = buyerId;
             _orderItems = items;
@@ -23,6 +23,7 @@ namespace BirileriWebSitesi.Models.OrderAggregate
             BillingAddress = billingAddress;
             IsInBuyRegion = isInBuyRegion;
             UpdateUserInfo = updateUserInfo;
+            PaymentType = paymentType;
         }
         [Required]
         public string BuyerId { get; set; }
@@ -69,7 +70,8 @@ namespace BirileriWebSitesi.Models.OrderAggregate
             var existingItem = OrderItems.First(p => p.ProductCode == productCode);
             existingItem.AddQuantity(quantity);
         }
-
+        public int PaymentType { get; set; } = 1;
+        public int InstallmentAmount { get; set; } = 1;
         public int Status { get; set; } = (int)ApprovalStatus.Pending;
     }
 }
