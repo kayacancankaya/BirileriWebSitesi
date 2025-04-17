@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Globalization;
 namespace BirileriWebSitesi.Controllers
@@ -850,7 +851,10 @@ namespace BirileriWebSitesi.Controllers
                 {
                     PaymentDTO payment = new PaymentDTO();
                     payment.Order = order;
-                    return View("Payment", payment);
+
+                    HttpContext.Session.SetString("PaymentDTO", JsonConvert.SerializeObject(payment));
+
+                    return Json(new { success = true, redirectUrl = Url.Action("Payment") });
 
                 }
                 else
@@ -862,33 +866,17 @@ namespace BirileriWebSitesi.Controllers
                 return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydeilirken Hata ile Karşılaşıldı. " });
             }
         }
-
-        [Authorize]
-        public async Task<IActionResult> Payment(Order order)
+        [HttpGet]
+        public IActionResult PaymentPage()
         {
-            try
-            {
-                string? userID = string.Empty;
-                
-                IdentityUser? user = new();
-                if (User.Identity.IsAuthenticated)
-                {
-                    userID = _userManager.GetUserId(User);
-                    user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
-                }
-                else
-                    return NotFound();
+            var paymentJson = HttpContext.Session.GetString("PaymentDTO");
 
-                PaymentDTO  payment = new PaymentDTO();
+            if (string.IsNullOrEmpty(paymentJson))
+                return RedirectToAction("Not Found"); // Or show a nice message
 
-                return View(order);
+            var paymentModel = JsonConvert.DeserializeObject<PaymentDTO>(paymentJson);
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return NotFound();
-            }
+            return View("Payment", paymentModel);
         }
         [Authorize]
         [HttpPost]

@@ -22,6 +22,13 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage"); // Secure areas
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login"); // Allow anonymous login
 });
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromDays(365 * 5); // 5 years
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders()
@@ -112,6 +119,7 @@ var app = builder.Build();
 
 app.UseRequestLocalization(localizationOptions);
 
+app.UseSession();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

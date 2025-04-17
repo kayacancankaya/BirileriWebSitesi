@@ -45,8 +45,10 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         public decimal TotalAmount => Convert.ToDecimal(_orderItems.Sum(i => i.Units * i.UnitPrice));
         [ForeignKey(nameof(ShipToAddressId))]
+        [JsonIgnore]
         public virtual Address ShipToAddress { get; private set; }
         [ForeignKey(nameof(BillingAddressId))]
+        [JsonIgnore]
         public virtual Address BillingAddress { get; private set; }
         public bool IsInBuyRegion { get; private set; } = false;
         public bool UpdateUserInfo { get; set; } = false;

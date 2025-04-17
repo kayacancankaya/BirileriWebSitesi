@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace BirileriWebSitesi.Models
 {
@@ -16,6 +17,7 @@ namespace BirileriWebSitesi.Models
         [Required]
 
         public string CatalogDescription { get; set; } = string.Empty; // Subscriber's email address
+        [JsonIgnore]
         public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

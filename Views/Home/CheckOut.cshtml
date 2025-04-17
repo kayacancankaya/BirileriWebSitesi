@@ -414,7 +414,10 @@
                     
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     success: function (response) {
-                        if (response.success === false) {
+                        if (response.success){
+                           window.location.href = response.redirectUrl;
+                        }
+                        else{
                             showAlert(button, response.message, "error");
                             $("#proceed-to-payment").text("Ödeme Adımına Geç").prop("disabled", false);
                         }

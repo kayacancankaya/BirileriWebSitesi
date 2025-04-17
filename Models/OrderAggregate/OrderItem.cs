@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BirileriWebSitesi.Models.OrderAggregate
@@ -28,7 +29,7 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         {
             Units += quantity;
         }
-
+        [JsonIgnore]
         public virtual ProductVariant ProductVariant { get; set; } = new();
 
     }
