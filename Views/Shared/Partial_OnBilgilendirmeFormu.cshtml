@@ -107,12 +107,12 @@
         </table>
         <p>
             <strong>Kargo Tutarı:</strong> 0,00 TL<br>
-            <strong>Ödeme Şekli:</strong> @Model.Pay<br>
-            <strong>Ödenmiş Toplam Tutar:</strong> 555,70 TL<br>
-            <strong>Teslimat Adresi:</strong> GDADA - İstanbul - Arnavutköy<br>
-            <strong>Fatura Adresi:</strong> GDADA - İstanbul / Arnavutköy<br>
-            <strong>Sipariş Tarihi:</strong> 16.04.25<br>
-            <strong>Teslim Şekli:</strong> Sürat Kargo
+            <strong>Ödeme Şekli:</strong> @Model.PaymentType == 1 ? "Kredi Kartı" : "Banka Transferi"<br>
+            <strong>Ödenecek Toplam Tutar:</strong> @Model.TotalAmount<br>
+            <strong>Teslimat Adresi:</strong> @Model.ShipToAddress<br>
+            <strong>Fatura Adresi:</strong>  @Model.BillingAddress<br>
+            <strong>Sipariş Tarihi:</strong> @DateTime.Now.ToString("dd.MM.yyyy")<br>
+            <strong>Teslim Şekli:</strong> Aras Kargo
         </p>
     </div>
 

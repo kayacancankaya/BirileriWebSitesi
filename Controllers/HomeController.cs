@@ -712,8 +712,9 @@ namespace BirileriWebSitesi.Controllers
                 return View(order);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 return NotFound();
             }
         }
@@ -758,6 +759,135 @@ namespace BirileriWebSitesi.Controllers
             {
                 Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
+            }
+        }
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> ProceedToPayment([FromBody] OrderRequestModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .Select(x => new { x.Key, x.Value.Errors })
+                        .ToList();
+
+                    return BadRequest(new { success = false, message = "Sipariş Oluşturulurken Hata İle Karşılaşıldı.", errors });
+                }
+                string? buyerID = _userManager.GetUserId(User);
+
+                if (string.IsNullOrEmpty(buyerID))
+                    return BadRequest(new { success = false, message = "Kullanıcı Bulunamadı." });
+
+                if (model.ShipToAddress == null)
+                    return BadRequest(new { success = false, message = "Gönderi Bilgilier Bulunamadı." });
+                if (model.BillingAddress == null)
+                    return BadRequest(new { success = false, message = "Fatura Bilgileri Bulunamadı." });
+                if (model.OrderItems == null)
+                    return BadRequest(new { success = false, message = "Ürün Bilgileri Bulunamadı." });
+                if (model.OrderItems.Count() <= 0)
+                    return BadRequest(new { success = false, message = "Ürün Bilgileri Bulunamadı." });
+                if (string.IsNullOrEmpty(model.Notes))
+                    model.Notes = string.Empty;
+                Address ShipToAddress = new();
+                ShipToAddress.UserId = buyerID;
+                ShipToAddress.FirstName = model.ShipToAddress.FirstName;
+                ShipToAddress.LastName = model.ShipToAddress.LastName;
+                ShipToAddress.CorporateName = model.ShipToAddress.CorporateName;
+                ShipToAddress.EmailAddress = model.ShipToAddress.EmailAddress;
+                ShipToAddress.Phone = model.ShipToAddress.Phone;
+                ShipToAddress.AddressDetailed = model.ShipToAddress.AddressDetailed;
+                ShipToAddress.Street = model.ShipToAddress.Street;
+                ShipToAddress.City = model.ShipToAddress.City;
+                ShipToAddress.State = model.ShipToAddress.State;
+                ShipToAddress.Country = model.ShipToAddress.Country;
+                ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
+                ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
+                ShipToAddress.IsBillingSame = model.ShipToAddress.IsBillingSame == null ? false : true;
+                Address BillingAddress = new();
+                BillingAddress.UserId = buyerID;
+                BillingAddress.FirstName = model.BillingAddress.FirstName;
+                BillingAddress.LastName = model.BillingAddress.LastName;
+                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
+                BillingAddress.EmailAddress = model.BillingAddress.EmailAddress;
+                BillingAddress.Phone = model.BillingAddress.Phone;
+                BillingAddress.AddressDetailed = model.BillingAddress.AddressDetailed;
+                BillingAddress.Street = model.BillingAddress.Street;
+                BillingAddress.City = model.BillingAddress.City;
+                BillingAddress.State = model.BillingAddress.State;
+                BillingAddress.Country = model.BillingAddress.Country;
+                BillingAddress.ZipCode = model.BillingAddress.ZipCode;
+                BillingAddress.IsBilling = model.BillingAddress.IsBilling;
+                BillingAddress.IsBillingSame = model.BillingAddress.IsBillingSame == null ? false : true;
+                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
+                BillingAddress.VATnumber = model.BillingAddress.VATnumber;
+                BillingAddress.VATstate = model.BillingAddress.VATstate;
+                BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
+
+                List<OrderItem> orderItems = new();
+                foreach (var item in model.OrderItems)
+                {
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice);
+                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
+                    orderItem.ProductVariant = product;
+                    orderItems.Add(orderItem);
+                }
+
+                Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, model.UpdateUserInfo, 2);
+
+                if (order == null)
+                    return BadRequest(new { success = false, message = "Uygun Olmayan Veri." });
+
+                //if(order.UpdateUserInfo)
+                //    await _userService.UpdateUserAsync(order, User);
+
+                var result = await _orderService.SaveOrderInfoAsync(order);
+
+                if (result == "SUCCESS")
+                {
+                    PaymentDTO payment = new PaymentDTO();
+                    payment.Order = order;
+                    return View("Payment", payment);
+
+                }
+                else
+                    return StatusCode(500, new { success = false, message = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydeilirken Hata ile Karşılaşıldı. " });
+            }
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Payment(Order order)
+        {
+            try
+            {
+                string? userID = string.Empty;
+                
+                IdentityUser? user = new();
+                if (User.Identity.IsAuthenticated)
+                {
+                    userID = _userManager.GetUserId(User);
+                    user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
+                }
+                else
+                    return NotFound();
+
+                PaymentDTO  payment = new PaymentDTO();
+
+                return View(order);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return NotFound();
             }
         }
         [Authorize]

@@ -37,6 +37,8 @@
         margin-top: 40px;
     }
 </style> *@
+
+@model BirileriWebSitesi.Models.OrderAggregate.Order
 <h2>ÖN BİLGİLENDİRME FORMU</h2>
 
 <div class="section">
@@ -60,50 +62,65 @@
 
 <div class="section">
     <h3>3. ALICI BİLGİLERİ</h3>
+
     <p>
-        <strong>Adı Soyadı:</strong> haha hahah<br>
-        <strong>Teslimat Adresi:</strong> GDADA - İstanbul - Arnavutköy<br>
-        <strong>Telefon:</strong> +90 (555) 555 55 55<br>
-        <strong>E-posta:</strong> kayacankirpikli@hotmail.com
+        @if (Model.BillingAddress.IsCorporate)
+        {
+            <strong>Firma Adı:</strong> @Model.BillingAddress.CorporateName <br>
+            <strong>Vergi Numarası:</strong> @Model.BillingAddress.VATnumber.ToString() <br>
+        }
+        else
+        {
+            <strong>Adı Soyadı:</strong> @String.Format("{0} {1}", Model.BillingAddress.FirstName, Model.BillingAddress.LastName) <br>
+        }
+        <strong>Adresi:</strong> @Model.BillingAddress.AddressDetailed<br>
+        <strong>Telefon:</strong> @Model.BillingAddress.Phone<br>
+        <strong>E-posta:</strong> @Model.BillingAddress.EmailAddress<br>
     </p>
 </div>
 
 <div class="section">
     <h3>4. SÖZLEŞME KONUSU ÜRÜN/ÜRÜNLER</h3>
     <table>
-        <tr>
-            <th>Ürün Adı</th>
-            <th>Adet</th>
-            <th>Taksit</th>
-            <th>Toplam Tutar</th>
-        </tr>
-        <tr>
-            <td>60x40x20 cm Esmer Çift Oluklu A-Box Taşıma Kolisi 10 - Esmer</td>
-            <td>1</td>
-            <td>-</td>
-            <td>463,08 TL</td>
-        </tr>
-        <tr>
-            <td colspan="3">KDV</td>
-            <td>92,62 TL</td>
-        </tr>
-        <tr>
-            <td colspan="3">Kargo Ücreti</td>
-            <td>0,00 TL</td>
-        </tr>
-        <tr>
+        @foreach (var item in Model.OrderItems)
+        {
+
+            var totalPrice = @item.UnitPrice * @item.Units;
+            var tax = Convert.ToDouble(totalPrice) * 0.2;
+            <tr>
+                <th>Ürün Adı</th>
+                <th>Adet</th>
+                <th>Taksit</th>
+                <th>Toplam Tutar</th>
+            </tr>
+            <tr>
+                <td>@item.ProductVariant.ProductName</td>
+                <td>@item.Units</td>
+                <td>@Model.InstallmentAmount</td>
+                <td>@totalPrice.ToString("C2")</td>
+            </tr>
+            <tr>
+                <td colspan="3">KDV</td>
+                <td>@tax.ToString("C2")</td>
+            </tr>
+            <tr>
+                <td colspan="3">Kargo Ücreti</td>
+                <td>0</td>
+            </tr>
+        }
+		<tr>
             <td colspan="3"><strong>Genel Toplam</strong></td>
-            <td><strong>555,70 TL</strong></td>
+            <td><strong>@Model.TotalAmount.ToString("C2") TL</strong></td>
         </tr>
     </table>
     <p>
         <strong>Kargo Tutarı:</strong> 0,00 TL<br>
-        <strong>Ödeme Şekli:</strong> Kredi Kartı<br>
-        <strong>Ödenmiş Toplam Tutar:</strong> 555,70 TL<br>
-        <strong>Teslimat Adresi:</strong> GDADA - İstanbul - Arnavutköy<br>
-        <strong>Fatura Adresi:</strong> GDADA - İstanbul / Arnavutköy<br>
-        <strong>Sipariş Tarihi:</strong> 16.04.25<br>
-        <strong>Teslim Şekli:</strong> Sürat Kargo
+        <strong>Ödeme Şekli:</strong> @Model.PaymentType == 1 ? "Banka Transferi" : "Kredi Kartı"<br>
+        <strong>Ödenecek Toplam Tutar:</strong> @Model.TotalAmount<br>
+        <strong>Teslimat Adresi:</strong> @Model.ShipToAddress.AddressDetailed<br>
+        <strong>Fatura Adresi:</strong> @Model.BillingAddress.AddressDetailed<br>
+        <strong>Sipariş Tarihi:</strong> @DateTime.Now.ToString("dd.MM.yyyy")<br>
+        <strong>Teslim Şekli:</strong> Aras Kargo
     </p>
 </div>
 

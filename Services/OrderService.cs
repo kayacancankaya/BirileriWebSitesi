@@ -30,6 +30,88 @@ namespace BirileriWebSitesi.Services
         {
             throw new NotImplementedException();
         }
+        public async Task<string> SaveOrderInfoAsync(Order order)
+        {
+            try
+            {
+                if (order.ShipToAddress == null)
+                    return "Gönderilecek Adres Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.FirstName))
+                    return "Gönderilecek Adres İsim Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.LastName))
+                    return "Gönderilecek Adres Soy İsim Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.EmailAddress))
+                    return "Gönderilecek Adres Email Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.AddressDetailed))
+                    return "Gönderilecek Adres Bilgisi Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.City))
+                    return "Gönderilecek Adres Şehir Bilgisi Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.State))
+                    return "Gönderilecek Adres İlçe Bilgisi Bulunamadı.";
+                if(string.IsNullOrEmpty(order.ShipToAddress.Street))
+                    return "Gönderilecek Adres Mahalle Bilgisi Bulunamadı.";
+
+                if (order.BillingAddress == null)
+                    return "Fatura Adresi Bulunamadı.";
+                if(!order.BillingAddress.IsCorporate)
+                {
+                    if (string.IsNullOrEmpty(order.BillingAddress.FirstName))
+                        return "Fatura Adresi İsim Bulunamadı.";
+                    if (string.IsNullOrEmpty(order.BillingAddress.LastName))
+                        return "Fatura Adresi Soy İsim Bulunamadı.";
+                    order.BillingAddress.CorporateName = string.Empty;
+                    order.BillingAddress.VATnumber = 0;
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(order.BillingAddress.CorporateName))
+                        return "Şirket İsmi Bulunamadı.";
+                    if (string.IsNullOrEmpty(order.BillingAddress.VATstate))
+                        return "Vergi Dairesi Bulunamadı.";
+                    if (order.BillingAddress.VATnumber == 0)
+                        return "Vergi Numarası Bulunamadı.";
+                    order.BillingAddress.FirstName = string.Empty;
+                    order.BillingAddress.LastName = string.Empty;
+                }
+                if (string.IsNullOrEmpty(order.BillingAddress.EmailAddress))
+                    return "Fatura Adresi Email Bulunamadı.";
+                if (string.IsNullOrEmpty(order.BillingAddress.AddressDetailed))
+                    return "Fatura Adresi Bilgisi Bulunamadı.";
+                if (string.IsNullOrEmpty(order.BillingAddress.City))
+                    return "Fatura Adresi Şehir Bilgisi Bulunamadı.";
+                if (string.IsNullOrEmpty(order.BillingAddress.State))
+                    return "Fatura Adresi İlçe Bilgisi Bulunamadı.";
+                if (string.IsNullOrEmpty(order.BillingAddress.Street))
+                    return "Fatura Adresi Mahalle Bilgisi Bulunamadı.";
+
+                if(order.UpdateUserInfo)
+                {
+                    order.ShipToAddress.SetAsDefault = true;
+                    order.BillingAddress.SetAsDefault = true;
+                }
+
+                foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
+                {
+                    item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
+                    item.ProductVariant.Product = await _context.Products.Where(p => p.ProductCode == item.ProductVariant.BaseProduct)
+                                                                             .Include(c=>c.Catalog)
+                                                                            .FirstOrDefaultAsync();
+                }
+                
+                    order.Status = (int)ApprovalStatus.Pending;
+
+                _context.Add(order);
+
+               //await _context.SaveChangesAsync();
+
+                return "SUCCESS";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return "Sipariş Kaydedilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
+            }
+        }
         public async Task<string> ProcessOrderAsync(Order order)
         {
             try
