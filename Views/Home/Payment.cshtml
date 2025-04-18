@@ -14,6 +14,24 @@
 
 @section CSS {
 	<style>
+        .exp-date-row {
+            display: flex;
+            flex-wrap: wrap; /* optional: wrap on small screens */
+        }
+
+        .credit-card-info {
+            margin-top: 20px;
+        }
+
+        .no-arrow::-webkit-outer-spin-button,
+        .no-arrow::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .no-arrow {
+            -moz-appearance: textfield;
+        }
         .checkout-container {
             display: flex;
             flex-wrap: wrap;
@@ -66,311 +84,381 @@
             background: #fafafa;
             border: 1px solid #ddd;
         }
+
+        .dropdown-checkbox {
+            margin-right: 10px; 
+            transform: scale(1.2); 
+        }
+
+        .dropdown-content {
+            display: none;
+            background-color: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            position: relative;
+            color: #333;
+        }
+
+            .dropdown-content.show {
+                display: block;
+            }
+
+        .dropdown-toggle {
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+            .dropdown-toggle:hover {
+                text-decoration: underline;
+            }
+
+        .section {
+            word-wrap: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
+            max-width: 100%; 
+            word-break: break-word;
+        }
     </style>
 
 }
 
 @Html.AntiForgeryToken()
-<div class="checkout-container">
-    <!--Payment Box-->
-    <div class="payment-box">
-        <div class="upper-box">
+<div class="sidebar-page-conatiner">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <!--Content Side-->
+            <div class="content-side col-lg-9 col-md-8 col-sm-12">
+                <!--Payment Box-->
+                <div class="payment-box">
+                    <div class="upper-box">
 
-            <!--Payment Options-->
-            <div class="payment-options">
-                <ul>
-                    <li>
-                        <div class="radio-option">
-                            <input type="radio" name="payment-group" id="payment-2" checked>
-                            <label for="payment-2"><strong>Banka Transferi</strong><span class="small-text" id="payment-2-text">Banka Havalesi ile ödeme yapın. Ödemenizin açıklamalar kısmına sipariş numaranızı eklemenizi önemle rica ederiz. Ödemeniz bankaya ulaştıktan sonra ürünleriniz kargoya hazırlanacaktır.</span></label>
+                        <!--Payment Options-->
+                        <div class="payment-options">
+                            <ul>
+                                <li>
+                                    <div class="radio-option">
+                                        <input type="radio" name="payment-group" id="payment-2" checked>
+                                        <label for="payment-2"><strong>Banka Transferi</strong><span class="small-text" id="payment-2-text">Banka Havalesi ile ödeme yapın. Ödemenizin açıklamalar kısmına sipariş numaranızı eklemenizi önemle rica ederiz. Ödemeniz bankaya ulaştıktan sonra ürünleriniz kargoya hazırlanacaktır.</span></label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="radio-option">
+                                        <input type="radio" name="payment-group" id="payment-1">
+                                        <label for="payment-1"><strong>Kredi Kartı</strong></label>
+                                    </div>
+
+                                    <!--Credit Card-->
+                                    <div id="credit-card-info" class="credit-card-info" style="display: none;">
+                                        <h3>Kredi Kartı Bilgileri</h3>
+
+                                        <!-- Credit Card Fields  -->
+                                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-label">Kart Numarası:</div>
+                                            <input type="number" id="credit-card-number" class="no-arrow pl-1" style="width:300px;" placeholder="Kart Numarası">
+                                        </div>
+                                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-label">Son Kullanma Tarihi:</div>
+                                            <div class="exp-date-row">
+                                                <input type="number" id="expiry-date-month" style="max-width:30px; max-height:24px" class="pl-1 no-arrow" placeholder="AA">
+                                                <p class="ml-2 mr-2" style="justify-content:center;">/</p>
+                                                <input type="number" id="expiry-date-year" style="max-width:30px;max-height:24px" class="pl-1 no-arrow" placeholder="YY">
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-label">CVV:</div>
+                                            <input style="max-width:40px;" class="no-arrow" type="number" id="cvv" placeholder="CVV">
+                                        </div>
+                                        <div id="installment-div" class="form-group col-lg-6 col-md-6 col-sm-12" style="display:none;">
+                                            <label for="installment">Taksit Seçeneği:</label>
+                                            <select id="installment" name="installment">
+                                                <option value="1">Tek Çekim</option>
+                                                <option value="2">2 Taksit</option>
+                                                <option value="3">3 Taksit</option>
+                                                <!-- Add more options as needed -->
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                                            <input type="checkbox" id="3d-payment" value="true">
+                                            <label for="3d-payment">3D Secure ile Öde</label>
+                                        </div>
+                                    </div>
+
+                                </li>
+
+                            </ul>
                         </div>
-                    </li>
-                    <li>
-                        <div class="radio-option">
-                            <input type="radio" name="payment-group" id="payment-1">
-                            <label for="payment-1"><strong>Kredi Kartı</strong></label>
-                        </div>
-
-                        <!--Credit Card-->
-                        <div id="credit-card-info" class="credit-card-info" style="display: none;">
-                            <h3>Kredi Kartı Bilgileri</h3>
-
-                            <!-- Credit Card Fields  -->
-                            <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                                <div class="field-label">Kart Numarası:</div>
-                                <input type="number" id="credit-card-number" class="no-arrow" style="width:300px;" placeholder="Kart Numarası" class="pl-1">
-                            </div>
-                            <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                                <div class="field-label">Son Kullanma Tarihi:</div>
-                                <div class="exp-date-row">
-                                    <input type="number" id="expiry-date-month" style="max-width:30px; max-height:24px" class="pl-1 no-arrow" placeholder="AA">
-                                    <p class="ml-2 mr-2" style="justify-content:center;">/</p>
-                                    <input type="number" id="expiry-date-year" style="max-width:30px;max-height:24px" class="pl-1 no-arrow" placeholder="YY">
+                    </div>
+                    <!--Legal Forms-->
+                    <div class="info-dropdowns">
+                        <div class="dropdown-item">
+                             <input type="checkbox" checked class="dropdown-checkbox">
+                       
+                            <button class="dropdown-toggle">Ön Bilgilendirme Formu</button>
+                            <div class="dropdown-content">
+                                @Html.Partial("_PartialOnBilgilendirmeFormu", Model)
+                                <div class="dropdown-content">
+                                    @Html.Partial("_PartialOnBilgilendirmeFormu", Model)
                                 </div>
                             </div>
-                            <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                                <div class="field-label">CVV:</div>
-                                <input style="max-width:40px;" class="no-arrow" type="number" id="cvv" placeholder="CVV">
-                            </div>
-                            <div id="installment-div" class="form-group col-lg-6 col-md-6 col-sm-12" style="display:none;">
-                                <label for="installment">Taksit Seçeneği:</label>
-                                <select id="installment" name="installment">
-                                    <option value="1">Tek Çekim</option>
-                                    <option value="2">2 Taksit</option>
-                                    <option value="3">3 Taksit</option>
-                                    <!-- Add more options as needed -->
-                                </select>
-                            </div>
-
-                            <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                                <input type="checkbox" id="3d-payment" value="true">
-                                <label for="3d-payment">3D Secure ile Öde</label>
-                            </div>
                         </div>
-
-                    </li>
-
-                </ul>
+                            <div class="dropdown-item">
+                        
+                                <input type="checkbox" checked class="dropdown-checkbox">
+                                <button class="dropdown-toggle">Mesafeli Satış Sözleşmesi</button>
+                                <div class="dropdown-content">
+                                    @Html.Partial("_PartialMesafeliSatisSozlesmesi", Model)
+                                </div>
+                            </div>
+                            <div class="dropdown-item">
+                                <input type="checkbox" checked class="dropdown-checkbox">
+                                <button class="dropdown-toggle">KVKK Aydınlatma Metni</button>
+                                <div class="dropdown-content">
+                                    @Html.Partial("_PartialAydinlatmaMetni", Model)
+                                </div>
+                            </div>
+                    </div>
+                        <!--End Legal Forms-->
+                    <div class="lower-box text-right">
+                        <span class="alert-text"></span>
+                        <a id="finish-payment" class="theme-btn order-btn">Ödemeyi Tamamla</a>
+                    </div>
+                </div>
+                <!--End Payment Box-->
             </div>
-        </div>
-        <div class="lower-box text-right">
-            <span class="alert-text"></span>
-            <a id="finish-payment" class="theme-btn order-btn">Ödemeyi Tamamla</a>
-        </div>
-    </div>
-    <!--End Payment Box-->
-    <!-- Cart Info Section -->
-    <div class="order-box">
-        <h2>Siparişiniz</h2>
-        <div class="title-box clearfix">
-            <div class="col">ÜRÜN</div>
-            <div class="col">TOPLAM</div>
-        </div>
-        <ul>
+            <div class="sidebar-side col-lg-3 col-md-4 col-sm-12">
+                <!-- Cart Info Section -->
+                <div class="order-box">
+                    <h2>Siparişiniz</h2>
+                    <div class="title-box clearfix">
+                        <div class="col">ÜRÜN</div>
+                        <div class="col">TOPLAM</div>
+                    </div>
+                    <ul>
 
-            @foreach (var item in Model.Order.OrderItems)
-            {
-                decimal subTotal = item.UnitPrice * item.Units;
-                <li class="clearfix order-item">
-                    <input type="hidden" class="product-code" value="@item.ProductCode" />
-                    <input type="hidden" class="unit-price" value="@item.UnitPrice" />
-                    Ürün Adı:<strong>
-                        <span class="product-name">@item.ProductVariant.ProductName </span> / Miktar: <span class="quantity">@item.Units</span>
-                    </strong>
-                </li>
-                <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
-            }
-            <li class="clearfix">KARGO ÜCRETİ<span class="free">ÜCRETSİZ</span></li>
-            <li class="clearfix">TOPLAM<span>@Model.Order.TotalAmount ₺</span></li>
-        </ul>
-    </div>
-	<!--End Cart Info Section-->
-    <!--Legal Forms-->
-    <div class="info-dropdowns">
-        <div class="dropdown-item">
-            <button class="dropdown-toggle">Ön Bilgilendirme Formu</button>
-            <div class="dropdown-content">
-                @Html.Partial("_PartialOnBilgilendirmeFormu", Model.Order)
-            </div>
-        </div>
-        <div class="dropdown-item">
-            <button class="dropdown-toggle">Mesafeli Satış Sözleşmesi</button>
-            <div class="dropdown-content">
-                @Html.Partial("_PartialMesafeliSatisSozlesmesi",Model.Order)
-            </div>
-        </div>
-        <div class="dropdown-item">
-            <button class="dropdown-toggle">KVKK Aydınlatma Metni</button>
-            <div class="dropdown-content">
-                @Html.Partial("_PartialAydinlatmaMetni", Model.Order)
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            decimal subTotal = item.UnitPrice * item.Units;
+                            <li class="clearfix order-item">
+                                <input type="hidden" class="product-code" value="@item.ProductCode" />
+                                <input type="hidden" class="unit-price" value="@item.UnitPrice" />
+                                Ürün Adı:<strong>
+                                    <span class="product-name">@item.ProductName </span> / Miktar: <span class="quantity">@item.Units</span>
+                                </strong>
+                            </li>
+                            <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
+                        }
+                        <li class="clearfix">KARGO ÜCRETİ<span class="free">ÜCRETSİZ</span></li>
+                        <li class="clearfix">TOPLAM<span>@Model.TotalAmount ₺</span></li>
+                    </ul>
+                </div>
+	            <!--End Cart Info Section-->
             </div>
         </div>
     </div>
-	<!--End Legal Forms-->
 </div>
-<script>
-	$(document).ready(function () {
+@section AdditionalScripts {
+    <script>
+	    $(document).ready(function () {
 
-       $(".dropdown").removeClass("current");
-       $(".cart").addClass("current");
-        document.querySelectorAll('.dropdown-toggle').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const content = btn.nextElementSibling;
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
-        });
-    });
-        $(document).on("change", "#payment-1", function () {
+           $(".dropdown").removeClass("current");
+           $(".cart").addClass("current");
+            document.querySelectorAll('.dropdown-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = btn.nextElementSibling;
+                    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+                });
+            });
+            document.querySelectorAll('.dropdown-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        console.log(`Checkbox for ${checkbox.parentElement.textContent.trim()} is checked.`);
+                    } else {
+                        console.log(`Checkbox for ${checkbox.parentElement.textContent.trim()} is unchecked.`);
+                    }
+                });
+            });
+            $(document).on("change", "#payment-1", function () {
+                    if (this.checked) {
+                        $("#credit-card-info").css("display","block");
+                        $("#payment-2-text").css("display","none");
+                    } else {
+                        $("#is-corporate-div").style.display = 'none';
+                        $("#payment-2-text").css("display","block");
+                    }
+            });
+            $(document).on("change", "#payment-2", function () {
                 if (this.checked) {
-                    $("#credit-card-info").css("display","block");
-                    $("#payment-2-text").css("display","none");
-                } else {
-                    $("#is-corporate-div").style.display = 'none';
+                    $("#credit-card-info").css("display","none");
                     $("#payment-2-text").css("display","block");
+                } else {
+                    $("#is-corporate-div").style.display = 'block';
+                    $("#payment-2-text").css("display","none");
                 }
-        });
-        $(document).on("change", "#payment-2", function () {
-            if (this.checked) {
-                $("#credit-card-info").css("display","none");
-                $("#payment-2-text").css("display","block");
-            } else {
-                $("#is-corporate-div").style.display = 'block';
-                $("#payment-2-text").css("display","none");
-            }
-        });
-        $(document).on("input","#credit-card-number", function () {
-            const cardNumber = $(this).val().replace(/\s+/g, '');
-            if (cardNumber.length >= 6) {
-                const binNumber = cardNumber.substring(0, 6);
+            });
+            $(document).on("input","#credit-card-number", function () {
+                const cardNumber = $(this).val().replace(/\s+/g, '');
+                if (cardNumber.length >= 6) {
+                    const binNumber = cardNumber.substring(0, 6);
 
-                $.ajax({
-                    url: "/Home/CheckInstallment",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({ binNumber: binNumber, price: 100 }),
-                    success: function (response) {
-                        if (response.installments && response.installments.length > 0) {
+                    $.ajax({
+                        url: "/Home/CheckInstallment",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ binNumber: binNumber, price: 100 }),
+                        success: function (response) {
+                            if (response.installments && response.installments.length > 0) {
 
-                            $("#installment").empty();
-                            $.each(response.installments, function (i, item) {
-                                $("#installment").append(
-                                    `<option value="${item.installmentNumber}">${item.installmentNumber} Taksit</option>`
-                                );
-                            });
-                            $("#installment-div").show();
-                        } else {
+                                $("#installment").empty();
+                                $.each(response.installments, function (i, item) {
+                                    $("#installment").append(
+                                        `<option value="${item.installmentNumber}">${item.installmentNumber} Taksit</option>`
+                                    );
+                                });
+                                $("#installment-div").show();
+                            } else {
+                                $("#installment-div").hide();
+                            }
+                        },
+                        error: function () {
                             $("#installment-div").hide();
                         }
-                    },
-                    error: function () {
-                        $("#installment-div").hide();
-                    }
-                });
-            } else {
-                $("#installment-div").hide();
-            }
-        });
-        $(document).on("click", "#finish-payment", function (e) {
-
-                e.preventDefault();
-                var button = $(this);
-                let requiredFields = [];
-                
-                var isCreditCardPayment = $("#payment-1").is(":checked");
-                if(isCreditCardPayment)
-                {
-                    requiredFields.push("credit-card-number", "expiry-date-month", "expiry-date-year", "cvv");
-                    var creditCardNumber = $("#credit-card-number").val();
-                    var expiryMonth = $("#expiry-date-month").val() ;
-                    var expiryYear = $("#expiry-date-year").val();
-                    var cvv = $("#cvv").val();
+                    });
+                } else {
+                    $("#installment-div").hide();
                 }
-                let isValid = true;
+            });
+            $(document).on("click", "#finish-payment", function (e) {
 
-                // if fields are filled
-                requiredFields.forEach(function (id) {
-                    let input = document.getElementById(id);
-                    if (input && input.value.trim() === "") {
-                        isValid = false;
-                        input.style.border = "1px solid red"; // Highlight empty fields
-                    } else {
-                        input.style.border = ""; // Reset style
-                    }
-                });
-                if (!isValid) {
                     e.preventDefault();
-                    showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
-                    return;
-                }
-                // Check card payment
-                if(isCreditCardPayment)
-                {
-                    if (!isValidCardNumber(creditCardNumber)) {
-                        e.preventDefault();
-                        showAlert(button,"Geçersiz kart numarası.","danger");
-                        return;
+                    var button = $(this);
+                    let requiredFields = [];
+                
+                    var isCreditCardPayment = $("#payment-1").is(":checked");
+                    if(isCreditCardPayment)
+                    {
+                        requiredFields.push("credit-card-number", "expiry-date-month", "expiry-date-year", "cvv");
+                        var creditCardNumber = $("#credit-card-number").val();
+                        var expiryMonth = $("#expiry-date-month").val() ;
+                        var expiryYear = $("#expiry-date-year").val();
+                        var cvv = $("#cvv").val();
                     }
+                    let isValid = true;
 
-                    if (!isValidExpiry(expiryMonth, expiryYear)) {
-                        e.preventDefault();
-                        showAlert(button,"Geçersiz son kullanma tarihi.","danger");
-                        return;
-                    }
-
-                    if (!isValidCVV(cvv)) {
-                        e.preventDefault();
-                        showAlert(button,"Geçersiz CVV.","danger");
-                        return;
-                    }
-                }
-                // Disable button and show loading
-                $("#finish-payment").text("İşlem Yapılıyor...").prop("disabled", true);
-
-
-                var paymentMethod = $("input[name='payment-group']:checked").attr("id");
-               
-                var data = {
-                    PaymentMethod: paymentMethod,
-					CreditCardNumber: creditCardNumber,
-					ExpiryDateMonth: expiryMonth,
-					ExpiryDateYear: expiryYear,
-					CVV: cvv,
-                };
-                console.log(JSON.stringify(data));
-                // Send AJAX request
-                $.ajax({
-                    url: "/Home/PlaceOrder",
-                    type: "POST",
-                    contentType: "application/json",
-                    dataType: "JSON",
-                    async: true,
-                    data: JSON.stringify(data),
-
-                    //headers: { "RequestVerificationToken": getAntiForgeryToken() },
-                    success: function (response) {
-                        if (response.success) {
-                            showAlert(button,response.message,"success");
-                            window.location.href = "/Home"; // Redirect to confirmation page
+                    // if fields are filled
+                    requiredFields.forEach(function (id) {
+                        let input = document.getElementById(id);
+                        if (input && input.value.trim() === "") {
+                            isValid = false;
+                            input.style.border = "1px solid red"; // Highlight empty fields
                         } else {
+                            input.style.border = ""; // Reset style
+                        }
+                    });
+                    if (!isValid) {
+                        e.preventDefault();
+                        showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
+                        return;
+                    }
+                    // Check card payment
+                    if(isCreditCardPayment)
+                    {
+                        if (!isValidCardNumber(creditCardNumber)) {
+                            e.preventDefault();
+                            showAlert(button,"Geçersiz kart numarası.","danger");
+                            return;
+                        }
+
+                        if (!isValidExpiry(expiryMonth, expiryYear)) {
+                            e.preventDefault();
+                            showAlert(button,"Geçersiz son kullanma tarihi.","danger");
+                            return;
+                        }
+
+                        if (!isValidCVV(cvv)) {
+                            e.preventDefault();
+                            showAlert(button,"Geçersiz CVV.","danger");
+                            return;
+                        }
+                    }
+                    // Disable button and show loading
+                    $("#finish-payment").text("İşlem Yapılıyor...").prop("disabled", true);
+
+
+                    var paymentMethod = $("input[name='payment-group']:checked").attr("id");
+               
+                    var data = {
+                        PaymentMethod: paymentMethod,
+					    CreditCardNumber: creditCardNumber,
+					    ExpiryDateMonth: expiryMonth,
+					    ExpiryDateYear: expiryYear,
+					    CVV: cvv,
+                    };
+                    console.log(JSON.stringify(data));
+                    // Send AJAX request
+                    $.ajax({
+                        url: "/Home/PlaceOrder",
+                        type: "POST",
+                        contentType: "application/json",
+                        dataType: "JSON",
+                        async: true,
+                        data: JSON.stringify(data),
+
+                        //headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                        success: function (response) {
+                            if (response.success) {
+                                showAlert(button,response.message,"success");
+                                window.location.href = "/Home"; // Redirect to confirmation page
+                            } else {
+                                showAlert(button, response.message, "error");
+                                $("#finish-payment").text("Ödemeyi Tamamla").prop("disabled", false);
+                            }
+                        },
+                        error: function (response) {
                             showAlert(button, response.message, "error");
                             $("#finish-payment").text("Ödemeyi Tamamla").prop("disabled", false);
                         }
-                    },
-                    error: function (response) {
-                        showAlert(button, response.message, "error");
-                        $("#finish-payment").text("Ödemeyi Tamamla").prop("disabled", false);
-                    }
+                    });
                 });
-
-            });
         });
-        function isValidCardNumber(number) {
-            let sum = 0;
-            let shouldDouble = false;
-            for (let i = number.length - 1; i >= 0; i--) {
-                let digit = parseInt(number.charAt(i));
+            function isValidCardNumber(number) {
+                let sum = 0;
+                let shouldDouble = false;
+                for (let i = number.length - 1; i >= 0; i--) {
+                    let digit = parseInt(number.charAt(i));
 
-                if (shouldDouble) {
-                    digit *= 2;
-                    if (digit > 9) digit -= 9;
+                    if (shouldDouble) {
+                        digit *= 2;
+                        if (digit > 9) digit -= 9;
+                    }
+
+                    sum += digit;
+                    shouldDouble = !shouldDouble;
                 }
-
-                sum += digit;
-                shouldDouble = !shouldDouble;
+                return sum % 10 === 0;
             }
-            return sum % 10 === 0;
-        }
-        function isValidExpiry(month, year) {
-            if (month < 1 || month > 12) return false;
+            function isValidExpiry(month, year) {
+                if (month < 1 || month > 12) return false;
 
-            const now = new Date();
-            const inputMonth = parseInt(month);
-            const inputYear = parseInt(`20${year.length === 2 ? year : year.slice(-2)}`);
+                const now = new Date();
+                const inputMonth = parseInt(month);
+                const inputYear = parseInt(`20${year.length === 2 ? year : year.slice(-2)}`);
 
-            const expiryDate = new Date(inputYear, inputMonth, 0);
-            if(expiryDate< now) return false;
-            return true;
-        }
-        function isValidCVV(cvv) {
-            return /^\d{3,4}$/.test(cvv);
-        }
-</script>
+                const expiryDate = new Date(inputYear, inputMonth, 0);
+                if(expiryDate< now) return false;
+                return true;
+            }
+            function isValidCVV(cvv) {
+                return /^\d{3,4}$/.test(cvv);
+            }
+    </script>
+}

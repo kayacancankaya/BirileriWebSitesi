@@ -21,23 +21,7 @@
             }
         }
 
-        .exp-date-row {
-            display: flex;
-            flex-wrap: wrap; /* optional: wrap on small screens */
-        }
-        .credit-card-info {
-            margin-top: 20px;
-        }
-
-        .no-arrow::-webkit-outer-spin-button,
-        .no-arrow::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .no-arrow {
-            -moz-appearance: textfield;
-        }
+        
 
     </style>
 }
@@ -214,8 +198,9 @@
                     decimal subTotal = item.UnitPrice * item.Units;
                     <li class="clearfix order-item">
                         <input type="hidden" class="product-code" value="@item.ProductCode" />
+                        <input type="hidden" class="product-name" value="@item.ProductName" />
                         <input type="hidden" class="unit-price" value="@item.UnitPrice" />
-                        Ürün Adı:<strong><span class="product-name">@item.ProductVariant.ProductName </span> / Miktar: <span class="quantity">@item.Units</span>
+                        Ürün Adı:<strong><span class="product-name">@item.ProductName </span> / Miktar: <span class="quantity">@item.Units</span>
                         </strong>
                     </li>
                     <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
@@ -388,9 +373,13 @@
                 $(".order-item").each(function () {
                     var item = {
                         ProductCode: $(this).find(".product-code").val(),
+                        ProductName: $(this).find(".product-name").val(),
+
                         UnitPrice: parseFloat($(this).find(".unit-price").val()),
                         Units: parseInt($(this).find(".quantity").text().trim())
                     };
+
+                        console.log(item.ProductName);
                     orderItems.push(item);
                 });
                 var notes = $("#other-notes").val();

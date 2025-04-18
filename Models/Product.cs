@@ -45,11 +45,11 @@ namespace BirileriWebSitesi.Models
 
         // Navigation Properties
         [ForeignKey(nameof(CatalogId))]
-        [JsonIgnore]
+        
         public virtual Catalog Catalog { get; set; } = new Catalog();
         public virtual ICollection<Discount> Discounts { get; set; } = new List<Discount>();
         public virtual ICollection<RelatedProduct> RelatedProducts { get; set; } = new List<RelatedProduct>();
-        [JsonIgnore]
+        
         public virtual ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
     }
 

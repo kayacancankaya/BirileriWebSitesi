@@ -4,12 +4,17 @@ namespace BirileriWebSitesi.Models
 {
     public class PaymentDTO
     {
-        public Order? Order { get; set; }
-        public string? PaymentType { get; set; }
+        public Address? ShipToAddress { get; set; }
+        public Address? BillingAddress { get; set; }
+        public List<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
+        public decimal TotalAmount { get; set; } = 0;
+        public int InstallmentAmount { get; set; } = 0;
+        public int PaymentType {  get; set; } = 1;
         public string? CreditCardNumber { get; set; }
         public string? ExpMonth { get; set; }
         public string? ExpYear { get; set; }
         public string? CVV { get; set; }
+
            
     }
 }

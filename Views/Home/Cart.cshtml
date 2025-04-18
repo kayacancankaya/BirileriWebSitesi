@@ -60,8 +60,7 @@
             $(document).on("click", ".bootstrap-touchspin", function () {
                 var productCode = $(this).closest("td").find(".quantity-spinner").data("productcode");
                 var quantity = $(this).closest("td").find(".quantity-spinner").val();
-                console.log(productCode)
-                console.log(quantity)
+
                 $.ajax({
                     type: "POST",
                     url: "/Home/CartItemAmountChanged",

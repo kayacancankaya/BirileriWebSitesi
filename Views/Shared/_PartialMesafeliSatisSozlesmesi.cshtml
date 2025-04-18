@@ -1,5 +1,5 @@
 ﻿
-@model BirileriWebSitesi.Models.OrderAggregate.Order
+@model BirileriWebSitesi.Models.PaymentDTO
 <h2>Mesafeli Satış Sözleşmesi</h2>
 
 <div class="section">
@@ -50,7 +50,7 @@
         @foreach (var item in Model.OrderItems)
         {
 
-            var totalPrice = @item.UnitPrice * @item.Units;
+            var totalPrice = Convert.ToDouble(@item.UnitPrice * @item.Units) * 0.8;
             var tax = Convert.ToDouble(totalPrice) * 0.2;
             <tr>
                 <th>Ürün Adı</th>

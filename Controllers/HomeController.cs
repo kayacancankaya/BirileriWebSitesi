@@ -670,9 +670,8 @@ namespace BirileriWebSitesi.Controllers
                 List<OrderItem> orderItems = new();
                 foreach (BasketItem item in basket.Items)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice);
-                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    orderItem.ProductVariant = product;
+                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
+
                     orderItems.Add(orderItem);
                 }
 
@@ -829,36 +828,24 @@ namespace BirileriWebSitesi.Controllers
                 BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
 
                 List<OrderItem> orderItems = new();
+                decimal totalAmount = 0;
                 foreach (var item in model.OrderItems)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice);
-                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    orderItem.ProductVariant = product;
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
+                    totalAmount += (item.Units * item.UnitPrice);
                     orderItems.Add(orderItem);
                 }
 
-                Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, model.UpdateUserInfo, 2);
+                PaymentDTO payment = new PaymentDTO();
+                payment.ShipToAddress = ShipToAddress;
+                payment.BillingAddress = BillingAddress;
+                payment.OrderItems = orderItems;
+                payment.TotalAmount = totalAmount;
 
-                if (order == null)
-                    return BadRequest(new { success = false, message = "Uygun Olmayan Veri." });
+                HttpContext.Session.SetString("PaymentDTO", JsonConvert.SerializeObject(payment));
 
-                //if(order.UpdateUserInfo)
-                //    await _userService.UpdateUserAsync(order, User);
-
-                var result = await _orderService.SaveOrderInfoAsync(order);
-
-                if (result == "SUCCESS")
-                {
-                    PaymentDTO payment = new PaymentDTO();
-                    payment.Order = order;
-
-                    HttpContext.Session.SetString("PaymentDTO", JsonConvert.SerializeObject(payment));
-
-                    return Json(new { success = true, redirectUrl = Url.Action("Payment") });
-
-                }
-                else
-                    return StatusCode(500, new { success = false, message = result });
+                return Json(new { success = true, redirectUrl = Url.Action("Payment") });
+   
             }
             catch (Exception ex)
             {
@@ -867,7 +854,7 @@ namespace BirileriWebSitesi.Controllers
             }
         }
         [HttpGet]
-        public IActionResult PaymentPage()
+        public IActionResult Payment()
         {
             var paymentJson = HttpContext.Session.GetString("PaymentDTO");
 
@@ -948,7 +935,7 @@ namespace BirileriWebSitesi.Controllers
                 List<OrderItem> orderItems = new();
                 foreach (var item in model.OrderItems)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice);
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
                     ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
                     orderItem.ProductVariant = product;
                     orderItems.Add(orderItem);
@@ -1116,7 +1103,6 @@ namespace BirileriWebSitesi.Controllers
                 return false;
             }
         }
-
         private string RenderPartialViewToString(string viewName, object model)
         {
             this.ViewData.Model = model;

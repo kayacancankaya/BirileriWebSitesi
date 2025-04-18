@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using static BirileriWebSitesi.Models.Enums.AprrovalStatus;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 
 namespace BirileriWebSitesi.Models.OrderAggregate
 {
@@ -62,11 +63,11 @@ namespace BirileriWebSitesi.Models.OrderAggregate
             }
             return total;
         }
-        public void AddItem(string productCode, decimal unitPrice, int quantity)
+        public void AddItem(string productCode, decimal unitPrice, int quantity, string productName)
         {
             if (!OrderItems.Any(p => p.ProductCode == productCode))
             {
-                _orderItems.Add(new OrderItem(productCode, quantity, unitPrice));
+                _orderItems.Add(new OrderItem(productCode, quantity, unitPrice, productName));
                 return;
             }
             var existingItem = OrderItems.First(p => p.ProductCode == productCode);
