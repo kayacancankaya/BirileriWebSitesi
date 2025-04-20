@@ -246,7 +246,7 @@
                         <!-- Main Menu End-->
                         <div class="outer-box clearfix">
                             <div class="advisor-box">
-                                <a href="#" class="theme-btn advisor-btn"><span>İletişim</span></a>
+                                <a class="theme-btn advisor-btn"><span>İletişim</span></a>
                             </div>
                         </div>
                     </div>
@@ -499,7 +499,25 @@
     </div>
 
     <!-- - - - - - - - - - - - - - Alerts ends - - - - - - - - - - - - - - - - -->
+    <!-- - - - - - - - - - - - - - Warning popup - - - - - - - - - - - - - - - - -->
     
+    <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="warningModalLabel">Uyarı</h5>
+                </div>
+                <div class="modal-body">
+                    @TempData["WarningMessage"]
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- - - - - - - - - - - - - - Warning popup ends - - - - - - - - - - - - - - - - -->
 
     <input type="hidden" value="0" id="currentState" />
     <input type="hidden" value="0" id="cart-counter" />
@@ -542,7 +560,16 @@
     <!--End Google Map APi-->
     <!--Color Switcher-->
     <script src="~/js/color-settings.js"></script>
-
+    <!--Show Warning If Exists-->
+    @if (TempData["WarningMessage"] != null)
+    {
+        <script>
+            $(document).ready(function () {
+                var warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+                warningModal.show();
+            });
+        </script>
+    }
     <script>
         $(document).ready(function () {
             let count = 0;

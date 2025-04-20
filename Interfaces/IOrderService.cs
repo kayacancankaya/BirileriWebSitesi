@@ -1,12 +1,16 @@
-﻿using BirileriWebSitesi.Models.OrderAggregate;
+﻿using BirileriWebSitesi.Models;
+using BirileriWebSitesi.Models.OrderAggregate;
+using Iyzipay.Model;
 
 namespace BirileriWebSitesi.Interfaces
 {
     public interface IOrderService
     {
-        Task<Dictionary<Address, Address>> GetAddress(string userId); 
-        Task<string> ProcessOrderAsync(Order order);
+        Task<Dictionary<Models.OrderAggregate.Address, Models.OrderAggregate.Address>> GetAddress(string userId); 
+        Task<string> ProcessOrderAsync(PaymentRequestModel payment);
+        Task<string> Process3DsOrderAsync(PaymentRequestModel payment);
         Task<string> SaveOrderInfoAsync(Order order);
-        Task<List<string>> GetInstallmentInfoAsync(string binNumber, decimal price);
+        Task<int> GetOrderID(Order order);
+        Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price);
     }
 }

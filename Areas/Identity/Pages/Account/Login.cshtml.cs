@@ -16,6 +16,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Antiforgery;
 using BirileriWebSitesi.Interfaces;
+using BirileriWebSitesi.Data;
+using Microsoft.EntityFrameworkCore;
+using BirileriWebSitesi.Models;
 
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 {
@@ -26,15 +29,18 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IAntiforgery _antiforgery;
         private readonly IBasketService _basketService;
+        private readonly ApplicationDbContext _dbContext;
         public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, UserManager<IdentityUser> userManager,
                              IAntiforgery antiforgery,
-                             IBasketService basketService)
+                             IBasketService basketService,
+                             ApplicationDbContext dbContext)
         {
             _signInManager = signInManager;
             _logger = logger;
             _userManager = userManager;
             _antiforgery = antiforgery;
             _basketService = basketService;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -89,7 +95,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Display(Name = "Remember me?")]
+            [Display(Name = "Beni Hatırla?")]
             public bool RememberMe { get; set; }
         }
 
@@ -136,6 +142,23 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
                         // Explicitly re-sign in with custom expiration settings
                         await _signInManager.SignInAsync(user, authProperties);
+                        // Update the last login date in the database
+                        var audit = await _dbContext.UserAudits.FirstOrDefaultAsync(a => a.UserId == user.Id);
+                        if (audit != null)
+                        {
+                            audit.LastLoginDate = DateTime.UtcNow;
+                            await _dbContext.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            _dbContext.UserAudits.Add(new UserAudit
+                            {
+                                UserId = user.Id,
+                                RegistrationDate = DateTime.UtcNow,
+                                LastLoginDate = DateTime.UtcNow
+                            });
+                            await _dbContext.SaveChangesAsync();
+                        }
                     }
                     _antiforgery.GetAndStoreTokens(HttpContext);
                     _logger.LogInformation("Kullanıcı Kayıt Oldu.");

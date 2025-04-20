@@ -5,8 +5,10 @@ using BirileriWebSitesi.Models.BasketAggregate;
 using BirileriWebSitesi.Models.OrderAggregate;
 using BirileriWebSitesi.Models.ViewModels;
 using BirileriWebSitesi.Services;
+using Iyzipay.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -24,6 +26,7 @@ namespace BirileriWebSitesi.Controllers
         private readonly IOrderService _orderService;
         private readonly IProductService _productService;
         private readonly IUserService _userService;
+        private readonly IUserAuditService _userAuditService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private string? authCookie = string.Empty;
@@ -34,6 +37,7 @@ namespace BirileriWebSitesi.Controllers
                             IProductService productService,
                             IOrderService orderService,
                             IUserService userService,
+                            IUserAuditService userAuditService,
                             UserManager<IdentityUser> userManager)
         {
             _logger = logger;
@@ -43,6 +47,7 @@ namespace BirileriWebSitesi.Controllers
             _productService = productService;
             _userService = userService;
             _userManager = userManager;
+            _userAuditService = userAuditService;
         }
 
         public IActionResult Index()
@@ -657,25 +662,28 @@ namespace BirileriWebSitesi.Controllers
                     return NotFound();
 
                 bool isInBuyRegion = false;
-                try
+                
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                if(ip == "::1")
+                    ip = "212.252.136.146";
+                isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
+                
+                if(!isInBuyRegion)
                 {
-                    isInBuyRegion = await GetRegionAsync();
-                }
-                catch
-                {
-                    isInBuyRegion = true;
+                    TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
+                    return RedirectToAction("Index", "Home");
                 }
 
                 Basket basket = await _basketService.GetBasketAsync(userID);
-                List<OrderItem> orderItems = new();
-                foreach (BasketItem item in basket.Items)
+                List<Models.OrderAggregate.OrderItem> orderItems = new();
+                foreach (Models.BasketAggregate.BasketItem item in basket.Items)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
+                    Models.OrderAggregate.OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
 
                     orderItems.Add(orderItem);
                 }
 
-                Address? shipToAddress = await _context.Addresses.OrderByDescending(i => i.Id)
+                Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.OrderByDescending(i => i.Id)
                                                                 .Where(i => i.UserId == userID &&
                                                                           i.IsBilling == false &&
                                                                           i.SetAsDefault == true)
@@ -691,7 +699,7 @@ namespace BirileriWebSitesi.Controllers
                     shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
                 }
 
-                Address? billingAddress = await _context.Addresses.OrderByDescending(i => i.Id)
+                Models.OrderAggregate.Address? billingAddress = await _context.Addresses.OrderByDescending(i => i.Id)
                                                                 .Where(i => i.UserId == userID &&
                                                                           i.IsBilling == true &&
                                                                           i.SetAsDefault == true)
@@ -718,20 +726,20 @@ namespace BirileriWebSitesi.Controllers
                 return NotFound();
             }
         }
-        public IActionResult _PartialIsCorporate(Address address)
+        public IActionResult _PartialIsCorporate(Models.OrderAggregate.Address address)
         {
             try
             {
                 if (ModelState.IsValid)
                     return PartialView(address);
 
-                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(address);
 
             }
             catch (Exception)
             {
-                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
             }
         }
@@ -751,13 +759,13 @@ namespace BirileriWebSitesi.Controllers
                     vATState = string.Empty;
 
 
-                Address address = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, vATNumber, vATState, firstName, lastName, string.Empty, string.Empty, isCorporate, corporateName);
+                Models.OrderAggregate.Address address = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, vATNumber, vATState, firstName, lastName, string.Empty, string.Empty, isCorporate, corporateName);
                 return PartialView(address);
 
             }
             catch (Exception)
             {
-                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
             }
         }
@@ -792,7 +800,7 @@ namespace BirileriWebSitesi.Controllers
                     return BadRequest(new { success = false, message = "Ürün Bilgileri Bulunamadı." });
                 if (string.IsNullOrEmpty(model.Notes))
                     model.Notes = string.Empty;
-                Address ShipToAddress = new();
+                Models.OrderAggregate.Address ShipToAddress = new();
                 ShipToAddress.UserId = buyerID;
                 ShipToAddress.FirstName = model.ShipToAddress.FirstName;
                 ShipToAddress.LastName = model.ShipToAddress.LastName;
@@ -806,8 +814,8 @@ namespace BirileriWebSitesi.Controllers
                 ShipToAddress.Country = model.ShipToAddress.Country;
                 ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
                 ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
-                ShipToAddress.IsBillingSame = model.ShipToAddress.IsBillingSame == null ? false : true;
-                Address BillingAddress = new();
+                ShipToAddress.IsBillingSame = (bool)(model.ShipToAddress.IsBillingSame == null ? false : model.ShipToAddress.IsBillingSame);
+                Models.OrderAggregate.Address BillingAddress = new();
                 BillingAddress.UserId = buyerID;
                 BillingAddress.FirstName = model.BillingAddress.FirstName;
                 BillingAddress.LastName = model.BillingAddress.LastName;
@@ -821,28 +829,38 @@ namespace BirileriWebSitesi.Controllers
                 BillingAddress.Country = model.BillingAddress.Country;
                 BillingAddress.ZipCode = model.BillingAddress.ZipCode;
                 BillingAddress.IsBilling = model.BillingAddress.IsBilling;
-                BillingAddress.IsBillingSame = model.BillingAddress.IsBillingSame == null ? false : true;
+                BillingAddress.IsBillingSame = (bool)(model.BillingAddress.IsBillingSame == null ? false : model.BillingAddress.IsBillingSame);
                 BillingAddress.CorporateName = model.BillingAddress.CorporateName;
                 BillingAddress.VATnumber = model.BillingAddress.VATnumber;
                 BillingAddress.VATstate = model.BillingAddress.VATstate;
-                BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
+                BillingAddress.IsCorporate = (bool)(model.BillingAddress.IsCorporate == null ? false : model.BillingAddress.IsCorporate);
 
-                List<OrderItem> orderItems = new();
+                List<Models.OrderAggregate.OrderItem> orderItems = new();
                 decimal totalAmount = 0;
                 foreach (var item in model.OrderItems)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
+                    Models.OrderAggregate.OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
                     totalAmount += (item.Units * item.UnitPrice);
                     orderItems.Add(orderItem);
                 }
 
-                PaymentDTO payment = new PaymentDTO();
+                //save order info
+                Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, true, 1);
+                await _orderService.SaveOrderInfoAsync(order);
+                int orderID = await _orderService.GetOrderID(order);
+                if(orderID == 0)
+                    return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
+               
+                //prepare payment view model
+                PaymentViewModel payment = new PaymentViewModel();
                 payment.ShipToAddress = ShipToAddress;
                 payment.BillingAddress = BillingAddress;
                 payment.OrderItems = orderItems;
                 payment.TotalAmount = totalAmount;
+                payment.OrderId = orderID;
 
-                HttpContext.Session.SetString("PaymentDTO", JsonConvert.SerializeObject(payment));
+
+                HttpContext.Session.SetString("PaymentViewModel", JsonConvert.SerializeObject(payment));
 
                 return Json(new { success = true, redirectUrl = Url.Action("Payment") });
    
@@ -850,24 +868,25 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydeilirken Hata ile Karşılaşıldı. " });
+                return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
             }
         }
         [HttpGet]
         public IActionResult Payment()
         {
-            var paymentJson = HttpContext.Session.GetString("PaymentDTO");
+            var paymentJson = HttpContext.Session.GetString("PaymentViewModel");
 
             if (string.IsNullOrEmpty(paymentJson))
                 return RedirectToAction("Not Found"); // Or show a nice message
 
-            var paymentModel = JsonConvert.DeserializeObject<PaymentDTO>(paymentJson);
+            var paymentModel = JsonConvert.DeserializeObject<PaymentViewModel>(paymentJson);
 
             return View("Payment", paymentModel);
         }
+        [ValidateAntiForgeryToken]
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> PlaceOrder([FromBody] OrderRequestModel model)
+        public async Task<IActionResult> PlaceOrder([FromBody] PaymentRequestModel model)
         {
             try
             {
@@ -878,98 +897,78 @@ namespace BirileriWebSitesi.Controllers
                         .Select(x => new { x.Key, x.Value.Errors })
                         .ToList();
 
-                    return BadRequest(new { success = false, message = "Model binding failed", errors });
+                    return BadRequest(new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı.", errors });
                 }
+
                 string? buyerID = _userManager.GetUserId(User);
 
-                if (string.IsNullOrEmpty(buyerID))
-                    return BadRequest(new { success = false, message = "Kullanýcý Bulunamadý." });
+            
+                UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
+                if(userAudit == null)
+                    return BadRequest(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
+                if (string.IsNullOrEmpty(userAudit.Ip))
+                    return BadRequest(new { success = false, message = "IP Bilgileri Bulunamadı." });
+                if (string.IsNullOrEmpty(userAudit.City))
+                    return BadRequest(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
+                if (string.IsNullOrEmpty(userAudit.Country))
+                    return BadRequest(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
+                if (userAudit.RegistrationDate == null)
+                    return BadRequest(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
+                if (userAudit.LastLoginDate == null)
+                    return BadRequest(new { success = false, message = "Son Giriş Tarihi Bilgileri Bulunamadı." });
+                DateTime lastLoginDate;
+                DateTime registrationDate;
+                if (!DateTime.TryParse(userAudit.LastLoginDate.ToString(), out lastLoginDate))
+                    return BadRequest(new { success = false, message = "Son Giriş Tarihi Bilgileri Bulunamadı." });
+                if(!DateTime.TryParse(userAudit.RegistrationDate.ToString(), out registrationDate))
+                    return BadRequest(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
 
-                if (model.ShipToAddress == null)
-                    return BadRequest(new { success = false, message = "Gönderi Bilgilier Bulunamadý." });
-                if (model.BillingAddress == null)
-                    return BadRequest(new { success = false, message = "Fatura Bilgileri Bulunamadý." });
-                if (model.OrderItems == null)
-                    return BadRequest(new { success = false, message = "Ürün Bilgileri Bulunamadý." });
-                if (model.OrderItems.Count() <= 0)
-                    return BadRequest(new { success = false, message = "Ürün Bilgileri Bulunamadý." });
-                if (string.IsNullOrEmpty(model.PaymentMethod))
-                    return BadRequest(new { success = false, message = "Ödeme Bilgileri Bulunamadý." });
-                if (string.IsNullOrEmpty(model.Notes))
-                    model.Notes = string.Empty;
-                Address ShipToAddress = new();
-                ShipToAddress.UserId = buyerID;
-                ShipToAddress.FirstName = model.ShipToAddress.FirstName;
-                ShipToAddress.LastName = model.ShipToAddress.LastName;
-                ShipToAddress.CorporateName = model.ShipToAddress.CorporateName;
-                ShipToAddress.EmailAddress = model.ShipToAddress.EmailAddress;
-                ShipToAddress.Phone = model.ShipToAddress.Phone;
-                ShipToAddress.AddressDetailed = model.ShipToAddress.AddressDetailed;
-                ShipToAddress.Street = model.ShipToAddress.Street;
-                ShipToAddress.City = model.ShipToAddress.City;
-                ShipToAddress.State = model.ShipToAddress.State;
-                ShipToAddress.Country = model.ShipToAddress.Country;
-                ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
-                ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
-                ShipToAddress.IsBillingSame = model.ShipToAddress.IsBillingSame == null ? false : true;
-                Address BillingAddress = new();
-                BillingAddress.UserId = buyerID;
-                BillingAddress.FirstName = model.BillingAddress.FirstName;
-                BillingAddress.LastName = model.BillingAddress.LastName;
-                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
-                BillingAddress.EmailAddress = model.BillingAddress.EmailAddress;
-                BillingAddress.Phone = model.BillingAddress.Phone;
-                BillingAddress.AddressDetailed = model.BillingAddress.AddressDetailed;
-                BillingAddress.Street = model.BillingAddress.Street;
-                BillingAddress.City = model.BillingAddress.City;
-                BillingAddress.State = model.BillingAddress.State;
-                BillingAddress.Country = model.BillingAddress.Country;
-                BillingAddress.ZipCode = model.BillingAddress.ZipCode;
-                BillingAddress.IsBilling = model.BillingAddress.IsBilling;
-                BillingAddress.IsBillingSame = model.BillingAddress.IsBillingSame == null ? false : true;
-                BillingAddress.CorporateName = model.BillingAddress.CorporateName;
-                BillingAddress.VATnumber = model.BillingAddress.VATnumber;
-                BillingAddress.VATstate = model.BillingAddress.VATstate;
-                BillingAddress.IsCorporate = model.BillingAddress.IsCorporate == null ? false : true;
-
-                List<OrderItem> orderItems = new();
-                foreach (var item in model.OrderItems)
+                model.RegistrationDate = lastLoginDate;
+                model.LastLoginDate = registrationDate;
+                model.Ip = userAudit.Ip;
+                model.City = userAudit.City;
+                model.Country = userAudit.Country;
+                string resultString = string.Empty;
+                if(model.PaymentType == 1)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
-                    ProductVariant product = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    orderItem.ProductVariant = product;
-                    orderItems.Add(orderItem);
+                    if (!model.Force3Ds)
+                    {
+                        resultString = await _orderService.ProcessOrderAsync(model);
 
-                }
-                int paymentType = 0;
-                if (!Int32.TryParse(model.PaymentMethod, out paymentType))
-                    return StatusCode(500, new { success = false, message = "Ödeme Yöntemi Bulunamadı." });
-                
+                        if (resultString == "success")
+                        {
+                            await _basketService.DeleteBasketAsync(buyerID);
+                            return Ok(new { success = true, message = "Sipariş Başarıyla İşleme Alındı." });
+                        }
+                        else
+                        {
+                            return StatusCode(500, new { success = false, message = resultString });
+                        }
+                    }
+                    else
+                    {
+                        resultString = await _orderService.Process3DsOrderAsync(model);
 
-                Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, model.UpdateUserInfo, paymentType);
-
-                if (order == null)
-                    return BadRequest(new { success = false, message = "Uygun Olmayan Veri." });
-
-                //if(order.UpdateUserInfo)
-                //    await _userService.UpdateUserAsync(order, User);
-
-                var result = await _orderService.ProcessOrderAsync(order);
-
-                if (result == "success")
-                {
-                    await _basketService.DeleteBasketAsync(buyerID);
-                    return Ok(new { success = true, message = "Sipariþ Baþarýyla Ýþleme Alýndý." });
+                        if (resultString != "ERROR")
+                        {
+                            await _basketService.DeleteBasketAsync(buyerID);
+                            return Ok(new { success = true, message = resultString });
+                        }
+                        else
+                        {
+                            return StatusCode(500, new { success = false, message = "Sipariş Kaydedilirken Hata İle Karşılaşıldı.Lütfen Tekrar Deneyiniz." });
+                        }
+                    }
                 }
                 else
                 {
-                    return StatusCode(500, new { success = false, message = result });
+                    return Ok(new { success = true, message = "Banka Transferi" });
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Hata ile Karþýlaþýldý. Lütfen Tekrar Deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
             }
         }
         [Authorize]
@@ -981,14 +980,16 @@ namespace BirileriWebSitesi.Controllers
                 if (string.IsNullOrEmpty(model.BinNumber))
                     return BadRequest(new { success = false, message = "Kart Numarasý Boþ Olamaz." });
 
-                List<string> installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
+                    InstallmentDetail installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
+                if(installmentInfo == null)
+                    return StatusCode(500, new { success = false, message = "Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
 
                 return Ok(new { installments = installmentInfo });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Hata ile Karþýlaþýldý. Lütfen Tekrar Deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
             }
         }
 
@@ -1376,32 +1377,7 @@ namespace BirileriWebSitesi.Controllers
                 return result;
             }
         }
-        public async Task<bool> GetRegionAsync()
-        {
-            try
-            {
-
-                var ipAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault() ?? HttpContext.Connection.RemoteIpAddress?.ToString();
-
-                var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"https://ipinfo.io/{ipAddress}/json");
-                dynamic locationInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(response);
-
-                if(locationInfo == null ) 
-                    return false;
-
-                if (locationInfo.country == "TR")
-                    return true;
-                else
-                    return false;
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-
-        }
+        
         public string GetFirstName(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName))

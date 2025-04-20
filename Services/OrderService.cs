@@ -1,5 +1,6 @@
 ﻿using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Interfaces;
+using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.OrderAggregate;
 using Iyzipay;
 using Iyzipay.Model;
@@ -7,6 +8,8 @@ using Iyzipay.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using static BirileriWebSitesi.Models.Enums.AprrovalStatus;
 using Address = BirileriWebSitesi.Models.OrderAggregate.Address;
@@ -18,12 +21,14 @@ namespace BirileriWebSitesi.Services
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> _logger;
+        private readonly IyzipayOptions _iyzipayOptions;
 
         public OrderService (ApplicationDbContext context, ILogger<OrderService> logger,
-                                UserManager<IdentityUser> user)
+                                UserManager<IdentityUser> user, IOptions<IyzipayOptions> iyzipayOptions)
         {
             _context = context;
             _logger = logger;
+            _iyzipayOptions = iyzipayOptions.Value;
         }
 
         public Task<Dictionary<Address, Address>> GetAddress(string userId)
@@ -84,12 +89,37 @@ namespace BirileriWebSitesi.Services
                 if (string.IsNullOrEmpty(order.BillingAddress.Street))
                     return "Fatura Adresi Mahalle Bilgisi Bulunamadı.";
 
-                if(order.UpdateUserInfo)
+                if (order.UpdateUserInfo)
                 {
                     order.ShipToAddress.SetAsDefault = true;
                     order.BillingAddress.SetAsDefault = true;
                 }
-
+                    //update address
+                    //check if addresses exists
+                bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);
+                if(result)
+                {
+                    _context.Addresses.Update(order.ShipToAddress);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    await _context.Addresses.AddAsync(order.ShipToAddress);
+                    await _context.SaveChangesAsync();
+                }
+                result = await CheckIfAddressExistsAsync(order.BillingAddress);
+                if(result)
+                {
+                    _context.Addresses.Update(order.BillingAddress);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    await _context.Addresses.AddAsync(order.BillingAddress);
+                    await _context.SaveChangesAsync();
+                }
+                        
+                
                 foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
                 {
                     item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
@@ -98,11 +128,11 @@ namespace BirileriWebSitesi.Services
                                                                             .FirstOrDefaultAsync();
                 }
                 
-                    order.Status = (int)ApprovalStatus.Pending;
+               order.Status = (int)ApprovalStatus.Pending;
 
                 _context.Add(order);
 
-               //await _context.SaveChangesAsync();
+               await _context.SaveChangesAsync();
 
                 return "SUCCESS";
             }
@@ -112,30 +142,323 @@ namespace BirileriWebSitesi.Services
                 return "Sipariş Kaydedilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
             }
         }
-        public async Task<string> ProcessOrderAsync(Order order)
+        public async Task<string> Process3DsOrderAsync(PaymentRequestModel model)
+        {
+            try
+            {
+
+                Order order = await GetOrderAsync(model.OrderId);
+                string checkString = await CheckOrderAsync(order, model);
+               
+                if(checkString != "success")
+                    return checkString;
+                Iyzipay.Options options = await GetIyzipayOptionsAsync();
+                CreatePaymentRequest request = await IyziPayCreateReqAsync(order, model, options);
+                string htmlResult = await IyziPay3ds(request,options);
+
+                    if (htmlResult != "ERROR")
+                        order.Status = (int)ApprovalStatus.Approved;
+                    else
+                        order.Status = (int)ApprovalStatus.Failed;
+
+
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+
+
+                return order.Status.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return ApprovalStatus.Failed.ToString();
+            }
+        }
+        public async Task<string> ProcessOrderAsync(PaymentRequestModel model)
+        {
+            try
+            {
+                Order order = await GetOrderAsync(model.OrderId);
+                string checkString = await CheckOrderAsync(order, model);
+
+                if (checkString != "success")
+                    return checkString;
+                Iyzipay.Options options = await GetIyzipayOptionsAsync();
+                CreatePaymentRequest request = await IyziPayCreateReqAsync(order, model, options);
+                Payment payment = await IyziPay(request, options);
+
+               if (payment.Status == "success")
+                   order.Status = (int)ApprovalStatus.Approved;
+               else
+                   order.Status = (int)ApprovalStatus.Failed;
+
+               if (!string.IsNullOrEmpty(payment.ErrorMessage))
+                   return payment.ErrorMessage.ToString();
+
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+
+                return order.Status.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return "Sipariş Kaydedilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
+            }
+        }
+        public async Task<int> GetOrderID(Order order)
+        {
+            try
+            {
+                var orderId = await _context.Orders.Where(o => o.BuyerId == order.BuyerId && o.OrderDate == order.OrderDate).Select(o => o.Id).FirstOrDefaultAsync();
+                return orderId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return 0;
+            }
+        }
+        private async Task<Iyzipay.Options> GetIyzipayOptionsAsync()
+        {
+            try
+            {
+                Iyzipay.Options options = new Iyzipay.Options();
+                options.ApiKey = _iyzipayOptions.ApiKey;
+                options.SecretKey = _iyzipayOptions.SecretKey;
+                options.BaseUrl = _iyzipayOptions.BaseUrl;
+                return options;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+        private async Task<CreatePaymentRequest> IyziPayCreateReqAsync(Order order, PaymentRequestModel model, Iyzipay.Options options)
+        {
+            try
+            {
+
+                CreatePaymentRequest request = new CreatePaymentRequest();
+                request.Locale = Locale.TR.ToString();
+                request.ConversationId = Guid.NewGuid().ToString();
+                request.Price = order.TotalAmount.ToString();
+                request.PaidPrice = order.TotalAmount.ToString();
+                request.Currency = Currency.TRY.ToString();
+                request.Installment = model.InstallmentAmount;
+                request.BasketId = model.OrderId.ToString();
+                request.PaymentChannel = PaymentChannel.WEB.ToString();
+                request.PaymentGroup = PaymentGroup.PRODUCT.ToString();
+
+                PaymentCard paymentCard = new PaymentCard();
+                paymentCard.CardHolderName = model.CardHolderName;
+                paymentCard.CardNumber = model.CreditCardNumber;
+                //5890040000000016
+                paymentCard.ExpireMonth = model.ExpMonth;
+                paymentCard.ExpireYear = model.ExpYear;
+                paymentCard.Cvc = model.CVV;
+                paymentCard.RegisterCard = 0;
+                request.PaymentCard = paymentCard;
+
+                Buyer buyer = new Buyer();
+                buyer.Id = order.BuyerId;
+                if (order.BillingAddress.IsCorporate)
+                {
+                    buyer.Name = order.BillingAddress.CorporateName;
+                    buyer.Surname = order.BillingAddress.VATstate;
+                }
+                else
+                {
+                    buyer.Name = order.BillingAddress.FirstName;
+                    buyer.Surname = order.BillingAddress.LastName;
+                }
+                buyer.GsmNumber = order.BillingAddress.Phone;
+                buyer.Email = order.BillingAddress.EmailAddress;
+                buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString();
+                buyer.LastLoginDate = model.LastLoginDate.ToString();
+                buyer.RegistrationDate = model.RegistrationDate.ToString();
+                buyer.RegistrationAddress = order.BillingAddress.AddressDetailed;
+                buyer.Ip = model.Ip;
+                buyer.City = model.City;
+                buyer.Country = model.Country;
+                buyer.ZipCode = order.BillingAddress.ZipCode;
+                request.Buyer = buyer;
+
+                Iyzipay.Model.Address shippingAddress = new Iyzipay.Model.Address();
+                shippingAddress.ContactName = string.Format("{0} {1}", order.ShipToAddress.FirstName, order.ShipToAddress.LastName);
+                shippingAddress.City = order.ShipToAddress.City;
+                shippingAddress.Country = order.ShipToAddress.Country;
+                shippingAddress.Description = order.ShipToAddress.AddressDetailed;
+                shippingAddress.ZipCode = order.ShipToAddress.ZipCode;
+                request.ShippingAddress = shippingAddress;
+
+                Iyzipay.Model.Address billingAddress = new Iyzipay.Model.Address();
+                if (order.BillingAddress.IsCorporate)
+                    billingAddress.ContactName = order.BillingAddress.CorporateName;
+                else
+                    billingAddress.ContactName = order.BillingAddress.FirstName + " " + order.BillingAddress.LastName;
+
+                billingAddress.City = order.BillingAddress.City;
+                billingAddress.Country = order.BillingAddress.Country;
+                billingAddress.Description = order.BillingAddress.AddressDetailed;
+                billingAddress.ZipCode = order.BillingAddress.ZipCode;
+                request.BillingAddress = billingAddress;
+
+                List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
+                foreach (var item in order.OrderItems)
+                {
+                    Iyzipay.Model.BasketItem basketItem = new BasketItem();
+                    basketItem.Id = item.ProductCode;
+                    basketItem.Name = item.ProductVariant.ProductName;
+                    basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
+                    basketItem.Category2 = string.Empty;
+                    basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
+                    basketItem.Price = (item.UnitPrice * item.Units).ToString();
+                    basketItems.Add(basketItem);
+                }
+
+                request.BasketItems = basketItems;
+                return request;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+        private async Task<Payment> IyziPay(CreatePaymentRequest request,Iyzipay.Options options)
+        {
+            try
+            {
+                Payment payment = await Payment.Create(request, options);
+                
+                return payment;
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+        private async Task<string> IyziPay3ds(CreatePaymentRequest request, Iyzipay.Options options)
+        {
+            try
+            {
+                request.CallbackUrl = "https://localhost:/Home/Process3DsOrder";
+                ThreedsInitialize threedsInit = await ThreedsInitialize.Create(request, options);
+                if (threedsInit.Status == "success")
+                {
+                    // Return this HTML to the frontend and show it inside a <div> or <iframe>
+                    return threedsInit.HtmlContent;
+                }
+                else
+                {
+                    return "ERROR";
+                }
+                
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError(ex, ex.Message.ToString());
+                return "ERROR";
+            }
+        }
+
+        public async Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price)
+        {
+            Iyzipay.Options options = new Iyzipay.Options();
+            options.ApiKey = "sandbox-bIx3IhgRc3bjqFAisIx1x56q6M9cf3X8";
+            options.SecretKey = "sandbox-TrRZHZlnbS3Z8Mc8Q28K6ito1Cdk1vLP";
+            options.BaseUrl = "https://sandbox-api.iyzipay.com";
+
+            var request = new RetrieveInstallmentInfoRequest
+            {
+                Locale = Locale.TR.ToString(),
+                ConversationId = Guid.NewGuid().ToString(),
+                BinNumber = binNumber,
+                Price = price.ToString("F2", CultureInfo.InvariantCulture)
+            };
+
+            var result = await InstallmentInfo.Retrieve(request, options);
+
+            var installmentDetails = result.InstallmentDetails.FirstOrDefault();
+
+
+            return installmentDetails;
+        }
+        private async Task<Order> GetOrderAsync(int orderId)
+        {
+            try
+            {
+                Order order = await _context.Orders
+                    .Include(o => o.ShipToAddress)
+                    .Include(o => o.BillingAddress)
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                    .ThenInclude(pv => pv.Product)
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+                return order;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+
+        private async Task<bool> CheckIfAddressExistsAsync(Address address)
+        {
+            try
+            {
+               bool result = await _context.Addresses.Where(a=>a.UserId == address.UserId &&
+                                            a.FirstName == address.FirstName &&
+                                            a.LastName == address.LastName &&
+                                            a.EmailAddress == address.EmailAddress &&
+                                            a.Phone == address.Phone &&
+                                            a.City == address.City &&
+                                            a.Street == address.Street &&
+                                            a.ZipCode == address.ZipCode &&
+                                            a.Country == address.Country &&
+                                            a.State == address.State &&
+                                            a.VATnumber == address.VATnumber &&
+                                            a.VATstate == address.VATstate &&
+                                            a.CorporateName == address.CorporateName)
+                                            .AnyAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return false;
+            }
+        }
+        private async Task<string>CheckOrderAsync(Order order, PaymentRequestModel model)
         {
             try
             {
                 if (order.ShipToAddress == null)
                     return "Gönderilecek Adres Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.FirstName))
+                if (string.IsNullOrEmpty(order.ShipToAddress.FirstName))
                     return "Gönderilecek Adres İsim Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.LastName))
+                if (string.IsNullOrEmpty(order.ShipToAddress.LastName))
                     return "Gönderilecek Adres Soy İsim Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.EmailAddress))
+                if (string.IsNullOrEmpty(order.ShipToAddress.EmailAddress))
                     return "Gönderilecek Adres Email Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.AddressDetailed))
+                if (string.IsNullOrEmpty(order.ShipToAddress.AddressDetailed))
                     return "Gönderilecek Adres Bilgisi Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.City))
+                if (string.IsNullOrEmpty(order.ShipToAddress.City))
                     return "Gönderilecek Adres Şehir Bilgisi Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.State))
+                if (string.IsNullOrEmpty(order.ShipToAddress.State))
                     return "Gönderilecek Adres İlçe Bilgisi Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.Street))
+                if (string.IsNullOrEmpty(order.ShipToAddress.Street))
                     return "Gönderilecek Adres Mahalle Bilgisi Bulunamadı.";
 
                 if (order.BillingAddress == null)
                     return "Fatura Adresi Bulunamadı.";
-                if(!order.BillingAddress.IsCorporate)
+                if (!order.BillingAddress.IsCorporate)
                 {
                     if (string.IsNullOrEmpty(order.BillingAddress.FirstName))
                         return "Fatura Adresi İsim Bulunamadı.";
@@ -166,171 +489,25 @@ namespace BirileriWebSitesi.Services
                 if (string.IsNullOrEmpty(order.BillingAddress.Street))
                     return "Fatura Adresi Mahalle Bilgisi Bulunamadı.";
 
-                if(order.UpdateUserInfo)
-                {
-                    order.ShipToAddress.SetAsDefault = true;
-                    order.BillingAddress.SetAsDefault = true;
-                }
+                if (string.IsNullOrEmpty(model.CardHolderName))
+                    return "Kredi Kartı Üzerindeki İsim Bulunamadı.";
+                if (string.IsNullOrEmpty(model.CreditCardNumber))
+                    return "Kredi Kartı Numarası Bulunamadı.";
+                if (string.IsNullOrEmpty(model.ExpMonth))
+                    return "Kredi Kartı Son Kullanma Tarihi Bulunamadı.";
+                if (string.IsNullOrEmpty(model.ExpYear))
+                    return "Kredi Kartı Son Kullanma Tarihi Bulunamadı.";
+                if (string.IsNullOrEmpty(model.CVV))
+                    return "Kredi Kartı CVV Bulunamadı.";
 
-                foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
-                {
-                    item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
-                    item.ProductVariant.Product = await _context.Products.Where(p => p.ProductCode == item.ProductVariant.BaseProduct)
-                                                                             .Include(c=>c.Catalog)
-                                                                            .FirstOrDefaultAsync();
-                }
-                if (order.PaymentType == 2)
-                {
-                    Payment payment = await IyziPay(order);
+                return "success";
 
-                    if (payment.Status == "success")
-                        order.Status = (int)ApprovalStatus.Approved;
-                    else
-                        order.Status = (int)ApprovalStatus.Failed;
-
-                    if (!string.IsNullOrEmpty(payment.ErrorMessage))
-                        return payment.ErrorMessage.ToString();
-                }
-                else
-                    order.Status = (int)ApprovalStatus.Pending;
-
-                _context.Add(order);
-
-                await _context.SaveChangesAsync();
-
-                return order.Status.ToString();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return "Sipariş Kaydedilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
+                return "Sipariş Kontrol Edilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
             }
-        }
-        private async Task<Payment> IyziPay(Order order)
-        {
-            try
-            {
-                Options options = new Options();
-                options.ApiKey = "sandbox-bIx3IhgRc3bjqFAisIx1x56q6M9cf3X8";
-                options.SecretKey = "sandbox-TrRZHZlnbS3Z8Mc8Q28K6ito1Cdk1vLP";
-                options.BaseUrl = "https://sandbox-api.iyzipay.com";
-
-                CreatePaymentRequest request = new CreatePaymentRequest();
-                request.Locale = Locale.TR.ToString();
-                request.ConversationId = "123456789";
-                request.Price = order.TotalAmount.ToString();
-                request.PaidPrice = order.TotalAmount.ToString(); 
-                request.Currency = Currency.TRY.ToString();
-                request.Installment = 1;
-                request.BasketId = order.Id.ToString();
-                request.PaymentChannel = PaymentChannel.WEB.ToString();
-                request.PaymentGroup = PaymentGroup.PRODUCT.ToString();
-
-                PaymentCard paymentCard = new PaymentCard();
-                paymentCard.CardHolderName = "John Doe";
-                paymentCard.CardNumber = "5528790000000008";
-                //5890040000000016
-                paymentCard.ExpireMonth = "12";
-                paymentCard.ExpireYear = "2030";
-                paymentCard.Cvc = "123";
-                paymentCard.RegisterCard = 0;
-                request.PaymentCard = paymentCard;
-
-                Buyer buyer = new Buyer();
-                buyer.Id = order.BuyerId;
-                if (order.BillingAddress.IsCorporate)
-                {
-                    buyer.Name = order.BillingAddress.CorporateName;
-                    buyer.Surname = order.BillingAddress.VATstate;
-                }
-                else
-                {
-                    buyer.Name = order.BillingAddress.FirstName;
-                    buyer.Surname = order.BillingAddress.LastName;
-                }
-                buyer.GsmNumber = order.BillingAddress.Phone;
-                buyer.Email = order.BillingAddress.EmailAddress;
-                buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString();
-                buyer.LastLoginDate = "2015-10-05 12:43:35";
-                buyer.RegistrationDate = "2013-04-21 15:12:09";
-                buyer.RegistrationAddress = "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1";
-                buyer.Ip = "85.34.78.112";
-                buyer.City = "Istanbul";
-                buyer.Country = "Turkey";
-                buyer.ZipCode = "34732";
-                request.Buyer = buyer;
-
-                Iyzipay.Model.Address shippingAddress = new Iyzipay.Model.Address();
-                shippingAddress.ContactName = string.Format("{0} {1}", order.ShipToAddress.FirstName,order.ShipToAddress.LastName);
-                shippingAddress.City = order.ShipToAddress.City;
-                shippingAddress.Country = order.ShipToAddress.Country;
-                shippingAddress.Description = order.ShipToAddress.AddressDetailed;
-                shippingAddress.ZipCode = order.ShipToAddress.ZipCode;
-                request.ShippingAddress = shippingAddress;
-
-                Iyzipay.Model.Address billingAddress = new Iyzipay.Model.Address();
-                if(order.BillingAddress.IsCorporate)
-                    billingAddress.ContactName = order.BillingAddress.CorporateName;
-                else
-                    billingAddress.ContactName = order.BillingAddress.FirstName + " " + order.BillingAddress.LastName;
-
-                billingAddress.City = order.BillingAddress.City;
-                billingAddress.Country = order.BillingAddress.Country;
-                billingAddress.Description = order.BillingAddress.AddressDetailed;
-                billingAddress.ZipCode = order.BillingAddress.ZipCode;
-                request.BillingAddress = billingAddress;
-
-                List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
-                foreach(var item in order.OrderItems)
-                {
-                    Iyzipay.Model.BasketItem basketItem = new BasketItem();
-                    basketItem.Id = item.ProductCode;
-                    basketItem.Name = item.ProductVariant.ProductName;
-                    basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
-                    basketItem.Category2 = string.Empty;
-                    basketItem.ItemType = BasketItemType.PHYSICAL.ToString(); 
-                    basketItem.Price = (item.UnitPrice * item.Units).ToString();
-                    basketItems.Add(basketItem);
-                }
-
-                request.BasketItems = basketItems;
-
-                Payment payment = await Payment.Create(request, options);
-                return payment;
-            }
-            catch (Exception ex)
-            {
-
-                _logger.LogError(ex, ex.Message.ToString());
-                return null;
-            }
-        }
-
-        public async Task<List<string>> GetInstallmentInfoAsync(string binNumber, decimal price)
-        {
-            Options options = new Options();
-            options.ApiKey = "sandbox-bIx3IhgRc3bjqFAisIx1x56q6M9cf3X8";
-            options.SecretKey = "sandbox-TrRZHZlnbS3Z8Mc8Q28K6ito1Cdk1vLP";
-            options.BaseUrl = "https://sandbox-api.iyzipay.com";
-
-            var request = new RetrieveInstallmentInfoRequest
-            {
-                Locale = Locale.TR.ToString(),
-                ConversationId = Guid.NewGuid().ToString(),
-                BinNumber = binNumber,
-                Price = price.ToString("F2", CultureInfo.InvariantCulture)
-            };
-
-            var result = await InstallmentInfo.Retrieve(request, options);
-
-            var installmentDetails = result.InstallmentDetails.FirstOrDefault();
-            var validInstallments = installmentDetails?.InstallmentPrices
-                .Select(ip => new { ip.InstallmentNumber })
-                .ToList();
-            if (validInstallments == null || !validInstallments.Any())
-                return new List<string>();
-
-            return validInstallments.Select(i => i.InstallmentNumber.ToString()).ToList();
         }
     }
 }

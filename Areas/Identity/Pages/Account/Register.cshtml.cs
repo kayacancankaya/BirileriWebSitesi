@@ -5,13 +5,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
+using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Interfaces;
+using BirileriWebSitesi.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account
@@ -25,6 +28,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly Microsoft.AspNetCore.Identity.UI.Services.IEmailSender _emailSender;
         private readonly IBasketService _basketService;
+        private readonly ApplicationDbContext _dbContext;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -32,7 +36,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             Microsoft.AspNetCore.Identity.UI.Services.IEmailSender emailSender,
-            IBasketService basketService)
+            IBasketService basketService,
+            ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -41,6 +46,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _basketService = basketService;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -123,6 +129,15 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    // Add the user login registration info to the database
+                    _dbContext.UserAudits.Add(new UserAudit
+                    {
+                        UserId = user.Id,
+                        RegistrationDate = DateTime.UtcNow,
+                        LastLoginDate = DateTime.UtcNow
+                    });
+                    await _dbContext.SaveChangesAsync();
+
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,

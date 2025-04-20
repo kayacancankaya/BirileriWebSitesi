@@ -1,44 +1,6 @@
-﻿@* <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 40px;
-        background-color: #f9f9f9;
-        color: #333;
-        line-height: 1.7;
-    }
+﻿
 
-    h2 {
-        color: #2a7dad;
-        margin-top: 40px;
-    }
-
-    h3 {
-        margin-top: 30px;
-        color: #444;
-    }
-
-    p, ul, ol, table {
-        margin-bottom: 15px;
-    }
-
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        background-color: #fff;
-    }
-
-    th, td {
-        border: 1px solid #ccc;
-        padding: 10px;
-        text-align: left;
-    }
-
-    .section {
-        margin-top: 40px;
-    }
-</style> *@
-
-@model BirileriWebSitesi.Models.PaymentDTO
+@model BirileriWebSitesi.Models.PaymentViewModel
 <h2>ÖN BİLGİLENDİRME FORMU</h2>
 
 <div class="section">
@@ -81,42 +43,47 @@
 
 <div class="section">
     <h3>4. SÖZLEŞME KONUSU ÜRÜN/ÜRÜNLER</h3>
-    <table>
-        @foreach (var item in Model.OrderItems)
-        {
-
-            var totalPrice = Convert.ToDouble(@item.UnitPrice * @item.Units) * 0.8;
-            var tax = Convert.ToDouble(totalPrice) * 0.2;
+    <table border="1" cellspacing="0" cellpadding="6" style="width:100%; border-collapse: collapse;">
+       <thead >
             <tr>
                 <th>Ürün Adı</th>
                 <th>Adet</th>
                 <th>Taksit</th>
                 <th>Toplam Tutar</th>
             </tr>
-            <tr>
-                <td>@item.ProductVariant.ProductName</td>
-                <td>@item.Units</td>
-                <td>@Model.InstallmentAmount</td>
-                <td>@totalPrice.ToString("C2")</td>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderItems)
+            {
+
+                var totalPrice = Convert.ToDouble(@item.UnitPrice * @item.Units) * 0.8;
+                var tax = Convert.ToDouble(totalPrice) * 0.2;
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.Units</td>
+                    <td>@Model.InstallmentAmount</td>
+                    <td>@totalPrice.ToString("C2")</td>
+                </tr>
+                <tr>
+                    <td colspan="3">KDV</td>
+                    <td>@tax.ToString("C2")</td>
+                </tr>
+                <tr>
+                    <td colspan="3">Kargo Ücreti</td>
+                    <td>0</td>
+                </tr>
+            }
+		    <tr>
+                <td colspan="3"><strong>Genel Toplam</strong></td>
+                <td><strong>@Model.TotalAmount.ToString("C2") TL</strong></td>
             </tr>
-            <tr>
-                <td colspan="3">KDV</td>
-                <td>@tax.ToString("C2")</td>
-            </tr>
-            <tr>
-                <td colspan="3">Kargo Ücreti</td>
-                <td>0</td>
-            </tr>
-        }
-		<tr>
-            <td colspan="3"><strong>Genel Toplam</strong></td>
-            <td><strong>@Model.TotalAmount.ToString("C2") TL</strong></td>
-        </tr>
+        </tbody>
     </table>
     <p>
         <strong>Kargo Tutarı:</strong> 0,00 TL<br>
-        <strong>Ödeme Şekli:</strong> @Model.PaymentType == 1 ? "Banka Transferi" : "Kredi Kartı"<br>
-        <strong>Ödenecek Toplam Tutar:</strong> @Model.TotalAmount<br>
+        <strong>Ödeme Şekli:</strong> <span id="info-form-payment-type">@(Model.PaymentType == 1 ? "Kredi Kartı" : "Banka Transferi")</span><br />
+        <strong>Taksit Adedi: </strong> <span id="info-form-installment-amount">@Model.InstallmentAmount</span><br />
+        <strong>Ödenecek Toplam Tutar:</strong> <span id="info-form-total-amount"> @Model.TotalAmount.ToString("C2")</span><br />
         <strong>Teslimat Adresi:</strong> @Model.ShipToAddress.AddressDetailed<br>
         <strong>Fatura Adresi:</strong> @Model.BillingAddress.AddressDetailed<br>
         <strong>Sipariş Tarihi:</strong> @DateTime.Now.ToString("dd.MM.yyyy")<br>

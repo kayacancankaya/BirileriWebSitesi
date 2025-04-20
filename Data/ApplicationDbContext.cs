@@ -26,6 +26,7 @@ namespace BirileriWebSitesi.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<UserAudit> UserAudits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +56,8 @@ namespace BirileriWebSitesi.Data
                         .HasKey(oi => new { oi.ProductCode, oi.OrderId });
             modelBuilder.Entity<Address>()
                         .HasKey(i=> i.Id);
+            modelBuilder.Entity<UserAudit>()
+                        .HasKey(i=> i.UserId);
 
 
             modelBuilder.Entity<RelatedProduct>()

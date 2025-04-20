@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Services;
 using BirileriWebSitesi.Areas;
+using BirileriWebSitesi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.Configure<IyzipayOptions>(
+    builder.Configuration.GetSection("IyzipayOptions"));
+
+builder.Services.Configure<IpInfoSettings>(builder.Configuration.GetSection("IpInfo"));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -44,6 +49,7 @@ builder.Services.AddScoped<IBasketService, BasketService>();
 builder.Services.AddScoped<IProductService, ProductService>(); 
 builder.Services.AddScoped<IOrderService, OrderService>(); 
 builder.Services.AddScoped<IUserService, UserService>(); 
+builder.Services.AddScoped<IUserAuditService, UserAuditService>(); 
 builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
 
 

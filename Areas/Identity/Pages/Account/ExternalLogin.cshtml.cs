@@ -19,6 +19,9 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using BirileriWebSitesi.Interfaces;
 using IEmailSender = Microsoft.AspNetCore.Identity.UI.Services.IEmailSender;
+using BirileriWebSitesi.Models;
+using Microsoft.EntityFrameworkCore;
+using BirileriWebSitesi.Data;
 
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 {
@@ -32,14 +35,15 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
         private readonly IBasketService _basketService;
-
+        private readonly ApplicationDbContext _dbContext;
         public ExternalLoginModel(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             ILogger<ExternalLoginModel> logger,
             IEmailSender emailSender,
-            IBasketService basketService)
+            IBasketService basketService,
+            ApplicationDbContext dbContext)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -48,6 +52,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _basketService = basketService;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -121,8 +126,17 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("{LoginProvider} ile {Name} kayıt başarılı.", info.Principal.Identity.Name, info.LoginProvider);
-                string cart = Request.Cookies["MyCart"];
+                //update last login date
                 string userID = _userManager.GetUserId(User);
+                var audit = await _dbContext.UserAudits.FirstOrDefaultAsync(a => a.UserId == userID);
+                if (audit != null)
+                {
+                    audit.LastLoginDate = DateTime.UtcNow;
+                    await _dbContext.SaveChangesAsync();
+                }
+                //update user basket
+                string cart = Request.Cookies["MyCart"];
+                
                 if (!string.IsNullOrEmpty(cart))
                 {
                     await _basketService.TransferBasketAsync(cart, userID);
@@ -195,6 +209,15 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         }
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+
+                        _dbContext.UserAudits.Add(new UserAudit
+                        {
+                            UserId = user.Id,
+                            RegistrationDate = DateTime.UtcNow,
+                            LastLoginDate = DateTime.UtcNow
+                        });
+                        await _dbContext.SaveChangesAsync();
+
                         return LocalRedirect(returnUrl);
                     }
                 }

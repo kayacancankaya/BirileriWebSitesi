@@ -1,5 +1,5 @@
 ﻿
-@model BirileriWebSitesi.Models.PaymentDTO
+@model BirileriWebSitesi.Models.PaymentViewModel
 <h2>Mesafeli Satış Sözleşmesi</h2>
 
 <div class="section">
@@ -45,43 +45,47 @@
 <div class="section">
     <h3>4. SİPARİŞE KONU ÜRÜNLER</h3>
     <p><strong>Tarih:</strong> @DateTime.Now.ToString("dd.MM.yyyy")</p>
-    <table>
+    <table border="1" cellspacing="0" cellpadding="6" style="width:100%; border-collapse: collapse;">
         
-        @foreach (var item in Model.OrderItems)
-        {
-
-            var totalPrice = Convert.ToDouble(@item.UnitPrice * @item.Units) * 0.8;
-            var tax = Convert.ToDouble(totalPrice) * 0.2;
+            <thead>
             <tr>
                 <th>Ürün Adı</th>
                 <th>Adet</th>
                 <th>Taksit</th>
                 <th>Toplam Tutar</th>
             </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.OrderItems)
+            {
+                var totalPrice = Convert.ToDouble(@item.UnitPrice * @item.Units) * 0.8;
+                var tax = Convert.ToDouble(totalPrice) * 0.2;
+                <tr>
+				        <td>@item.ProductName</td>
+				        <td>@item.Units</td>
+				        <td>@Model.InstallmentAmount</td>
+				        <td>@totalPrice.ToString("C2")</td>
+                </tr>
+                <tr>
+                    <td colspan="3">KDV</td>
+                    <td>@tax.ToString("C2")</td>
+                </tr>
+                <tr>
+                    <td colspan="3">Kargo Ücreti</td>
+                    <td>0</td>
+                </tr>
+            }
             <tr>
-				    <td>@item.ProductVariant.ProductName</td>
-				    <td>@item.Units</td>
-				    <td>@Model.InstallmentAmount</td>
-				    <td>@totalPrice.ToString("C2")</td>
+                <td colspan="3"><strong>Genel Toplam</strong></td>
+                <td><strong>@Model.TotalAmount.ToString("C2")</strong></td>
             </tr>
-            <tr>
-                <td colspan="3">KDV</td>
-                <td>@tax.ToString("C2")</td>
-            </tr>
-            <tr>
-                <td colspan="3">Kargo Ücreti</td>
-                <td>0</td>
-            </tr>
-        }
-        <tr>
-            <td colspan="3"><strong>Genel Toplam</strong></td>
-            <td><strong>@Model.TotalAmount.ToString("C2")</strong></td>
-        </tr>
+            </tbody>
     </table>
     <p>
-        <strong>Ödeme Şekli:</strong> @Model.PaymentType == 1 ? "Banka Transferi" : "Kredi Kartı" <br>
+        <strong>Ödeme Şekli:</strong> <span id="agreement-form-payment-type">@(Model.PaymentType == 1 ? "Kredi Kartı" : "Banka Transferi")</span><br />
         <strong>Teslimat Adresi:</strong> @Model.ShipToAddress.AddressDetailed<br>
-		<strong>Ödenecek Toplam Tutar:</strong> @Model.TotalAmount.ToString("C2")<br>
+        <strong>Taksit Adedi: </strong> <span id="agreement-form-installment-amount">@Model.InstallmentAmount</span><br />
+        <strong>Ödenecek Toplam Tutar:</strong> <span id="agreement-form-total-amount"> @Model.TotalAmount.ToString("C2")</span><br/>
     </p>
 </div>
 
