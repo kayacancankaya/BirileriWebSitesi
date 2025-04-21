@@ -76,5 +76,7 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public int PaymentType { get; set; } = 1;
         public int InstallmentAmount { get; set; } = 1;
         public int Status { get; set; } = (int)ApprovalStatus.Pending;
+
+        public virtual PaymentLog? PaymentLog { get; set; } 
     }
 }

@@ -518,6 +518,44 @@
     </div>
 
     <!-- - - - - - - - - - - - - - Warning popup ends - - - - - - - - - - - - - - - - -->
+    <!-- - - - - - - - - - - - - - Success popup - - - - - - - - - - - - - - - - -->
+    
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title" id="warningModalLabel">Başarılı</h5>
+                </div>
+                <div class="modal-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- - - - - - - - - - - - - - Success popup ends - - - - - - - - - - - - - - - - -->
+    <!-- - - - - - - - - - - - - - Danger popup - - - - - - - - - - - - - - - - -->
+    
+    <div class="modal fade" id="dangerModal" tabindex="-1" role="dialog" aria-labelledby="dangerModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title" id="warningModalLabel">Hata</h5>
+                </div>
+                <div class="modal-body">
+                    @TempData["DangerMessage"]
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- - - - - - - - - - - - - - Success popup ends - - - - - - - - - - - - - - - - -->
 
     <input type="hidden" value="0" id="currentState" />
     <input type="hidden" value="0" id="cart-counter" />
@@ -567,6 +605,26 @@
             $(document).ready(function () {
                 var warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
                 warningModal.show();
+            });
+        </script>
+    }
+    <!--Show Success If Exists-->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            $(document).ready(function () {
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            });
+        </script>
+    }
+    <!--Show Danger If Exists-->
+    @if (TempData["DangerMessage"] != null)
+    {
+        <script>
+            $(document).ready(function () {
+                var dangerModal = new bootstrap.Modal(document.getElementById('dangerModal'));
+                dangerModal.show();
             });
         </script>
     }

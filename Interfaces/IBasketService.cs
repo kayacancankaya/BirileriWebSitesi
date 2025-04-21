@@ -9,6 +9,7 @@ namespace BirileriWebSitesi.Interfaces
         Task<int> CountTotalBasketItems(string userId);
         Task<int> CountDistinctBasketItems(string userId);
         Task DeleteBasketAsync(string userID);
+        Task DeleteBasketAsync(int orderID);
         Task<bool> RemoveBasketItemAsync(string userID,string productCode);
         Task<Basket> SetQuantity(string userID,string productCode,int quantity); 
         Task<Basket> SetQuantities(string userID, Dictionary<string, int> quantities);

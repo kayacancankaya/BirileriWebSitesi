@@ -125,6 +125,7 @@
 }
 
 @Html.AntiForgeryToken()
+
 <div class="sidebar-page-conatiner">
     <div class="auto-container">
         <div class="row clearfix">
@@ -235,7 +236,7 @@
                                 @Html.Partial("_PartialAydinlatmaMetni", Model)
                             </div>
                         </div>
-                        <div class="dropdown-item">
+                        <div class="dropdown-item section">
                            <p>Ödemeyi Tamamla tuşuna basarak, Ön Bilgilendirme Formu, Mesafeli Satış Sözleşmesi ve KVKK Aydınlatma metnini okuyup onayladığınız kabul edilir.</p>
                             <p>Ödenecek Toplam Tutar KDV Dahil <span id="info-p-total-amount"> @Model.TotalAmount.ToString("C2") </span></p>
                         </div>
@@ -409,7 +410,6 @@
                         requiredFields.push("credit-card-number", "expiry-date-month", "expiry-date-year", "cvv", "card-holder-name");
                         var cardHolderName = $("#card-holder-name").val();
                         var creditCardNumber = $("#credit-card-number").val();
-                        var creditCardNumber = $("#credit-card-number").val();
                         var expiryMonth = $("#expiry-date-month").val() ;
                         var expiryYear = $("#expiry-date-year").val();
                         var cvv = $("#cvv").val();
@@ -431,10 +431,11 @@
                         showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
                         return;
                     }
-
+                    var paymentType = 0;
                     // Check card payment
                     if(isCreditCardPayment)
                     {
+                        paymentType = 1;
                         if (!isValidCardNumber(creditCardNumber)) {
                             e.preventDefault();
                             showAlert(button,"Geçersiz kart numarası.","danger");
@@ -453,7 +454,9 @@
                             return;
                         }
                     }
-
+                    else {
+                        paymentType = 2;
+                    }
                     // Check forms are checked
                     $(".dropdown-checkbox").each(function () {
                         if (!$(this).is(":checked")) {
@@ -475,12 +478,12 @@
 
 
                     var paymentMethod = $("input[name='payment-group']:checked").attr("id");
-                    var orderId = parseInt($("order-id").val());
+                    var orderId = parseInt($("#order-id").val());
                     var installmentAmount = parseInt($("#installment").val());
                     var data = {
-                        orderId : orderId,
+                        OrderId : orderId,
                         InstallmentAmount: installmentAmount,
-                        PaymentType: paymentMethod,
+                        PaymentType: paymentType,
                         CardHolderName : cardHolderName,
 					    CreditCardNumber: creditCardNumber,
                         ExpMonth: expiryMonth,
@@ -503,12 +506,24 @@
                         async: true,
                         data: JSON.stringify(data),
 
-                        //headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                        headers: { "RequestVerificationToken": getAntiForgeryToken() },
                         success: function (response) {
                             if (response.success) {
-                                showAlert(button,response.message,"success");
-                                window.location.href = "/Home"; // Redirect to confirmation page
+                                 // Check if it's a 3DS payment
+                                if (response.is3Ds && response.htmlContent) {
+
+                                        const win = window.open('', '_self'); // or '_blank' for new tab
+                                        win.document.open();
+                                        win.document.write(response.htmlContent);
+                                        win.document.close();
+
+                                } else {
+
+                                    showAlert(button, "Ödeme başarıyla gerçekleşti!", "success");
+                                    window.location.href = "/Home"; // Redirect to confirmation page
+                                }
                             } else {
+
                                 showAlert(button, response.message, "error");
                                 $("#finish-payment").text("Ödemeyi Tamamla").prop("disabled", false);
                             }

@@ -1,4 +1,5 @@
-﻿using BirileriWebSitesi.Data;
+﻿using Azure.Core;
+using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.OrderAggregate;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Composition;
 using System.Globalization;
 using static BirileriWebSitesi.Models.Enums.AprrovalStatus;
 using Address = BirileriWebSitesi.Models.OrderAggregate.Address;
@@ -96,28 +99,28 @@ namespace BirileriWebSitesi.Services
                 }
                     //update address
                     //check if addresses exists
-                bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);
-                if(result)
-                {
-                    _context.Addresses.Update(order.ShipToAddress);
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    await _context.Addresses.AddAsync(order.ShipToAddress);
-                    await _context.SaveChangesAsync();
-                }
-                result = await CheckIfAddressExistsAsync(order.BillingAddress);
-                if(result)
-                {
-                    _context.Addresses.Update(order.BillingAddress);
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    await _context.Addresses.AddAsync(order.BillingAddress);
-                    await _context.SaveChangesAsync();
-                }
+                //bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);
+                //if(result)
+                //{
+                //    _context.Addresses.Update(order.ShipToAddress);
+                //    await _context.SaveChangesAsync();
+                //}
+                //else
+                //{
+                //    await _context.Addresses.AddAsync(order.ShipToAddress);
+                //    await _context.SaveChangesAsync();
+                //}
+                //result = await CheckIfAddressExistsAsync(order.BillingAddress);
+                //if(result)
+                //{
+                //    _context.Addresses.Update(order.BillingAddress);
+                //    await _context.SaveChangesAsync();
+                //}
+                //else
+                //{
+                //    await _context.Addresses.AddAsync(order.BillingAddress);
+                //    await _context.SaveChangesAsync();
+                //}
                         
                 
                 foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
@@ -151,27 +154,26 @@ namespace BirileriWebSitesi.Services
                 string checkString = await CheckOrderAsync(order, model);
                
                 if(checkString != "success")
-                    return checkString;
+                    return "ERROR";
                 Iyzipay.Options options = await GetIyzipayOptionsAsync();
                 CreatePaymentRequest request = await IyziPayCreateReqAsync(order, model, options);
                 string htmlResult = await IyziPay3ds(request,options);
 
-                    if (htmlResult != "ERROR")
-                        order.Status = (int)ApprovalStatus.Approved;
-                    else
-                        order.Status = (int)ApprovalStatus.Failed;
-
+                if (htmlResult.TrimStart().StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase))
+                    order.Status = (int)ApprovalStatus.Pending;
+                else
+                    order.Status = (int)ApprovalStatus.Failed;
 
                 _context.Orders.Update(order);
                 await _context.SaveChangesAsync();
 
 
-                return order.Status.ToString();
+                return htmlResult;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return ApprovalStatus.Failed.ToString();
+                return "ERROR";
             }
         }
         public async Task<string> ProcessOrderAsync(PaymentRequestModel model)
@@ -243,8 +245,8 @@ namespace BirileriWebSitesi.Services
                 CreatePaymentRequest request = new CreatePaymentRequest();
                 request.Locale = Locale.TR.ToString();
                 request.ConversationId = Guid.NewGuid().ToString();
-                request.Price = order.TotalAmount.ToString();
-                request.PaidPrice = order.TotalAmount.ToString();
+                request.Price = order.TotalAmount.ToString("0.00",CultureInfo.InvariantCulture);
+                request.PaidPrice = order.TotalAmount.ToString("0.00", CultureInfo.InvariantCulture);
                 request.Currency = Currency.TRY.ToString();
                 request.Installment = model.InstallmentAmount;
                 request.BasketId = model.OrderId.ToString();
@@ -254,7 +256,13 @@ namespace BirileriWebSitesi.Services
                 PaymentCard paymentCard = new PaymentCard();
                 paymentCard.CardHolderName = model.CardHolderName;
                 paymentCard.CardNumber = model.CreditCardNumber;
-                //5890040000000016
+                //Card number: 5890040000000016
+
+                //Expire Month: 12
+
+                //Expire Year: 2030
+
+                //CVC: 123
                 paymentCard.ExpireMonth = model.ExpMonth;
                 paymentCard.ExpireYear = model.ExpYear;
                 paymentCard.Cvc = model.CVV;
@@ -276,8 +284,8 @@ namespace BirileriWebSitesi.Services
                 buyer.GsmNumber = order.BillingAddress.Phone;
                 buyer.Email = order.BillingAddress.EmailAddress;
                 buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString();
-                buyer.LastLoginDate = model.LastLoginDate.ToString();
-                buyer.RegistrationDate = model.RegistrationDate.ToString();
+                buyer.LastLoginDate = model.LastLoginDate.ToString("yyyy-MM-dd HH:mm:ss");
+                buyer.RegistrationDate = model.RegistrationDate.ToString("yyyy-MM-dd HH:mm:ss");
                 buyer.RegistrationAddress = order.BillingAddress.AddressDetailed;
                 buyer.Ip = model.Ip;
                 buyer.City = model.City;
@@ -314,7 +322,7 @@ namespace BirileriWebSitesi.Services
                     basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
                     basketItem.Category2 = string.Empty;
                     basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
-                    basketItem.Price = (item.UnitPrice * item.Units).ToString();
+                    basketItem.Price = (item.UnitPrice * item.Units).ToString("0.00",CultureInfo.InvariantCulture);
                     basketItems.Add(basketItem);
                 }
 
@@ -346,7 +354,7 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
-                request.CallbackUrl = "https://localhost:/Home/Process3DsOrder";
+                request.CallbackUrl = "https://localhost:7031/Home/Payment3dsCallBack";
                 ThreedsInitialize threedsInit = await ThreedsInitialize.Create(request, options);
                 if (threedsInit.Status == "success")
                 {
@@ -354,9 +362,7 @@ namespace BirileriWebSitesi.Services
                     return threedsInit.HtmlContent;
                 }
                 else
-                {
-                    return "ERROR";
-                }
+                    return threedsInit.ErrorMessage;
                 
             }
             catch (Exception ex)
@@ -399,6 +405,7 @@ namespace BirileriWebSitesi.Services
                     .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.ProductVariant)
                     .ThenInclude(pv => pv.Product)
+                    .ThenInclude(c => c.Catalog)
                     .FirstOrDefaultAsync(o => o.Id == orderId);
                 return order;
             }
@@ -408,7 +415,6 @@ namespace BirileriWebSitesi.Services
                 return null;
             }
         }
-
         private async Task<bool> CheckIfAddressExistsAsync(Address address)
         {
             try
@@ -509,5 +515,76 @@ namespace BirileriWebSitesi.Services
                 return "Sipariş Kontrol Edilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
             }
         }
+        public async Task<ThreedsPayment> Payment3dsCallBack(string conversationID, string paymentId)
+        {
+            try
+            {
+                Iyzipay.Options options = await GetIyzipayOptionsAsync();
+                var request = new CreateThreedsPaymentRequest
+                {
+                    Locale = Locale.TR.ToString(),
+                    ConversationId = conversationID,
+                    PaymentId = paymentId,
+                };
+
+                var payment = await ThreedsPayment.Create(request, options);
+
+                return payment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+        public async Task<bool> RecordPayment(PaymentLog payment)
+        {
+            try
+            {
+                _context.PaymentLogs.Add(payment);
+                await _context.SaveChangesAsync();
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateOrderStatus(int orderID, string status)
+        {
+            try
+            {
+                var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderID);
+                if (order != null)
+                {
+                    switch(status)
+                    {
+                        case "Pending":
+                            order.Status = (int)ApprovalStatus.Pending;
+                            break;
+                        case "Approved":
+                            order.Status = (int)ApprovalStatus.Approved;
+                            break;
+                        case "Failed":
+                            order.Status = (int)ApprovalStatus.Failed;
+                            break;
+                        default:
+                            return false;
+                    }
+                    _context.Orders.Update(order);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return false;
+            }
+        }
+
     }
 }

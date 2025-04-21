@@ -27,6 +27,7 @@ namespace BirileriWebSitesi.Data
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<UserAudit> UserAudits { get; set; }
+        public DbSet<PaymentLog> PaymentLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,6 +59,8 @@ namespace BirileriWebSitesi.Data
                         .HasKey(i=> i.Id);
             modelBuilder.Entity<UserAudit>()
                         .HasKey(i=> i.UserId);
+            modelBuilder.Entity<PaymentLog>()
+                        .HasKey(i=> i.ConversationId);
 
 
             modelBuilder.Entity<RelatedProduct>()
@@ -166,6 +169,10 @@ namespace BirileriWebSitesi.Data
                         .WithMany() // If BillingAddress is not used for multiple orders, use .WithOne()
                         .HasForeignKey(o => o.BillingAddressId)
                         .OnDelete(DeleteBehavior.Restrict); // Optional
+
+            modelBuilder.Entity<PaymentLog>()
+                .HasOne(O => O.Order)
+                .WithOne(p => p.PaymentLog);
 
         }
     }

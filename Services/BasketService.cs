@@ -122,6 +122,16 @@ namespace BirileriWebSitesi.Services
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task DeleteBasketAsync(int orderID)
+        {
+            var userID = await _context.Orders.Where(i => i.Id == orderID).Select(b => b.BuyerId).FirstOrDefaultAsync();
+            var basket = await _context.Baskets.Where(i => i.BuyerId == userID).FirstOrDefaultAsync();
+            if (basket != null)
+            {
+                _context.Baskets.Remove(basket);
+                await _context.SaveChangesAsync();
+            }
+        }
         public async Task<Basket> GetBasketAsync(string userID)
         {
             var basket = await _context.Baskets.Where(i => i.BuyerId == userID)

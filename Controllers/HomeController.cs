@@ -6,6 +6,7 @@ using BirileriWebSitesi.Models.OrderAggregate;
 using BirileriWebSitesi.Models.ViewModels;
 using BirileriWebSitesi.Services;
 using Iyzipay.Model;
+using Iyzipay.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -207,7 +208,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, new { success = false, message = "Filtreleme iþlemi esnasýnda hata ile karþýlaþýldý.Lütfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Filtreleme iþlemi esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
         public IActionResult ProductDetailed(string productCode)
@@ -313,7 +314,7 @@ namespace BirileriWebSitesi.Controllers
                 if (string.IsNullOrEmpty(productCode) ||
                     price <= 0 ||
                     quantity <= 0)
-                    return BadRequest("Ürün Sepete Eklenirken Hata Ýle Karþýlaþýldý.");
+                    return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
 
                 //cookie 
                 if (userId == "0")
@@ -322,7 +323,7 @@ namespace BirileriWebSitesi.Controllers
                     if(result.Values.FirstOrDefault() == "HATA")
                     {
                         TempData["TotalProduct"] = 0;
-                        return BadRequest("Ürün Sepete Eklenirken Hata Ýle Karþýlaþýldý.");
+                        return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
                     }
                     totalProduct = result.Keys.FirstOrDefault().ToString();
                     return Ok(new { message = "Ürün Sepete Eklendi", totalProduct });
@@ -330,16 +331,16 @@ namespace BirileriWebSitesi.Controllers
 
                 //db
                 result =  await _basketService.AddItemToBasketAsync(userId, productCode, price, quantity);
-                if (result.Values.FirstOrDefault() == "Ürün Sepete Eklenirken Hata Ýle Karþýlaþýldý")
+                if (result.Values.FirstOrDefault() == "Ürün Sepete Eklenirken Hata ile Karşılaşıldı")
                 {
-                    return BadRequest("Ürün Sepete Eklenirken Hata Ýle Karþýlaþýldý.");
+                    return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
                 }
                 totalProduct = result.Keys.FirstOrDefault().ToString();
                 return Ok(new { message = "Ürün Sepete Eklendi", TotalProduct = totalProduct });
             }
             catch
             {
-                return BadRequest("Ürün Sepete Eklenirken Hata Ýle Karþýlaþýldý.");
+                return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
             }
         }
         [HttpPost]
@@ -411,7 +412,7 @@ namespace BirileriWebSitesi.Controllers
 
                     if (result.Values.FirstOrDefault() == "HATA")
                     {
-                        message = "Ürün Sepetten Çýkarýlýrken Hata Ýle Karþýlaþýldý";
+                        message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
                         return BadRequest(new { message });
                     }
                     TempData["message"] = message;
@@ -437,7 +438,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                string message = "Ürün Sepetten Çýkarýlýrken Hata Ýle Karþýlaþýldý";
+                string message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
             }
         }
@@ -476,7 +477,7 @@ namespace BirileriWebSitesi.Controllers
 
                     if (result.Values.FirstOrDefault() == "HATA")
                     {
-                        message = "Ürün Sepetten Çýkarýlýrken Hata Ýle Karþýlaþýldý";
+                        message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
                         return BadRequest(new { message });
                     }
 
@@ -505,7 +506,7 @@ namespace BirileriWebSitesi.Controllers
                 if(resultDb)
                     message = "Ürün Sepetten Çýkarýldý";
                 else
-                    message = "Ürün Sepetten Çýkarýlýrken Hata Ýle Karþýlaþýldý";
+                    message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
                 totalProductCount = await _basketService.CountTotalBasketItems(userID);
                 TempData["message"] = message;
                 Basket basket = await _basketService.GetBasketAsync(userID);
@@ -513,7 +514,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                string message = "Ürün Sepetten Çýkarýlýrken Hata Ýle Karþýlaþýldý";
+                string message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
             }
         }
@@ -533,7 +534,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return Ok(new { success = false, message = "Ürün Listelenirken Hata Ýle Karþýlaþýldý." });
+                return Ok(new { success = false, message = "Ürün Listelenirken Hata ile Karşılaşıldı." });
             }
         }
         public async Task<IActionResult> GetPartialViewsForProductVariant(string productCode,string productName, Dictionary<string,string> variantAttributes)
@@ -666,13 +667,13 @@ namespace BirileriWebSitesi.Controllers
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                 if(ip == "::1")
                     ip = "212.252.136.146";
-                isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
+                //isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
                 
-                if(!isInBuyRegion)
-                {
-                    TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
-                    return RedirectToAction("Index", "Home");
-                }
+                //if(!isInBuyRegion)
+                //{
+                //    TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
+                //    return RedirectToAction("Index", "Home");
+                //}
 
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
@@ -717,6 +718,12 @@ namespace BirileriWebSitesi.Controllers
                 }
 
                 Order order = new(userID, shipToAddress, billingAddress, orderItems, isInBuyRegion, true, 1);
+                if(order.TotalAmount>100000)
+                {
+                    TempData["DangerMessage"] = "Sepet Miktarı 100000₺'den Büyük Olamaz.";
+                    return RedirectToAction("Cart");
+                }
+
                 return View(order);
 
             }
@@ -859,7 +866,6 @@ namespace BirileriWebSitesi.Controllers
                 payment.TotalAmount = totalAmount;
                 payment.OrderId = orderID;
 
-
                 HttpContext.Session.SetString("PaymentViewModel", JsonConvert.SerializeObject(payment));
 
                 return Json(new { success = true, redirectUrl = Url.Action("Payment") });
@@ -931,46 +937,88 @@ namespace BirileriWebSitesi.Controllers
                 string resultString = string.Empty;
                 if(model.PaymentType == 1)
                 {
-                    if (!model.Force3Ds)
+                    if (model.Force3Ds)
+                    {
+
+                        resultString = await _orderService.Process3DsOrderAsync(model);
+
+                        if (resultString.TrimStart().StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase))
+                            return Ok(new { success = true, is3Ds = true, htmlContent = resultString, message = "Yönlendiriliyor..." });
+
+                        return Ok(new { success = false, message = resultString });
+
+                    }
+                    else
                     {
                         resultString = await _orderService.ProcessOrderAsync(model);
 
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
-                            return Ok(new { success = true, message = "Sipariş Başarıyla İşleme Alındı." });
+                            return Ok(new { success = true, is3Ds = true, message = "Sipariş Başarıyla İşleme Alındı." });
                         }
                         else
                         {
-                            return StatusCode(500, new { success = false, message = resultString });
-                        }
-                    }
-                    else
-                    {
-                        resultString = await _orderService.Process3DsOrderAsync(model);
-
-                        if (resultString != "ERROR")
-                        {
-                            await _basketService.DeleteBasketAsync(buyerID);
-                            return Ok(new { success = true, message = resultString });
-                        }
-                        else
-                        {
-                            return StatusCode(500, new { success = false, message = "Sipariş Kaydedilirken Hata İle Karşılaşıldı.Lütfen Tekrar Deneyiniz." });
+                            return Ok(new { success = false, message = resultString });
                         }
                     }
                 }
                 else
                 {
-                    return Ok(new { success = true, message = "Banka Transferi" });
+                    return Ok(new { success = true, is3Ds = false, message = "Banka Transferi" });
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
+                return Ok(new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
             }
         }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> Payment3dsCallBack()
+        {
+            ThreedsPayment payment = await _orderService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
+
+
+            PaymentLog paymentLog = new();
+            paymentLog.ConversationId = payment.ConversationId;
+            paymentLog.OrderId = Convert.ToInt32(payment.BasketId);
+            paymentLog.PaymentId = payment.PaymentId;
+            paymentLog.Price = payment.Price;
+            paymentLog.PaidPrice = payment.PaidPrice;
+            paymentLog.IyziCommissionRateAmount = payment.IyziCommissionRateAmount;
+            paymentLog.IyziCommissionFee = payment.IyziCommissionFee;
+            paymentLog.CardFamily = payment.CardFamily;
+            paymentLog.CardAssociation = payment.CardAssociation;
+            paymentLog.CardType = payment.CardType;
+            paymentLog.BinNumber = payment.BinNumber;
+            paymentLog.LastFourDigits = payment.LastFourDigits;
+            paymentLog.Status = payment.Status;
+            paymentLog.PaidAt = DateTime.UtcNow;
+
+
+
+            if (payment.Status == "success")
+            {
+                TempData["SuccessMessage"] = "Siparişiniz Başarıyla İşleme Alındı.";
+
+                await _basketService.DeleteBasketAsync(Convert.ToInt32(payment.BasketId));
+                await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved");
+                await _orderService.RecordPayment(paymentLog);
+                // await _emailService.SendOrderConfirmationEmailAsync(_userManager.GetUserId(User));
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                TempData["DangerMessage"] = payment.Status.ToString();
+                await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
+                await _orderService.RecordPayment(paymentLog);
+                return RedirectToAction("Index");
+            }
+        }
+
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> CheckInstallment([FromBody] BinRequestDTO model)
@@ -1020,7 +1068,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { success = false, message = "Kayýt esnasýnda hata ile karþýlaþýldý. Lütfen daha sonra tekrar deneyiniz." });
+                return Ok(new { success = false, message = "Kayýt esnasýnda hata ile Karşılaşıldı. Lütfen daha sonra tekrar deneyiniz." });
             }
         }
         public async Task<IActionResult> SendEmail(string username,string emailAddress,string phone,string message,string subject)
@@ -1044,7 +1092,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Kayýt esnasýnda hata ile karþýlaþýldý.Lütfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Kayýt esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
 
