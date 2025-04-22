@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Dashboard\Data\**" />
+    <Compile Remove="Areas\Dashboard\Models\**" />
+    <Content Remove="Areas\Dashboard\Data\**" />
+    <Content Remove="Areas\Dashboard\Models\**" />
+    <EmbeddedResource Remove="Areas\Dashboard\Data\**" />
+    <EmbeddedResource Remove="Areas\Dashboard\Models\**" />
+    <None Remove="Areas\Dashboard\Data\**" />
+    <None Remove="Areas\Dashboard\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Iyzipay" Version="2.1.67" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
@@ -28,9 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Dashboard\Data\" />
-    <Folder Include="Areas\Dashboard\Models\" />
     <Folder Include="Data\Migrations\" />
+    <Folder Include="wwwroot\css\DataTables\" />
   </ItemGroup>
 
 </Project>
