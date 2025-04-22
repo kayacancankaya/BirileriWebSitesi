@@ -308,6 +308,11 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+                if(price * quantity > 100000)
+                {
+                    TempData["DangerMessage"] = "Sepet Miktarı 100.000₺'den Büyük Olamaz.";
+                    return BadRequest("Sepet Miktarı 100.000₺'den Büyük Olamaz.");
+                }
 
                 string totalProduct = string.Empty;
                 Dictionary<int, string> result = new();
@@ -336,6 +341,7 @@ namespace BirileriWebSitesi.Controllers
                     return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
                 }
                 totalProduct = result.Keys.FirstOrDefault().ToString();
+                
                 return Ok(new { message = "Ürün Sepete Eklendi", TotalProduct = totalProduct });
             }
             catch

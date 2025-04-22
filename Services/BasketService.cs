@@ -49,10 +49,10 @@ namespace BirileriWebSitesi.Services
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);    
                 basket.AddItem(productCode, price, quantity,userId,productName,imagePath);
-                foreach (var item in basket.Items)
-                {
-                    item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == productCode).FirstOrDefaultAsync();
-                }
+                var basketItem = basket.Items.Where(i => i.BuyerID == userId &&
+                                                                        i.ProductCode == productCode)
+                                                                    .FirstOrDefault();
+                basketItem.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == productCode).FirstOrDefaultAsync();
 
                 _context.Baskets.Update(basket);
                 await _context.SaveChangesAsync();
