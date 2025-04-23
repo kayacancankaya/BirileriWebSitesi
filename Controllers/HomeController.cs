@@ -208,7 +208,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, new { success = false, message = "Filtreleme iþlemi esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Filtreleme işlemi esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
         public IActionResult ProductDetailed(string productCode)
