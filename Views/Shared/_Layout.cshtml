@@ -215,9 +215,9 @@
                                     <li class="dropdown shop">
                                         <a asp-controller="Home" asp-action="Shop">Mağaza</a>
                                     </li>
-                                    <li class="dropdown blog">
+                                    @* <li class="dropdown blog">
                                         <a asp-controller="Home" asp-action="Blog">Blog</a>
-                                    </li>
+                                    </li> *@
                                     <li class="dropdown account">
                                         @if (User.Identity.IsAuthenticated)
                                         {
@@ -246,7 +246,7 @@
                         <!-- Main Menu End-->
                         <div class="outer-box clearfix">
                             <div class="advisor-box">
-                                <a class="theme-btn advisor-btn"><span>İletişim</span></a>
+                                <a class="theme-btn advisor-btn" asp-controller="Home" asp-action="ContactUs"><span>İletişim</span></a>
                             </div>
                         </div>
                     </div>
@@ -279,9 +279,9 @@
                                     <li class="dropdown shop">
                                         <a asp-controller="Home" asp-action="Shop">Mağaza</a>
                                     </li>
-                                    <li class="dropdown blog">
+                                    @* <li class="dropdown blog">
                                         <a asp-controller="Home" asp-action="Blog">Blog</a>
-                                    </li>
+                                    </li> *@
                                     <li class="dropdown account">
                                         @if (User.Identity.IsAuthenticated)
                                         {
@@ -316,7 +316,8 @@
         
         <!--End Main Header -->
         @RenderBody()
-        <footer class="main-footer" style="background-image:url(~/images/background/5.jpg)">
+        <footer class="main-footer" style="background-image: url('@Url.Content("~/images/background/5.jpg")');">
+
             <div class="auto-container">
 
                 <!--Widgets Section-->
@@ -324,45 +325,80 @@
                     <div class="row clearfix">
 
                         <!--big column-->
-                        <div class="big-column col-lg-6 col-md-12 col-sm-12">
+                        <div class="big-column col-lg-7 col-md-12 col-sm-12">
                             <div class="row clearfix">
 
-                                <!--Footer Column-->
-                                <div class="footer-column col-lg-7 col-md-6 col-sm-12">
+                                <!--About Footer Column-->
+                                <div class="footer-column col-lg-4 col-md-6 col-sm-12">
                                     <div class="footer-widget logo-widget">
                                         <div class="logo">
-                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="" /></a>
+                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="Birileri İthalat Logo" /></a>
                                         </div>
-                                        <div class="text">Over 24 years experience and knowledge international standards, technologicaly changes our industrial systems, we are dedicated to provides the best solutions to our valued customers there are many variations solutions.</div>
+                                        <div class="text">
+                                            Birileri Dış Ticaret  olarak, uluslararası kalite standartlarına uygun şekilde ithalat gerçekleştiriyoruz.
+                                            Müşteri memnuniyetini ön planda tutarak, şeffaf, güvenilir ve sürdürülebilir ticaret ilkeleriyle faaliyet gösteriyoruz.
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!--Footer Column-->
+                                <!--Category Footer Column-->
                                 <div class="footer-column col-lg-5 col-md-6 col-sm-12">
                                     <div class="footer-widget links-widget">
                                         <div class="footer-title">
-                                            <h2>Services</h2>
+                                            <h2>Hizmetler</h2>
                                         </div>
                                         <ul class="footer-lists">
-                                            <li><a href="#">Agricultural Processing</a></li>
-                                            <li><a href="#">Chemical Research</a></li>
-                                            <li><a href="#">Material Engineering</a></li>
-                                            <li><a href="#">Mechanical Engineering</a></li>
-                                            <li><a href="#">Petroleum and Gas</a></li>
-                                            <li><a href="#">Power and Energy</a></li>
+                                            <li><a asp-controller="Home" asp-action="Catalog"
+                                                    asp-route-catalogId="1">Spor Malzemeleri</a></li>
+                                            <li>
+                                                <a asp-controller="Home" asp-action="Catalog"
+                                                   asp-route-catalogId="2">Ofis ve Kırtarsiye Ürünleri</a>
+                                            </li>
+                                            <li>
+                                                <a asp-controller="Home" asp-action="Catalog"
+                                                   asp-route-catalogId="3">Pet Shop Ürünleri</a>
+                                            </li>
+                                            <li>
+                                                <a asp-controller="Home" asp-action="Catalog"
+                                                   asp-route-catalogId="4">Ev Gereçleri</a>
+                                            </li>
+                                            <li>
+                                                <a asp-controller="Home" asp-action="Catalog"
+                                                   asp-route-catalogId="5">Elektronik Ürünler</a>
+                                            </li>
+                                            <li>
+                                                <a asp-controller="Home" asp-action="Catalog"
+                                                   asp-route-catalogId="6">Oyuncak ve Hobi Ürünleri</a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
 
+                                <!--Forms Footer Column-->
+                                <div class="footer-column col-lg-3 col-md-6 col-sm-12">
+                                    <div class="footer-widget links-widget">
+                                        <div class="footer-title">
+                                            <h2>Formlar</h2>
+                                        </div>
+                                        <!--Forms Footer Column-->
+                                        <ul class="footer-lists">
+                                            <li><a asp-controller="home" asp-action="CookiePolicy">Çerez Politikası</a></li>
+                                            <li><a asp-controller="home" asp-action="Privacy">Gizlilik Politikası</a></li>
+                                            <li><a asp-controller="home" asp-action="IWannaMakeALongDistanceCall">Mesafeli Satış Sözleşmesi</a></li>
+                                            <li><a asp-controller="home" asp-action="KVKK">KVKK Aydınlatma Metni</a></li>
+
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!--big column-->
-                        <div class="big-column col-lg-6 col-md-12 col-sm-12">
+                        <div class="big-column col-lg-5 col-md-12 col-sm-12">
                             <div class="row clearfix">
 
-                                <!--Footer Column-->
-                                <div class="footer-column col-lg-6 col-md-6 col-sm-12">
+                                <!--Blog Footer Column-->
+                               @*  <div class="footer-column col-lg-6 col-md-6 col-sm-12">
                                     <div class="footer-widget news-widget">
                                         <div class="footer-title">
                                             <h2>Son Gönderiler</h2>
@@ -389,7 +425,10 @@
 
                                         </div>
                                     </div>
-                                </div>
+                                </div> *@
+
+
+
 
                                 <!--Footer Column-->
                                 <div class="footer-column col-lg-6 col-md-6 col-sm-12">
@@ -665,38 +704,71 @@
             $(document).on("click", ".subscribe-btn", function () {
                 var emailAddress = $(this).siblings(".subscribe-input").val();
                 var button = $(this);
+
+                // Disable button and show loading
+                $(".subscribe-btn").prop("disabled", true);
                 $.ajax({
                     type: "POST",
                     url: "/Home/Subscribe",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     data: {
                         emailAddress: emailAddress,
                     },
                     success: function (response) {
                         if (response.success) {
                             showAlert(button, response.message, "success");  // Show success message
+                            $(".subscribe-btn").prop("disabled", false);
                         } else {
                             showAlert(button, response.message, "danger");  // Show error message
+                            $(".subscribe-btn").prop("disabled", false);
                         }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
-                    console.log(xhr.responseText);
-
-                    showAlert(response.message, "danger");
+                        showAlert(response.message, "danger");
+                        $(".subscribe-btn").prop("disabled", false);
                     }
                 });
             });
 
-            $(document).on("click", ".send-contact-us", function () {
+            $(document).on("click", ".send-contact-us", function (e) {
+                e.preventDefault();
                 var emailAddress = $("#contact-us-email-address").val();
                 var username = $("#contact-us-username").val();
                 var phone = $("#contact-us-phone").val();
                 var subject = $("#contact-us-subject").val();
                 var message = $("#contact-us-message").val();
                 var button = $(this);
+
+                let requiredFields = ["contact-us-username", "contact-us-email-address","contact-us-message" ];
+                
+
+                let isValid = true;
+
+                // if fields are filled
+                requiredFields.forEach(function (id) {
+                    let input = document.getElementById(id);
+                    if (input && input.value.trim() === "") {
+                        isValid = false;
+                        input.style.border = "1px solid red"; // Highlight empty fields
+                    } else {
+                        input.style.border = ""; // Reset style
+                    }
+                });
+                if (!isValid) {
+                    e.preventDefault();
+                    showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
+                    return;
+                }
+
+                // Disable button and show loading
+                $(".send-contact-us").text("İşlem Yapılıyor...").prop("disabled", true);
+
                 $.ajax({
                     type: "POST",
                     url: "/Home/SendEmail",
+
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     data: {
                         emailAddress: emailAddress,
                         username: username,
@@ -708,13 +780,15 @@
                     success: function (response) {
                         if (response.success) {
                              showAlert(button,response.message, "success");  // Show success message
+                            $(".send-contact-us").text("Gönder").prop("disabled", false);
                         } else {
                             showAlert(button, response.message, "danger");  // Show error message
+                            $(".send-contact-us").text("Gönder").prop("disabled", false);
                         }
                     },
                     error: function () {
-                        console.log("hata");
                         showAlert("Sunucu hatası! Lütfen daha sonra tekrar deneyin.", "danger");
+                            $(".send-contact-us").text("Gönder").prop("disabled", false);
                     }
                 });
             });

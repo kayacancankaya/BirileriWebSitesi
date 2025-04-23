@@ -8,6 +8,7 @@ using BirileriWebSitesi.Services;
 using Iyzipay.Model;
 using Iyzipay.Request;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NuGet.Protocol.Core.Types;
 using System.Diagnostics;
 using System.Globalization;
 namespace BirileriWebSitesi.Controllers
@@ -100,6 +102,80 @@ namespace BirileriWebSitesi.Controllers
                 shop.PopularProducts = popularProducts;
                 
                 return View(shop);
+
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+        }
+        public IActionResult Catalog(int catalogID)
+        {
+            try
+            {
+                IEnumerable<Product> products = new List<Product>();
+                int totalCount = 0;
+                int totalPage = 0;
+                int pageNumber = 1;
+                // get products
+                products = _context.Products
+                                     .Where(n =>  n.CatalogId == catalogID &&
+                                                 n.IsActive == true)
+                                     .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
+                                     .Take(PaginationViewModel.PageSize)
+                                     .Include(d => d.Discounts)
+                                     .Include(p => p.ProductVariants)
+                                     .ToList();
+
+                //filter related discounts
+
+                foreach (Product product in products)
+                {
+                    product.Discounts = product.Discounts.OrderByDescending(d => d.StartDate)
+                                                            .Where(d => d.StartDate <= DateTime.Now &&
+                                                                        d.EndDate >= DateTime.Now)
+                                                            .ToList();
+                    if (product.Discounts == null)
+                        product.Discounts = new List<Discount>();
+                }
+                //get total products
+                totalCount = _context.Products
+                                     .Where(n => n.CatalogId == catalogID &&
+                                                 n.IsActive == true)
+                                     .Count();
+
+                totalPage = (int)Math.Ceiling((double)totalCount / PaginationViewModel.PageSize);
+
+                ProductCardViewModel model = new();
+                model.products = products;
+                PaginationViewModel pagination = new();
+                pagination.TotalCount = totalCount;
+                pagination.TotalPage = totalPage;
+                pagination.CurrentPage = pageNumber;
+                model.pagination = pagination;
+
+
+                //get all categories
+                IEnumerable<Catalog> catalogs = _context.Catalogs.ToList();
+          
+                if(products == null)
+                    return NotFound();
+
+                //get popular products
+                IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
+                                                                        .Where(a=>a.IsActive == true)
+                                                                         .Take(3);
+
+               
+                ShopViewModel shop = new ShopViewModel();
+                ProductCardViewModel productCard = new ProductCardViewModel();
+                productCard.products = products;
+                productCard.pagination = pagination;
+                shop.productCard = productCard;
+                shop.Catalogs = catalogs;
+                shop.PopularProducts = popularProducts;
+                
+                return View("Shop",shop);
 
             }
             catch (Exception)
@@ -1051,6 +1127,8 @@ namespace BirileriWebSitesi.Controllers
 
 
         //-------------mail-------------//
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> Subscribe(string emailAddress)
         {
             try
@@ -1077,28 +1155,30 @@ namespace BirileriWebSitesi.Controllers
                 return Ok(new { success = false, message = "Kayýt esnasýnda hata ile Karşılaşıldı. Lütfen daha sonra tekrar deneyiniz." });
             }
         }
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> SendEmail(string username,string emailAddress,string phone,string message,string subject)
         {
             try
             {
                 if (string.IsNullOrEmpty(username))
-                    return Ok(new { success = false, message = "Ýsim boþ olamaz." });
+                    return Ok(new { success = false, message = "İsim boş olamaz." });
                 if (string.IsNullOrEmpty(emailAddress))
-                    return Ok(new { success = false, message = "Email adresi boþ olamaz." });
+                    return Ok(new { success = false, message = "Email adresi boş olamaz." });
                 // Validate email format
                 if (!IsValidEmail(emailAddress))
-                    return Ok(new { success = false, message = "Hatalý Email formatý." });
+                    return Ok(new { success = false, message = "Hatalı Email formatı." });
                 if (string.IsNullOrEmpty(message))
-                    return Ok(new { success = false, message = "Mesaj boþ olamaz." });
+                    return Ok(new { success = false, message = "Mesaj boş olamaz." });
 
 
                 
 
-                return Ok(new { success = true, message = "Kayýt Baþarýlý!" });
+                return Ok(new { success = true, message = "Kayıt Başarılı!" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Kayýt esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Kayıt esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
 
@@ -1115,6 +1195,10 @@ namespace BirileriWebSitesi.Controllers
             return View();
         }
         public IActionResult IWannaMakeALongDistanceCall()
+        {
+            return View();
+        }
+        public IActionResult KVKK()
         {
             return View();
         }
@@ -1136,6 +1220,19 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 return BadRequest();
+            }
+        }
+
+        public IActionResult ContactUs()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
             }
         }
 
