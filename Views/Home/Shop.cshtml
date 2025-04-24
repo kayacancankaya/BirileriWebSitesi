@@ -247,6 +247,8 @@
                 $.ajax({
                     type: "POST",
                     url: "/Home/AddToCart",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    async: true,
                     data: {
                         userId: userId,
                         productCode: productCode,
@@ -254,16 +256,20 @@
                         quantity: quantity
                     },
                     success: function (response) {
-
-                        showAlert(button, response.message, "success");
-                        let currentItem = response.totalProduct;
-                        console.log(currentItem);
-                        $(".cart .cart-count").text(currentItem);
+                        if(response.success){
+                            showAlert(button, response.message, "success");
+                            let currentItem = response.totalProduct;
+                            $(".cart .cart-count").text(currentItem);
+                        }
+                        else{
+                            showAlert(button, response.message, "error");
+                            let currentItem = response.totalProduct;
+                            $(".cart .cart-count").text(currentItem);
+                        }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
-                        console.log(xhr.responseText);
-
+               
                         showAlert(button, response.message, "danger");
                     }
                 });

@@ -82,7 +82,7 @@ namespace BirileriWebSitesi.Controllers
                 //get total products
                 pagination.TotalCount = _context.Products.Count();
                 if(products == null)
-                    return NotFound();
+                   return View("Not Found");
 
                 //get popular products
                 IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
@@ -106,7 +106,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return NotFound();
+               return View("Not Found");
             }
         }
         public IActionResult Catalog(int catalogID)
@@ -159,7 +159,7 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Catalog> catalogs = _context.Catalogs.ToList();
           
                 if(products == null)
-                    return NotFound();
+                   return View("Not Found");
 
                 //get popular products
                 IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
@@ -180,7 +180,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return NotFound();
+               return View("Not Found");
             }
         }
         public async Task<IActionResult> Cart()
@@ -224,7 +224,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return NotFound();
+               return View("Not Found");
             }
         }
         public IActionResult ShopFiltered(int catalogID,string searchFilter,int pageNumber,decimal minPrice, decimal maxPrice)
@@ -297,7 +297,7 @@ namespace BirileriWebSitesi.Controllers
                                                     .FirstOrDefault();
 
                 if(product == null) 
-                    return NotFound();
+                   return View("Not Found");
                 
                 string productVariant = product.ProductVariants.First().ProductCode;//to fetch global variants
                 Dictionary<string,string> globalVariants = new Dictionary<string,string>();
@@ -376,9 +376,10 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 string err = ex.Message.ToString();
-                return NotFound();
+               return View("Not Found");
             }
         }
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> AddToCart(string userId, string productCode, decimal price, int quantity)
         {
@@ -387,7 +388,7 @@ namespace BirileriWebSitesi.Controllers
                 if(price * quantity > 100000)
                 {
                     TempData["DangerMessage"] = "Sepet Miktarı 100.000₺'den Büyük Olamaz.";
-                    return BadRequest("Sepet Miktarı 100.000₺'den Büyük Olamaz.");
+                    return Ok( new { success = false, message = "Sepet Miktarı 100.000₺'den Büyük Olamaz." });
                 }
 
                 string totalProduct = string.Empty;
@@ -395,7 +396,7 @@ namespace BirileriWebSitesi.Controllers
                 if (string.IsNullOrEmpty(productCode) ||
                     price <= 0 ||
                     quantity <= 0)
-                    return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
+                    return Ok(new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
 
                 //cookie 
                 if (userId == "0")
@@ -404,7 +405,7 @@ namespace BirileriWebSitesi.Controllers
                     if(result.Values.FirstOrDefault() == "HATA")
                     {
                         TempData["TotalProduct"] = 0;
-                        return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
+                        return Ok( new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
                     }
                     totalProduct = result.Keys.FirstOrDefault().ToString();
                     return Ok(new { message = "Ürün Sepete Eklendi", totalProduct });
@@ -414,7 +415,7 @@ namespace BirileriWebSitesi.Controllers
                 result =  await _basketService.AddItemToBasketAsync(userId, productCode, price, quantity);
                 if (result.Values.FirstOrDefault() == "Ürün Sepete Eklenirken Hata ile Karşılaşıldı")
                 {
-                    return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
+                    return Ok(new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
                 }
                 totalProduct = result.Keys.FirstOrDefault().ToString();
                 
@@ -422,7 +423,8 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                return BadRequest("Ürün Sepete Eklenirken Hata ile Karşılaşıldı.");
+                return Ok(new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
+
             }
         }
         [HttpPost]
@@ -465,6 +467,7 @@ namespace BirileriWebSitesi.Controllers
                 return BadRequest(new { message });
             }
         }
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> CartItemAmountChanged(string productCode,int quantity)
         {
@@ -485,7 +488,7 @@ namespace BirileriWebSitesi.Controllers
                     string cart = Request.Cookies["MyCart"];
                     if (string.IsNullOrEmpty(cart))
                     {
-                        message = "Sepet Bulunamadý";
+                        message = "Sepet Bulunamadı";
                         return BadRequest(new { message });
                     }
 
@@ -494,7 +497,7 @@ namespace BirileriWebSitesi.Controllers
 
                     if (result.Values.FirstOrDefault() == "HATA")
                     {
-                        message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
+                        message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                         return BadRequest(new { message });
                     }
                     TempData["message"] = message;
@@ -520,10 +523,12 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                string message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
+                string message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
             }
         }
+
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> RemoveCartItem(string productCode)
         {
@@ -559,7 +564,7 @@ namespace BirileriWebSitesi.Controllers
 
                     if (result.Values.FirstOrDefault() == "HATA")
                     {
-                        message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
+                        message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                         return BadRequest(new { message });
                     }
 
@@ -586,9 +591,9 @@ namespace BirileriWebSitesi.Controllers
                 //db
                 bool resultDb = await _basketService.RemoveBasketItemAsync(userID,productCode);
                 if(resultDb)
-                    message = "Ürün Sepetten Çýkarýldý";
+                    message = "Ürün Sepetten Çıkarıldı";
                 else
-                    message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
+                    message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                 totalProductCount = await _basketService.CountTotalBasketItems(userID);
                 TempData["message"] = message;
                 Basket basket = await _basketService.GetBasketAsync(userID);
@@ -596,7 +601,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch
             {
-                string message = "Ürün Sepetten Çýkarýlýrken Hata ile Karşılaşıldı";
+                string message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
             }
         }
@@ -742,7 +747,7 @@ namespace BirileriWebSitesi.Controllers
                     user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
                 }
                 else
-                    return NotFound();
+                   return View("Not Found");
 
                 bool isInBuyRegion = false;
                 
@@ -812,7 +817,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return NotFound();
+               return View("Not Found");
             }
         }
         public IActionResult _PartialIsCorporate(Models.OrderAggregate.Address address)
@@ -938,7 +943,7 @@ namespace BirileriWebSitesi.Controllers
                 await _orderService.SaveOrderInfoAsync(order);
                 int orderID = await _orderService.GetOrderID(order);
                 if(orderID == 0)
-                    return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
+                    return Ok(new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
                
                 //prepare payment view model
                 PaymentViewModel payment = new PaymentViewModel();
@@ -956,7 +961,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
+                return Ok(new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
             }
         }
         [HttpGet]

@@ -33,6 +33,8 @@
                     data: {
                         productCode: productCode,
                     },
+
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     async:true,
                     success: function (response) {
                         $("#cart-content").html(response);
@@ -64,6 +66,7 @@
                 $.ajax({
                     type: "POST",
                     url: "/Home/CartItemAmountChanged",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     data: {
                         productCode: productCode,
                         quantity: quantity
