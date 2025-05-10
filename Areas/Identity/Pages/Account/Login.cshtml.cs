@@ -30,10 +30,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly IAntiforgery _antiforgery;
         private readonly IBasketService _basketService;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IUserAuditService _userAuditService;
         public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, UserManager<IdentityUser> userManager,
                              IAntiforgery antiforgery,
                              IBasketService basketService,
-                             ApplicationDbContext dbContext)
+                             ApplicationDbContext dbContext, 
+                             IUserAuditService userAuditService)
         {
             _signInManager = signInManager;
             _logger = logger;
@@ -41,6 +43,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _antiforgery = antiforgery;
             _basketService = basketService;
             _dbContext = dbContext;
+            _userAuditService = userAuditService;
         }
 
         /// <summary>
@@ -148,6 +151,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         {
                             audit.LastLoginDate = DateTime.UtcNow;
                             await _dbContext.SaveChangesAsync();
+
                         }
                         else
                         {

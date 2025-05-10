@@ -137,7 +137,7 @@ namespace BirileriWebSitesi.Services
 
                await _context.SaveChangesAsync();
 
-                return "SUCCESS";
+                return order.Id.ToString();
             }
             catch (Exception ex)
             {

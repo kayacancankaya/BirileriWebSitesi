@@ -60,7 +60,8 @@ namespace BirileriWebSitesi.Controllers
                 TempData["Cookie"] = "exists";
             else
                 TempData["Cookie"] = "not exists";
-			return View();
+
+            return View();
         }
         //-------------shop-------------//
         public IActionResult Shop()
@@ -82,7 +83,7 @@ namespace BirileriWebSitesi.Controllers
                 //get total products
                 pagination.TotalCount = _context.Products.Count();
                 if(products == null)
-                   return View("Not Found");
+                   return View("NotFound");
 
                 //get popular products
                 IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
@@ -104,9 +105,10 @@ namespace BirileriWebSitesi.Controllers
                 return View(shop);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-               return View("Not Found");
+                _logger.LogError(ex, ex.Message.ToString());
+               return View("NotFound");
             }
         }
         public IActionResult Catalog(int catalogID)
@@ -159,7 +161,7 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Catalog> catalogs = _context.Catalogs.ToList();
           
                 if(products == null)
-                   return View("Not Found");
+                   return View("NotFound");
 
                 //get popular products
                 IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
@@ -180,7 +182,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-               return View("Not Found");
+               return View("NotFound");
             }
         }
         public async Task<IActionResult> Cart()
@@ -224,7 +226,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-               return View("Not Found");
+               return View("NotFound");
             }
         }
         public IActionResult ShopFiltered(int catalogID,string searchFilter,int pageNumber,decimal minPrice, decimal maxPrice)
@@ -297,7 +299,7 @@ namespace BirileriWebSitesi.Controllers
                                                     .FirstOrDefault();
 
                 if(product == null) 
-                   return View("Not Found");
+                   return View("NotFound");
                 
                 string productVariant = product.ProductVariants.First().ProductCode;//to fetch global variants
                 Dictionary<string,string> globalVariants = new Dictionary<string,string>();
@@ -376,7 +378,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 string err = ex.Message.ToString();
-               return View("Not Found");
+               return View("NotFound");
             }
         }
         [ValidateAntiForgeryToken]
@@ -418,8 +420,8 @@ namespace BirileriWebSitesi.Controllers
                     return Ok(new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
                 }
                 totalProduct = result.Keys.FirstOrDefault().ToString();
-                
-                return Ok(new { message = "Ürün Sepete Eklendi", TotalProduct = totalProduct });
+
+                return Ok(new { success = true, message = "Ürün Sepete Eklendi", TotalProduct = totalProduct });
             }
             catch
             {
@@ -747,7 +749,7 @@ namespace BirileriWebSitesi.Controllers
                     user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
                 }
                 else
-                   return View("Not Found");
+                   return View("NotFound");
 
                 bool isInBuyRegion = false;
                 
@@ -817,7 +819,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-               return View("Not Found");
+               return View("NotFound");
             }
         }
         public IActionResult _PartialIsCorporate(Models.OrderAggregate.Address address)
@@ -940,11 +942,13 @@ namespace BirileriWebSitesi.Controllers
 
                 //save order info
                 Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, true, 1);
-                await _orderService.SaveOrderInfoAsync(order);
-                int orderID = await _orderService.GetOrderID(order);
-                if(orderID == 0)
+                string orderResult = await _orderService.SaveOrderInfoAsync(order);
+                int orderID = 0;
+                if (!Int32.TryParse(orderResult, out orderID))
+                    return Ok(new { success = false, message = orderResult });
+                if (orderID == 0 || orderID == -1)
                     return Ok(new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
-               
+
                 //prepare payment view model
                 PaymentViewModel payment = new PaymentViewModel();
                 payment.ShipToAddress = ShipToAddress;
@@ -998,23 +1002,23 @@ namespace BirileriWebSitesi.Controllers
             
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
                 if(userAudit == null)
-                    return BadRequest(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
                 if (string.IsNullOrEmpty(userAudit.Ip))
-                    return BadRequest(new { success = false, message = "IP Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
                 if (string.IsNullOrEmpty(userAudit.City))
-                    return BadRequest(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
                 if (string.IsNullOrEmpty(userAudit.Country))
-                    return BadRequest(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
                 if (userAudit.RegistrationDate == null)
-                    return BadRequest(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
                 if (userAudit.LastLoginDate == null)
-                    return BadRequest(new { success = false, message = "Son Giriş Tarihi Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Son Giriş Tarihi Bilgileri Bulunamadı." });
                 DateTime lastLoginDate;
                 DateTime registrationDate;
                 if (!DateTime.TryParse(userAudit.LastLoginDate.ToString(), out lastLoginDate))
-                    return BadRequest(new { success = false, message = "Son Giriş Tarihi Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Son Giriş Tarihi Bilgileri Bulunamadı." });
                 if(!DateTime.TryParse(userAudit.RegistrationDate.ToString(), out registrationDate))
-                    return BadRequest(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
+                    return Ok(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
 
                 model.RegistrationDate = lastLoginDate;
                 model.LastLoginDate = registrationDate;
@@ -1193,28 +1197,68 @@ namespace BirileriWebSitesi.Controllers
         //-------------other pages -------------//
         public IActionResult Privacy()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
         }
         public IActionResult CookiePolicy()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
         }
         public IActionResult IWannaMakeALongDistanceCall()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
         }
         public IActionResult KVKK()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
         }
         public IActionResult About()
         {
-            authCookie = Request.Cookies["AuthToken"];
-            if (authCookie != null)
-                TempData["Cookie"] = "exists";
-            else
-                TempData["Cookie"] = "not exists";
-            return View();
+           try
+            {
+                authCookie = Request.Cookies["AuthToken"];
+                if (authCookie != null)
+                    TempData["Cookie"] = "exists";
+                else
+                    TempData["Cookie"] = "not exists";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
         }
         public IActionResult _PartialContactUs()
         {
@@ -1245,6 +1289,10 @@ namespace BirileriWebSitesi.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        public IActionResult NotFound()
+        {
+            return View();
         }
         //-------------other pages ends -------------//
 

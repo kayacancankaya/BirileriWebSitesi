@@ -9,16 +9,100 @@ using BirileriWebSitesi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 var config = builder.Configuration;
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+string? connectionString = string.Empty;
+builder.Configuration.AddEnvironmentVariables();
+// Load configuration based on environment
+if (builder.Environment.IsDevelopment())
+{
+    // Add secret.json file for development environment
+    builder.Configuration.AddJsonFile("Secrets.json", optional: true, reloadOnChange: true);
+}
+else
+{
+    // In production, use environment variables for sensitive data
+    builder.Configuration.AddEnvironmentVariables();
+}
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+//if (builder.Environment.IsProduction())
+//{
+//builder.WebHost.UseUrls("https://birilerigt.com");
+//builder.Services.Configure<ForwardedHeadersOptions>(options =>
+//{
+//    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+//    options.KnownNetworks.Clear(); // Clear known networks to allow all
+//    options.KnownProxies.Clear();  // Clear known proxies to allow all
+//});
+builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(5000); 
+    });
 
-builder.Services.Configure<IyzipayOptions>(
-    builder.Configuration.GetSection("IyzipayOptions"));
+    connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.Configure<IpInfoSettings>(builder.Configuration.GetSection("IpInfo"));
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseMySql(connectionString,
+            ServerVersion.AutoDetect(connectionString)));
+
+    builder.Services.Configure<IyzipayOptions>(
+         builder.Configuration.GetSection("IyzipayOptions"));
+
+
+    builder.Services.Configure<IpInfoSettings>(builder.Configuration.GetSection("IpInfo"));
+
+    builder.Services.AddAuthentication()
+       .AddGoogle(options =>
+       {
+           IConfigurationSection googleAuthNSection =
+           config.GetSection("Authentication:Google"); 
+           options.ClientId = googleAuthNSection["ClientId"];
+           options.ClientSecret = googleAuthNSection["ClientSecret"];
+       })
+       .AddFacebook(options =>
+       {
+           IConfigurationSection FBAuthNSection =
+           config.GetSection("Authentication:FB");
+           options.ClientId = FBAuthNSection["ClientId"];
+           options.ClientSecret = FBAuthNSection["ClientSecret"];
+       })
+       .AddMicrosoftAccount(microsoftOptions =>
+       {
+           microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"];
+           microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"];
+       })
+       .AddTwitter(twitterOptions =>
+       {
+           twitterOptions.ConsumerKey = config["Authentication:Twitter:ConsumerAPIKey"];
+           twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
+           twitterOptions.RetrieveUserDetails = true;
+       });
+
+//    builder.Services.AddAuthentication()
+//       .AddGoogle(options =>
+//       {
+//           IConfigurationSection googleAuthNSection =
+//           config.GetSection("Authentication:Google");
+//           options.ClientId = googleAuthNSection["ClientId"];
+//           options.ClientSecret = googleAuthNSection["ClientSecret"];
+//       })
+//       .AddFacebook(options =>
+//       {
+//           IConfigurationSection FBAuthNSection =
+//           config.GetSection("Authentication:FB");
+//           options.ClientId = FBAuthNSection["ClientId"];
+//           options.ClientSecret = FBAuthNSection["ClientSecret"];
+//       })
+//       .AddMicrosoftAccount(microsoftOptions =>
+//       {
+//           microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"];
+//           microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"];
+//       })
+//       .AddTwitter(twitterOptions =>
+//       {
+//           twitterOptions.ConsumerKey = config["Authentication:Twitter:ConsumerAPIKey"];
+//           twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
+//           twitterOptions.RetrieveUserDetails = true;
+//       });
+//}
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -52,33 +136,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserAuditService, UserAuditService>(); 
 builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
 
-
-builder.Services.AddAuthentication()
-   .AddGoogle(options =>
-   {
-       IConfigurationSection googleAuthNSection =
-       config.GetSection("Authentication:Google");
-       options.ClientId = googleAuthNSection["ClientId"];
-       options.ClientSecret = googleAuthNSection["ClientSecret"];
-   })
-   .AddFacebook(options =>
-   {
-       IConfigurationSection FBAuthNSection =
-       config.GetSection("Authentication:FB");
-       options.ClientId = FBAuthNSection["ClientId"];
-       options.ClientSecret = FBAuthNSection["ClientSecret"];
-   })
-   .AddMicrosoftAccount(microsoftOptions =>
-   {
-       microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"];
-       microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"];
-   })
-   .AddTwitter(twitterOptions =>
-   {
-       twitterOptions.ConsumerKey = config["Authentication:Twitter:ConsumerAPIKey"];
-       twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
-       twitterOptions.RetrieveUserDetails = true;
-   });
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -133,7 +190,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Home/NotFound");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -143,6 +200,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseForwardedHeaders();
 app.UseAuthentication();
 app.UseAuthorization();
 

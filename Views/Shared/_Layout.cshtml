@@ -39,6 +39,9 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .add-to-cart {
+            display: none;
+        }
         .alertParagraph {
             margin: 0px;
             10px;
@@ -165,7 +168,9 @@
 </head>
 
 <body>
-    
+
+    @Html.AntiForgeryToken()
+    <input name="__RequestVerificationToken" type="hidden" value="TOKEN_VALUE" />
     <div class="header-top">
         <div class="auto-container">
             <div class="clearfix">
@@ -794,7 +799,7 @@
         
         function showAlert(button, message, type) {
             var alertText = button.prevAll(".alert-text").first(); // Find closest alert-text
-            console.warn(message);
+            
             if (alertText.length === 0) {
                 console.warn("No alert-text found for this button.");
                 return;

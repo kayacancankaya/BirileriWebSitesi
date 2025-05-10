@@ -12,6 +12,8 @@
 
 
 
+@Html.AntiForgeryToken()
+<input name="__RequestVerificationToken" type="hidden" value="TOKEN_VALUE" />
 <!--Cart Section-->
 <section class="cart-section" id="cart-content">
     @Html.Partial("_PartialCart",Model)
