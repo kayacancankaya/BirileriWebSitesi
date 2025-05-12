@@ -32,6 +32,8 @@ namespace BirileriWebSitesi.Services
             _context = context;
             _logger = logger;
             _iyzipayOptions = iyzipayOptions.Value;
+            Console.WriteLine(_iyzipayOptions.BaseUrl);
+            _logger.LogWarning(_iyzipayOptions.BaseUrl);
         }
 
         public Task<Dictionary<Address, Address>> GetAddress(string userId)
@@ -186,6 +188,8 @@ namespace BirileriWebSitesi.Services
                 if (checkString != "success")
                     return checkString;
                 Iyzipay.Options options = await GetIyzipayOptionsAsync();
+                Console.WriteLine(options.BaseUrl);
+                _logger.LogWarning(options.BaseUrl);
                 CreatePaymentRequest request = await IyziPayCreateReqAsync(order, model, options);
                 Payment payment = await IyziPay(request, options);
 
@@ -283,7 +287,7 @@ namespace BirileriWebSitesi.Services
                 }
                 buyer.GsmNumber = order.BillingAddress.Phone;
                 buyer.Email = order.BillingAddress.EmailAddress;
-                buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString();
+                buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString() == string.Empty ? "0000000000000" : order.BillingAddress.VATnumber.ToString();
                 buyer.LastLoginDate = model.LastLoginDate.ToString("yyyy-MM-dd HH:mm:ss");
                 buyer.RegistrationDate = model.RegistrationDate.ToString("yyyy-MM-dd HH:mm:ss");
                 buyer.RegistrationAddress = order.BillingAddress.AddressDetailed;

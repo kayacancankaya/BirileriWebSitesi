@@ -43,25 +43,47 @@ namespace BirileriWebSitesi.Controllers
                             IUserAuditService userAuditService,
                             UserManager<IdentityUser> userManager)
         {
+            try
+            {
+
             _logger = logger;
-            _context = context;
-            _basketService = basketService;
-            _orderService = orderService;
+                _logger.LogError("Logger Created");
+                _context = context;
+                _logger.LogError("Context Created");
+                _basketService = basketService;
+                _logger.LogError("Basket Created");
+                _orderService = orderService;
             _productService = productService;
             _userService = userService;
             _userManager = userManager;
             _userAuditService = userAuditService;
+
+                _logger.LogError("home controller construction completed");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+            }
         }
 
         public IActionResult Index()
         {
-            authCookie = Request.Cookies[".AspNetCore.Identity.Application"];
-            if (authCookie != null)
-                TempData["Cookie"] = "exists";
-            else
-                TempData["Cookie"] = "not exists";
+            try
+            {
 
-            return View();
+                authCookie = Request.Cookies[".AspNetCore.Identity.Application"];
+                if (authCookie != null)
+                    TempData["Cookie"] = "exists";
+                else
+                    TempData["Cookie"] = "not exists";
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
         }
         //-------------shop-------------//
         public IActionResult Shop()
@@ -180,9 +202,10 @@ namespace BirileriWebSitesi.Controllers
                 return View("Shop",shop);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-               return View("NotFound");
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
             }
         }
         public async Task<IActionResult> Cart()
@@ -224,9 +247,10 @@ namespace BirileriWebSitesi.Controllers
                 return View(basket);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-               return View("NotFound");
+                _logger.LogError(ex,ex.Message.ToString());
+                return View("NotFound");
             }
         }
         public IActionResult ShopFiltered(int catalogID,string searchFilter,int pageNumber,decimal minPrice, decimal maxPrice)
@@ -286,7 +310,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, new { success = false, message = "Filtreleme iþlemi esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = "Filtreleme işlemi esnasında hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
         public IActionResult ProductDetailed(string productCode)
@@ -463,9 +487,10 @@ namespace BirileriWebSitesi.Controllers
                 message = result.ToString();
                 return Ok(new { message });
             }
-            catch
+            catch (Exception ex)
             {
                 string message = "0";
+                _logger.LogError(ex, ex.Message.ToString());
                 return BadRequest(new { message });
             }
         }
@@ -523,8 +548,9 @@ namespace BirileriWebSitesi.Controllers
 
                 return PartialView("_PartialCart",basket);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 string message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
             }
@@ -551,7 +577,7 @@ namespace BirileriWebSitesi.Controllers
                     string cart = Request.Cookies["MyCart"];
                     if (string.IsNullOrEmpty(cart))
                     {
-                        message = "Sepet Bulunamadý";
+                        message = "Sepet Bulunamadı";
                         return BadRequest(new { message });
                     }
 
@@ -601,8 +627,9 @@ namespace BirileriWebSitesi.Controllers
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 return PartialView("_PartialCart",basket);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 string message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
             }
@@ -613,9 +640,9 @@ namespace BirileriWebSitesi.Controllers
             {
 
                 if (products == null)
-                    return Ok(new { success = false, message = "Ürün Bulunamadý." });
+                    return Ok(new { success = false, message = "Ürün Bulunamadı." });
                 if (!products.Any())
-                    return Ok(new { success = false, message = "Ürün Bulunamadý." });
+                    return Ok(new { success = false, message = "Ürün Bulunamadı." });
 
 
                 return PartialView("_PartialProductCard", products);
@@ -634,7 +661,7 @@ namespace BirileriWebSitesi.Controllers
                     string.IsNullOrEmpty(productName) ||
                     variantAttributes == null)
                 {
-                    return BadRequest(new { success = false, message = "Varyant Seçeneði Bulunamadý." });
+                    return BadRequest(new { success = false, message = "Varyant Seçeneði Bulunamadı." });
                 }
                 string variantCode = productCode;
                 string variantName = productName;
@@ -669,7 +696,8 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, message = "Beklenmeyen Bir Hata Oluþtu"});
+                _logger.LogError(ex, ex.Message.ToString());
+                return BadRequest(new { success = false, message = "Beklenmeyen Bir Hata Oluştu"});
             }
         }
         public async Task<IActionResult> _CatalogPartial()
@@ -685,6 +713,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 return BadRequest();
             }
         }
@@ -696,6 +725,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 return BadRequest();
             }
         }
@@ -833,8 +863,9 @@ namespace BirileriWebSitesi.Controllers
                 return PartialView(address);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
             }
@@ -859,8 +890,9 @@ namespace BirileriWebSitesi.Controllers
                 return PartialView(address);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
             }
@@ -971,14 +1003,23 @@ namespace BirileriWebSitesi.Controllers
         [HttpGet]
         public IActionResult Payment()
         {
-            var paymentJson = HttpContext.Session.GetString("PaymentViewModel");
+            try
+            {
+                var paymentJson = HttpContext.Session.GetString("PaymentViewModel");
 
-            if (string.IsNullOrEmpty(paymentJson))
-                return RedirectToAction("Not Found"); // Or show a nice message
+                if (string.IsNullOrEmpty(paymentJson))
+                    return RedirectToAction("Not Found"); // Or show a nice message
 
-            var paymentModel = JsonConvert.DeserializeObject<PaymentViewModel>(paymentJson);
+                var paymentModel = JsonConvert.DeserializeObject<PaymentViewModel>(paymentJson);
 
-            return View("Payment", paymentModel);
+                return View("Payment", paymentModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+            
         }
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -993,7 +1034,7 @@ namespace BirileriWebSitesi.Controllers
                         .Where(x => x.Value.Errors.Count > 0)
                         .Select(x => new { x.Key, x.Value.Errors })
                         .ToList();
-
+                    _logger.LogError("ModelState is not valid, PlaceOrder controller");
                     return BadRequest(new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı.", errors });
                 }
 
@@ -1003,12 +1044,12 @@ namespace BirileriWebSitesi.Controllers
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
                 if(userAudit == null)
                     return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
-                if (string.IsNullOrEmpty(userAudit.Ip))
-                    return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
-                if (string.IsNullOrEmpty(userAudit.City))
-                    return Ok(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
-                if (string.IsNullOrEmpty(userAudit.Country))
-                    return Ok(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
+                //if (string.IsNullOrEmpty(userAudit.Ip))
+                //    return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
+                //if (string.IsNullOrEmpty(userAudit.City))
+                //    return Ok(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
+                //if (string.IsNullOrEmpty(userAudit.Country))
+                //    return Ok(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
                 if (userAudit.RegistrationDate == null)
                     return Ok(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
                 if (userAudit.LastLoginDate == null)
@@ -1022,9 +1063,9 @@ namespace BirileriWebSitesi.Controllers
 
                 model.RegistrationDate = lastLoginDate;
                 model.LastLoginDate = registrationDate;
-                model.Ip = userAudit.Ip;
-                model.City = userAudit.City;
-                model.Country = userAudit.Country;
+                model.Ip = "127.0.0.1";
+                model.City = "İzmir";
+                model.Country = "Türkiye";
                 string resultString = string.Empty;
                 if(model.PaymentType == 1)
                 {
@@ -1050,6 +1091,7 @@ namespace BirileriWebSitesi.Controllers
                         }
                         else
                         {
+                            _logger.LogError(resultString);
                             return Ok(new { success = false, message = resultString });
                         }
                     }
@@ -1070,42 +1112,53 @@ namespace BirileriWebSitesi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Payment3dsCallBack()
         {
-            ThreedsPayment payment = await _orderService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
-
-
-            PaymentLog paymentLog = new();
-            paymentLog.ConversationId = payment.ConversationId;
-            paymentLog.OrderId = Convert.ToInt32(payment.BasketId);
-            paymentLog.PaymentId = payment.PaymentId;
-            paymentLog.Price = payment.Price;
-            paymentLog.PaidPrice = payment.PaidPrice;
-            paymentLog.IyziCommissionRateAmount = payment.IyziCommissionRateAmount;
-            paymentLog.IyziCommissionFee = payment.IyziCommissionFee;
-            paymentLog.CardFamily = payment.CardFamily;
-            paymentLog.CardAssociation = payment.CardAssociation;
-            paymentLog.CardType = payment.CardType;
-            paymentLog.BinNumber = payment.BinNumber;
-            paymentLog.LastFourDigits = payment.LastFourDigits;
-            paymentLog.Status = payment.Status;
-            paymentLog.PaidAt = DateTime.UtcNow;
-
-
-
-            if (payment.Status == "success")
+            try
             {
-                TempData["SuccessMessage"] = "Siparişiniz Başarıyla İşleme Alındı.";
 
-                await _basketService.DeleteBasketAsync(Convert.ToInt32(payment.BasketId));
-                await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved");
-                await _orderService.RecordPayment(paymentLog);
-                // await _emailService.SendOrderConfirmationEmailAsync(_userManager.GetUserId(User));
-                return RedirectToAction("Index");
+                ThreedsPayment payment = await _orderService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
+
+
+                PaymentLog paymentLog = new();
+                paymentLog.ConversationId = payment.ConversationId;
+                paymentLog.OrderId = Convert.ToInt32(payment.BasketId);
+                paymentLog.PaymentId = payment.PaymentId;
+                paymentLog.Price = payment.Price;
+                paymentLog.PaidPrice = payment.PaidPrice;
+                paymentLog.IyziCommissionRateAmount = payment.IyziCommissionRateAmount;
+                paymentLog.IyziCommissionFee = payment.IyziCommissionFee;
+                paymentLog.CardFamily = payment.CardFamily;
+                paymentLog.CardAssociation = payment.CardAssociation;
+                paymentLog.CardType = payment.CardType;
+                paymentLog.BinNumber = payment.BinNumber;
+                paymentLog.LastFourDigits = payment.LastFourDigits;
+                paymentLog.Status = payment.Status;
+                paymentLog.PaidAt = DateTime.UtcNow;
+
+
+
+                if (payment.Status == "success")
+                {
+                    TempData["SuccessMessage"] = "Siparişiniz Başarıyla İşleme Alındı.";
+
+                    await _basketService.DeleteBasketAsync(Convert.ToInt32(payment.BasketId));
+                    await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved");
+                    await _orderService.RecordPayment(paymentLog);
+                    // await _emailService.SendOrderConfirmationEmailAsync(_userManager.GetUserId(User));
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    _logger.LogError("Payment failed: " + payment.Status + DateTime.Now.ToString());
+                    TempData["DangerMessage"] = payment.Status.ToString();
+                    await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
+                    await _orderService.RecordPayment(paymentLog);
+                    return RedirectToAction("Index");
+
+                }
             }
-            else
+            catch (Exception ex)
             {
-                TempData["DangerMessage"] = payment.Status.ToString();
-                await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
-                await _orderService.RecordPayment(paymentLog);
+                _logger.LogError(ex, ex.Message.ToString());
                 return RedirectToAction("Index");
             }
         }
@@ -1117,7 +1170,7 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 if (string.IsNullOrEmpty(model.BinNumber))
-                    return BadRequest(new { success = false, message = "Kart Numarasý Boþ Olamaz." });
+                    return BadRequest(new { success = false, message = "Kart Numarası Boş Olamaz." });
 
                     InstallmentDetail installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
                 if(installmentInfo == null)
@@ -1143,11 +1196,11 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 if (string.IsNullOrEmpty(emailAddress))
-                    return Ok(new { success = false, message = "Email adresi boþ olamaz." });
+                    return Ok(new { success = false, message = "Email adresi boş olamaz." });
 
                 // Validate email format
                 if (!IsValidEmail(emailAddress))
-                    return Ok(new { success = false, message = "Hatalý Email formatý." });
+                    return Ok(new { success = false, message = "Hatalı Email formatı." });
 
                 if (_context.Subscribers.Any(s => s.EmailAddress == emailAddress))
                     return Ok(new { success = false, message = "Email abone listesinde mevcut." });
@@ -1157,11 +1210,11 @@ namespace BirileriWebSitesi.Controllers
                 _context.Subscribers.Add(subscriber);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, message = "Kayýt Baþarýlý!" });
+                return Ok(new { success = true, message = "Kayıt Başarılı!" });
             }
             catch (Exception ex)
             {
-                return Ok(new { success = false, message = "Kayýt esnasýnda hata ile Karşılaşıldı. Lütfen daha sonra tekrar deneyiniz." });
+                return Ok(new { success = false, message = "Kayıt esnasında hata ile Karşılaşıldı. Lütfen daha sonra tekrar deneyiniz." });
             }
         }
         [ValidateAntiForgeryToken]
@@ -1187,7 +1240,8 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Kayıt esnasýnda hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
+                _logger.LogError(ex, ex.Message.ToString());
+                return StatusCode(500, new { success = false, message = "Kayıt esnasında hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
 
@@ -1268,6 +1322,7 @@ namespace BirileriWebSitesi.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 return BadRequest();
             }
         }
@@ -1318,7 +1373,7 @@ namespace BirileriWebSitesi.Controllers
 
                 if (viewResult.Success == false)
                 {
-                    throw new Exception($"Ýlgili sayfa bulunamadý.");
+                    throw new Exception($"Ýlgili sayfa bulunamadı.");
                 }
 
                 var viewContext = new ViewContext(
@@ -1376,9 +1431,9 @@ namespace BirileriWebSitesi.Controllers
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, ex.Message.ToString());
                 Dictionary<int, string> result = new();
                 result.Add(0, "HATA");
                 return result; ;
@@ -1437,8 +1492,9 @@ namespace BirileriWebSitesi.Controllers
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 Dictionary<int, string> result = new();
                 result.Add(0, "HATA");
                 return result;
@@ -1497,8 +1553,9 @@ namespace BirileriWebSitesi.Controllers
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 Dictionary<int, string> result = new();
                 result.Add(0, "HATA");
                 return result;
@@ -1540,8 +1597,10 @@ namespace BirileriWebSitesi.Controllers
                     return result;
                 
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
+                //returns result as int different product count in basket and cookie as string
                 Dictionary<int, string> result = new();
                 result.Add(0, "HATA");
                 return result;
@@ -1574,8 +1633,10 @@ namespace BirileriWebSitesi.Controllers
                 return result;
                 
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
+                //returns result as int different product count in basket and cookie as string
                 Dictionary<string, int> result = new();
                 result.Add("HATA", 0);
                 return result;

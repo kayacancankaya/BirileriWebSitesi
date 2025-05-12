@@ -5,8 +5,11 @@ using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Services;
 using BirileriWebSitesi.Areas;
 using BirileriWebSitesi.Models;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 var config = builder.Configuration;
 string? connectionString = string.Empty;
@@ -35,21 +38,29 @@ else
 builder.WebHost.ConfigureKestrel(options =>
     {
         options.ListenAnyIP(5000); 
+
     });
 
     connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseMySql(connectionString,
-            ServerVersion.AutoDetect(connectionString)));
+            new MySqlServerVersion(new Version(8, 0, 42)))
+        .LogTo(Console.WriteLine, LogLevel.Information));
 
-    builder.Services.Configure<IyzipayOptions>(
-         builder.Configuration.GetSection("IyzipayOptions"));
+builder.Services.Configure<IyzipayOptions>(options =>
+{
+    options.BaseUrl = builder.Configuration["IyzipayOptions:BaseUrl"];
+    options.ApiKey = builder.Configuration["IyzipayOptions:ApiKey"];
+    options.SecretKey = builder.Configuration["IyzipayOptions:SecretKey"];
+});
 
 
-    builder.Services.Configure<IpInfoSettings>(builder.Configuration.GetSection("IpInfo"));
-
-    builder.Services.AddAuthentication()
+builder.Services.Configure<IpInfoSettings>(options =>
+{
+    options.Token = builder.Configuration["IpInfo:Token"];
+});
+builder.Services.AddAuthentication()
        .AddGoogle(options =>
        {
            IConfigurationSection googleAuthNSection =
@@ -75,35 +86,6 @@ builder.WebHost.ConfigureKestrel(options =>
            twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
            twitterOptions.RetrieveUserDetails = true;
        });
-
-//    builder.Services.AddAuthentication()
-//       .AddGoogle(options =>
-//       {
-//           IConfigurationSection googleAuthNSection =
-//           config.GetSection("Authentication:Google");
-//           options.ClientId = googleAuthNSection["ClientId"];
-//           options.ClientSecret = googleAuthNSection["ClientSecret"];
-//       })
-//       .AddFacebook(options =>
-//       {
-//           IConfigurationSection FBAuthNSection =
-//           config.GetSection("Authentication:FB");
-//           options.ClientId = FBAuthNSection["ClientId"];
-//           options.ClientSecret = FBAuthNSection["ClientSecret"];
-//       })
-//       .AddMicrosoftAccount(microsoftOptions =>
-//       {
-//           microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"];
-//           microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"];
-//       })
-//       .AddTwitter(twitterOptions =>
-//       {
-//           twitterOptions.ConsumerKey = config["Authentication:Twitter:ConsumerAPIKey"];
-//           twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
-//           twitterOptions.RetrieveUserDetails = true;
-//       });
-//}
-
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddRazorPages(options =>
@@ -117,7 +99,6 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders()
@@ -157,7 +138,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     "abc�defg�hijklmno�pqrstu�vwxyzABC�DEFGHI�JKLMNO�PQRSTU�VWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = true;
 });
-
+Console.WriteLine("Using identity options: ");
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
@@ -179,7 +160,6 @@ var localizationOptions = new RequestLocalizationOptions
     SupportedUICultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList()
 };
 var app = builder.Build();
-
 app.UseRequestLocalization(localizationOptions);
 
 app.UseSession();
@@ -208,4 +188,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
 app.Run();
