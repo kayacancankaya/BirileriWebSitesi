@@ -260,20 +260,25 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Product> products = new List<Product>();
                 int totalCount = 0;
                 int totalPage = 0;
-                if (searchFilter == null)
-                    searchFilter = string.Empty;
-                // get products
-                products = _context.Products
-                                     .Where(n => n.ProductName.ToLower().Contains(searchFilter.ToLower()) &&
-                                                 n.BasePrice >= minPrice && n.BasePrice <= maxPrice &&
-                                                 (catalogID == 0 || n.CatalogId == catalogID) &&
-                                                 n.IsActive == true)
-                                     .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
-                                     .Take(PaginationViewModel.PageSize)
-                                     .Include(d => d.Discounts)
-                                     .Include(p => p.ProductVariants)
-                                     .ToList();
-
+                IQueryable<Product> query = _context.Products
+                                                    .Where(n => n.BasePrice >= minPrice && n.BasePrice <= maxPrice &&
+                                                                (catalogID == 0 || n.CatalogId == catalogID) &&
+                                                                n.IsActive == true);
+                
+                if (!string.IsNullOrEmpty(searchFilter))
+                {
+                    string loweredFilter = searchFilter.ToLower();
+                    query = query.Where(n => n.ProductName.ToLower().Contains(loweredFilter));
+                }
+                
+                products = query
+                    .OrderBy(n => n.Id) // ensure stable ordering before Skip/Take
+                    .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
+                    .Take(PaginationViewModel.PageSize)
+                    .Include(d => d.Discounts)
+                    .Include(p => p.ProductVariants)
+                    .ToList();
+          
                 //filter related discounts
 
                 foreach (Product product in products)
