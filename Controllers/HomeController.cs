@@ -30,6 +30,7 @@ namespace BirileriWebSitesi.Controllers
         private readonly IProductService _productService;
         private readonly IUserService _userService;
         private readonly IUserAuditService _userAuditService;
+        private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private string? authCookie = string.Empty;
@@ -41,24 +42,22 @@ namespace BirileriWebSitesi.Controllers
                             IOrderService orderService,
                             IUserService userService,
                             IUserAuditService userAuditService,
-                            UserManager<IdentityUser> userManager)
+                            UserManager<IdentityUser> userManager,
+                            IEmailSender emailSender)
         {
             try
             {
 
-            _logger = logger;
-                _logger.LogError("Logger Created");
+                _logger = logger;
                 _context = context;
-                _logger.LogError("Context Created");
                 _basketService = basketService;
-                _logger.LogError("Basket Created");
                 _orderService = orderService;
-            _productService = productService;
-            _userService = userService;
-            _userManager = userManager;
-            _userAuditService = userAuditService;
+                _productService = productService;
+                _userService = userService;
+                _userManager = userManager;
+                _userAuditService = userAuditService;
+                _emailSender = emailSender;
 
-                _logger.LogError("home controller construction completed");
             }
             catch (Exception ex)
             {
@@ -1232,11 +1231,14 @@ namespace BirileriWebSitesi.Controllers
                     return Ok(new { success = false, message = "Hatalı Email formatı." });
                 if (string.IsNullOrEmpty(message))
                     return Ok(new { success = false, message = "Mesaj boş olamaz." });
-
-
+                if(string.IsNullOrEmpty(subject))
+                    return Ok(new { success = false, message = "Konu boş olamaz." });
                 
-
-                return Ok(new { success = true, message = "Kayıt Başarılı!" });
+                   bool result = await _emailSender.SendContactUsEmailAsync(username,emailAddress,phone,message,subject);
+                if (result)
+                    return Ok(new { success = true, message = "Kayıt Başarılı!" });
+                else
+                    return Ok(new { success = false, message = "Email Gönderilirken Hata ile Karşılaşıldı." });
             }
             catch (Exception ex)
             {
