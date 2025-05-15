@@ -160,9 +160,9 @@ var localizationOptions = new RequestLocalizationOptions
     SupportedCultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList(),
     SupportedUICultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList()
 };
-var sw = Stopwatch.StartNew();
+
 var app = builder.Build();
-Console.WriteLine("App built in " + sw.Elapsed);
+
 app.UseRequestLocalization(localizationOptions);
 
 app.UseSession();
