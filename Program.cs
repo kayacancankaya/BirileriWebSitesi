@@ -138,7 +138,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
     options.Cookie.HttpOnly = true;
-     options.ExpireTimeSpan = TimeSpan.FromDays(30); 
+     options.ExpireTimeSpan = TimeSpan.FromMinutes(30); 
      options.SlidingExpiration = true; // Renew the cookie when active
    
 
