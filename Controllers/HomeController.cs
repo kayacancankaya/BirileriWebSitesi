@@ -46,15 +46,13 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+                authCookie = Request.Cookies[".AspNetCore.Identity.Application"];
+                if (authCookie != null)
+                    TempData["Cookie"] = "exists";
+                else
+                    TempData["Cookie"] = "not exists";
 
-                //authCookie = Request.Cookies[".AspNetCore.Identity.Application"];
-                //if (authCookie != null)
-                //    TempData["Cookie"] = "exists";
-                //else
-                //    TempData["Cookie"] = "not exists";
-
-                //return View();
-                return Content("Hello world");
+                return View();
             }
             catch (Exception ex)
             {
