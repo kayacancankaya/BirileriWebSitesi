@@ -15,16 +15,13 @@ builder.Logging.AddConsole();
 
 var config = builder.Configuration;
 string? connectionString = string.Empty;
-builder.Configuration.AddEnvironmentVariables();
 // Load configuration based on environment
 if (builder.Environment.IsDevelopment())
 {
-    // Add secret.json file for development environment
     builder.Configuration.AddJsonFile("Secrets.json", optional: true, reloadOnChange: true);
 }
 else
 {
-    // In production, use environment variables for sensitive data
     builder.Configuration.AddEnvironmentVariables();
 }
 
@@ -32,7 +29,11 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(5000);
 });
-
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Add KnownProxies or KnownNetworks if you want to limit trusted proxies
+});
 connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -88,7 +89,7 @@ builder.Services.AddRazorPages(options =>
 });
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromDays(365 * 5); // 5 years
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -137,7 +138,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
     options.Cookie.HttpOnly = true;
-     options.ExpireTimeSpan = TimeSpan.FromDays(365 * 5); // 5 years
+     options.ExpireTimeSpan = TimeSpan.FromDays(30); 
      options.SlidingExpiration = true; // Renew the cookie when active
    
 
