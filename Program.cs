@@ -46,7 +46,7 @@ builder.WebHost.ConfigureKestrel(options =>
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseMySql(connectionString,
             new MySqlServerVersion(new Version(8, 0, 42)),
-            mysqlOptions => mysqlOptions.CommandTimeout(10));
+            mysqlOptions => mysqlOptions.CommandTimeout(10)));
         
 
 builder.Services.Configure<IyzipayOptions>(options =>
