@@ -6,6 +6,8 @@ using BirileriWebSitesi.Services;
 using BirileriWebSitesi.Areas;
 using BirileriWebSitesi.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -26,22 +28,12 @@ else
     builder.Configuration.AddEnvironmentVariables();
 }
 
-//if (builder.Environment.IsProduction())
-//{
-//builder.WebHost.UseUrls("https://birilerigt.com");
-//builder.Services.Configure<ForwardedHeadersOptions>(options =>
-//{
-//    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-//    options.KnownNetworks.Clear(); // Clear known networks to allow all
-//    options.KnownProxies.Clear();  // Clear known proxies to allow all
-//});
 builder.WebHost.ConfigureKestrel(options =>
-    {
-        options.ListenAnyIP(5000); 
+{
+    options.ListenAnyIP(5000);
+});
 
-    });
-
-    connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseMySql(connectionString,
@@ -168,23 +160,22 @@ app.UseRequestLocalization(localizationOptions);
 
 app.UseSession();
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-    //app.UseMigrationsEndPoint();
-//}
-//else
-//{
-    //app.UseExceptionHandler("/Home/NotFound");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    //app.UseHsts();
-//}
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
+{
+  app.UseExceptionHandler("/home/notfound");
+  // the default hsts value is 30 days. you may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+  app.UseHsts();
+}
 
-//app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseForwardedHeaders();
+app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseForwardedHeaders();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -192,5 +183,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-Console.WriteLine("App starting at: " + DateTime.Now);
+
 app.Run();
