@@ -45,8 +45,9 @@ builder.WebHost.ConfigureKestrel(options =>
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseMySql(connectionString,
-            new MySqlServerVersion(new Version(8, 0, 42)))
-        .LogTo(Console.WriteLine, LogLevel.Information));
+            new MySqlServerVersion(new Version(8, 0, 42)),
+            mysqlOptions => mysqlOptions.CommandTimeout(10));
+        
 
 builder.Services.Configure<IyzipayOptions>(options =>
 {
@@ -86,7 +87,7 @@ builder.Services.AddAuthentication()
            twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
            twitterOptions.RetrieveUserDetails = true;
        });
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddRazorPages(options =>
 {
@@ -159,23 +160,25 @@ var localizationOptions = new RequestLocalizationOptions
     SupportedCultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList(),
     SupportedUICultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList()
 };
+var sw = Stopwatch.StartNew();
 var app = builder.Build();
+Console.WriteLine("App built in " + sw.Elapsed);
 app.UseRequestLocalization(localizationOptions);
 
 app.UseSession();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseMigrationsEndPoint();
-}
-else
-{
-    app.UseExceptionHandler("/Home/NotFound");
+//if (app.Environment.IsDevelopment())
+//{
+    //app.UseMigrationsEndPoint();
+//}
+//else
+//{
+    //app.UseExceptionHandler("/Home/NotFound");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
+    //app.UseHsts();
+//}
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -188,5 +191,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-
+Console.WriteLine("App starting at: " + DateTime.Now);
 app.Run();
