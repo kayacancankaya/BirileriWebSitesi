@@ -12,7 +12,6 @@ namespace BirileriWebSitesi.Interfaces
         Task<string> SaveOrderInfoAsync(Order order);
         Task<int> GetOrderID(Order order);
         Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price);
-        Task<ThreedsPayment> Payment3dsCallBack(string conversationID,string paymentID);
         Task<bool> RecordPayment(PaymentLog payment);
         Task<bool> UpdateOrderStatus(int orderID,string status);
     }

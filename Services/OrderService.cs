@@ -24,16 +24,16 @@ namespace BirileriWebSitesi.Services
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> _logger;
-        private readonly IyzipayOptions _iyzipayOptions;
+        private readonly IServiceProvider _serviceProvider;
 
         public OrderService (ApplicationDbContext context, ILogger<OrderService> logger,
-                                UserManager<IdentityUser> user, IOptions<IyzipayOptions> iyzipayOptions)
+                                UserManager<IdentityUser> user,
+                                IServiceProvider serviceProvider)
         {
             _context = context;
             _logger = logger;
-            _iyzipayOptions = iyzipayOptions.Value;
-            Console.WriteLine(_iyzipayOptions.BaseUrl);
-            _logger.LogWarning(_iyzipayOptions.BaseUrl);
+            _serviceProvider = serviceProvider;
+            _logger.LogWarning("order service created");
         }
 
         public Task<Dictionary<Address, Address>> GetAddress(string userId)
@@ -156,11 +156,10 @@ namespace BirileriWebSitesi.Services
                 string checkString = await CheckOrderAsync(order, model);
                
                 if(checkString != "success")
-                    return "ERROR";
-                Iyzipay.Options options = await GetIyzipayOptionsAsync();
-                CreatePaymentRequest request = await IyziPayCreateReqAsync(order, model, options);
-                string htmlResult = await IyziPay3ds(request,options);
-
+                    return "Ödeme Esnasında Hata ile Karşılaşıldı.";
+                var iyzipayService = _serviceProvider.GetRequiredService<IIyzipayPaymentService>();
+                string htmlResult = await iyzipayService.IyziPayCreate3dsReqAsync(order, model);
+                
                 if (htmlResult.TrimStart().StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase))
                     order.Status = (int)ApprovalStatus.Pending;
                 else
@@ -175,7 +174,7 @@ namespace BirileriWebSitesi.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return "ERROR";
+                return "Ödeme Esnasında Hata ile Karşılaşıldı.";
             }
         }
         public async Task<string> ProcessOrderAsync(PaymentRequestModel model)
@@ -187,11 +186,9 @@ namespace BirileriWebSitesi.Services
 
                 if (checkString != "success")
                     return checkString;
-                Iyzipay.Options options = await GetIyzipayOptionsAsync();
-                Console.WriteLine(options.BaseUrl);
-                _logger.LogWarning(options.BaseUrl);
-                CreatePaymentRequest request = await IyziPayCreateReqAsync(order, model, options);
-                Payment payment = await IyziPay(request, options);
+
+                var iyzipayService = _serviceProvider.GetRequiredService<IIyzipayPaymentService>();
+                Payment payment = await iyzipayService.IyziPayCreateReqAsync(order, model);
 
                if (payment.Status == "success")
                    order.Status = (int)ApprovalStatus.Approved;
@@ -225,158 +222,6 @@ namespace BirileriWebSitesi.Services
                 return 0;
             }
         }
-        private async Task<Iyzipay.Options> GetIyzipayOptionsAsync()
-        {
-            try
-            {
-                Iyzipay.Options options = new Iyzipay.Options();
-                options.ApiKey = _iyzipayOptions.ApiKey;
-                options.SecretKey = _iyzipayOptions.SecretKey;
-                options.BaseUrl = _iyzipayOptions.BaseUrl;
-                return options;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return null;
-            }
-        }
-        private async Task<CreatePaymentRequest> IyziPayCreateReqAsync(Order order, PaymentRequestModel model, Iyzipay.Options options)
-        {
-            try
-            {
-
-                CreatePaymentRequest request = new CreatePaymentRequest();
-                request.Locale = Locale.TR.ToString();
-                request.ConversationId = Guid.NewGuid().ToString();
-                request.Price = order.TotalAmount.ToString("0.00",CultureInfo.InvariantCulture);
-                request.PaidPrice = order.TotalAmount.ToString("0.00", CultureInfo.InvariantCulture);
-                request.Currency = Currency.TRY.ToString();
-                request.Installment = model.InstallmentAmount;
-                request.BasketId = model.OrderId.ToString();
-                request.PaymentChannel = PaymentChannel.WEB.ToString();
-                request.PaymentGroup = PaymentGroup.PRODUCT.ToString();
-
-                PaymentCard paymentCard = new PaymentCard();
-                paymentCard.CardHolderName = model.CardHolderName;
-                paymentCard.CardNumber = model.CreditCardNumber;
-                //Card number: 5890040000000016
-
-                //Expire Month: 12
-
-                //Expire Year: 2030
-
-                //CVC: 123
-                paymentCard.ExpireMonth = model.ExpMonth;
-                paymentCard.ExpireYear = model.ExpYear;
-                paymentCard.Cvc = model.CVV;
-                paymentCard.RegisterCard = 0;
-                request.PaymentCard = paymentCard;
-
-                Buyer buyer = new Buyer();
-                buyer.Id = order.BuyerId;
-                if (order.BillingAddress.IsCorporate)
-                {
-                    buyer.Name = order.BillingAddress.CorporateName;
-                    buyer.Surname = order.BillingAddress.VATstate;
-                }
-                else
-                {
-                    buyer.Name = order.BillingAddress.FirstName;
-                    buyer.Surname = order.BillingAddress.LastName;
-                }
-                buyer.GsmNumber = order.BillingAddress.Phone;
-                buyer.Email = order.BillingAddress.EmailAddress;
-                buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString() == string.Empty ? "0000000000000" : order.BillingAddress.VATnumber.ToString();
-                buyer.LastLoginDate = model.LastLoginDate.ToString("yyyy-MM-dd HH:mm:ss");
-                buyer.RegistrationDate = model.RegistrationDate.ToString("yyyy-MM-dd HH:mm:ss");
-                buyer.RegistrationAddress = order.BillingAddress.AddressDetailed;
-                buyer.Ip = model.Ip;
-                buyer.City = model.City;
-                buyer.Country = model.Country;
-                buyer.ZipCode = order.BillingAddress.ZipCode;
-                request.Buyer = buyer;
-
-                Iyzipay.Model.Address shippingAddress = new Iyzipay.Model.Address();
-                shippingAddress.ContactName = string.Format("{0} {1}", order.ShipToAddress.FirstName, order.ShipToAddress.LastName);
-                shippingAddress.City = order.ShipToAddress.City;
-                shippingAddress.Country = order.ShipToAddress.Country;
-                shippingAddress.Description = order.ShipToAddress.AddressDetailed;
-                shippingAddress.ZipCode = order.ShipToAddress.ZipCode;
-                request.ShippingAddress = shippingAddress;
-
-                Iyzipay.Model.Address billingAddress = new Iyzipay.Model.Address();
-                if (order.BillingAddress.IsCorporate)
-                    billingAddress.ContactName = order.BillingAddress.CorporateName;
-                else
-                    billingAddress.ContactName = order.BillingAddress.FirstName + " " + order.BillingAddress.LastName;
-
-                billingAddress.City = order.BillingAddress.City;
-                billingAddress.Country = order.BillingAddress.Country;
-                billingAddress.Description = order.BillingAddress.AddressDetailed;
-                billingAddress.ZipCode = order.BillingAddress.ZipCode;
-                request.BillingAddress = billingAddress;
-
-                List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
-                foreach (var item in order.OrderItems)
-                {
-                    Iyzipay.Model.BasketItem basketItem = new BasketItem();
-                    basketItem.Id = item.ProductCode;
-                    basketItem.Name = item.ProductVariant.ProductName;
-                    basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
-                    basketItem.Category2 = string.Empty;
-                    basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
-                    basketItem.Price = (item.UnitPrice * item.Units).ToString("0.00",CultureInfo.InvariantCulture);
-                    basketItems.Add(basketItem);
-                }
-
-                request.BasketItems = basketItems;
-                return request;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return null;
-            }
-        }
-        private async Task<Payment> IyziPay(CreatePaymentRequest request,Iyzipay.Options options)
-        {
-            try
-            {
-                Payment payment = await Payment.Create(request, options);
-                
-                return payment;
-            }
-            catch (Exception ex)
-            {
-
-                _logger.LogError(ex, ex.Message.ToString());
-                return null;
-            }
-        }
-        private async Task<string> IyziPay3ds(CreatePaymentRequest request, Iyzipay.Options options)
-        {
-            try
-            {
-                request.CallbackUrl = "https://localhost:7031/Home/Payment3dsCallBack";
-                ThreedsInitialize threedsInit = await ThreedsInitialize.Create(request, options);
-                if (threedsInit.Status == "success")
-                {
-                    // Return this HTML to the frontend and show it inside a <div> or <iframe>
-                    return threedsInit.HtmlContent;
-                }
-                else
-                    return threedsInit.ErrorMessage;
-                
-            }
-            catch (Exception ex)
-            {
-
-                _logger.LogError(ex, ex.Message.ToString());
-                return "ERROR";
-            }
-        }
-
         public async Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price)
         {
             Iyzipay.Options options = new Iyzipay.Options();
@@ -517,28 +362,6 @@ namespace BirileriWebSitesi.Services
             {
                 _logger.LogError(ex, ex.Message.ToString());
                 return "Sipariş Kontrol Edilirken Sistemsel Hata Oluştu, Lütfen Tekrar Deneyiniz.";
-            }
-        }
-        public async Task<ThreedsPayment> Payment3dsCallBack(string conversationID, string paymentId)
-        {
-            try
-            {
-                Iyzipay.Options options = await GetIyzipayOptionsAsync();
-                var request = new CreateThreedsPaymentRequest
-                {
-                    Locale = Locale.TR.ToString(),
-                    ConversationId = conversationID,
-                    PaymentId = paymentId,
-                };
-
-                var payment = await ThreedsPayment.Create(request, options);
-
-                return payment;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return null;
             }
         }
         public async Task<bool> RecordPayment(PaymentLog payment)

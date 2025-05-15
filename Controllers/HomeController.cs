@@ -33,38 +33,15 @@ namespace BirileriWebSitesi.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IServiceProvider _serviceProvider;
         private string? authCookie = string.Empty;
         string MyCart = string.Empty;
-        public HomeController(ILogger<HomeController> logger,
-                            ApplicationDbContext context,
-                            IBasketService basketService,
-                            IProductService productService,
-                            IOrderService orderService,
-                            IUserService userService,
-                            IUserAuditService userAuditService,
-                            UserManager<IdentityUser> userManager,
-                            IEmailSender emailSender)
+        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger)
         {
-            try
-            {
-
-                _logger = logger;
-                _context = context;
-                _basketService = basketService;
-                _orderService = orderService;
-                _productService = productService;
-                _userService = userService;
-                _userManager = userManager;
-                _userAuditService = userAuditService;
-                _emailSender = emailSender;
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-            }
+            _context = context;
+            _logger = logger;
         }
-
+        
         public IActionResult Index()
         {
             try
@@ -707,6 +684,7 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+
                 IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
                 if (catalogs == null)
                     return BadRequest();
@@ -1090,7 +1068,7 @@ namespace BirileriWebSitesi.Controllers
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
-                            return Ok(new { success = true, is3Ds = true, message = "Sipariş Başarıyla İşleme Alındı." });
+                            return Ok(new { success = true, is3Ds = true, message = "Siparişiniz İşleme Alındı." });
                         }
                         else
                         {
@@ -1117,8 +1095,8 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
-
-                ThreedsPayment payment = await _orderService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
+                var iyzipayService = _serviceProvider.GetRequiredService<IIyzipayPaymentService>();
+                ThreedsPayment payment = await iyzipayService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
 
 
                 PaymentLog paymentLog = new();
