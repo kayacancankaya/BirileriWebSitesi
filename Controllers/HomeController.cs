@@ -267,8 +267,9 @@ namespace BirileriWebSitesi.Controllers
                 
                 if (!string.IsNullOrEmpty(searchFilter))
                 {
-                    string loweredFilter = searchFilter.ToLower();
-                    query = query.Where(n => n.ProductName.ToLower().Contains(loweredFilter));
+                    //string loweredFilter = searchFilter.ToLower();
+                    query = query.Where(n => EF.Functions.Like(n.ProductName, $"%{searchFilter}%"));
+
                 }
                 
                 products = query
