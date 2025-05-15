@@ -273,7 +273,7 @@ namespace BirileriWebSitesi.Controllers
                 }
                 
                 products = query
-                    .OrderBy(n => n.Id) // ensure stable ordering before Skip/Take
+                    .OrderBy(n => n.ProductCode) // ensure stable ordering before Skip/Take
                     .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
                     .Take(PaginationViewModel.PageSize)
                     .Include(d => d.Discounts)
@@ -383,9 +383,9 @@ namespace BirileriWebSitesi.Controllers
                 List<string> relatedProductCodes = _context.RelatedProducts.Where(c=>c.ProductCode == productCode).Select(r=>r.RelatedProductCode).ToList();
                 List<Product> relatedProducts = new List<Product>();
 
-                List<Product> relatedProducts = _context.Products
-                                                .Where(p => relatedProductCodes.Contains(p.ProductCode))
-                                                .ToList();
+                relatedProducts = _context.Products
+                                        .Where(p => relatedProductCodes.Contains(p.ProductCode))
+                                        .ToList();
 
                 IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
                                                                         .Where(a => a.IsActive == true)
