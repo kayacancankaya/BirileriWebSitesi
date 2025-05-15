@@ -383,12 +383,10 @@ namespace BirileriWebSitesi.Controllers
                 List<string> relatedProductCodes = _context.RelatedProducts.Where(c=>c.ProductCode == productCode).Select(r=>r.RelatedProductCode).ToList();
                 List<Product> relatedProducts = new List<Product>();
 
-                foreach (var relatedProductCode in relatedProductCodes)
-                {
-                    Product? relatedProduct = _context.Products.Where(c => c.ProductCode == relatedProductCode).FirstOrDefault();
-                    if (relatedProduct != null)
-                        relatedProducts.Add(relatedProduct);
-                }
+                List<Product> relatedProducts = _context.Products
+                                                .Where(p => relatedProductCodes.Contains(p.ProductCode))
+                                                .ToList();
+
                 IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
                                                                         .Where(a => a.IsActive == true)
                                                                          .Take(3);
