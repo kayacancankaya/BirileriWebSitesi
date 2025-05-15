@@ -25,6 +25,18 @@ jobs:
       run: dotnet build --no-restore
     - name: Release
       run: dotnet publish -c Release -r linux-x64 --self-contained true -o ./publish
+
+    - name: Stop app on server
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PASSWORD }}
+        port: ${{ secrets.VM_PORT }}
+        script: |
+          cd /home/birileri/apps/birileriwebsitesi
+          sudo systemctl stop birileri.service
+      
     - name: Copy published files to server
       uses: appleboy/scp-action@v0.1.5
       with:
@@ -46,6 +58,5 @@ jobs:
         script: |
           cd /home/birileri/apps/birileriwebsitesi
           chmod +x BirileriWebSitesi
-          sudo systemctl stop birileri.service
           sudo systemctl daemon-reload
           sudo systemctl start birileri.service
