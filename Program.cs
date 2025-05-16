@@ -174,7 +174,6 @@ else
 
 app.UseStaticFiles();
 app.UseForwardedHeaders();
-app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
