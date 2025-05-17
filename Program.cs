@@ -8,6 +8,7 @@ using BirileriWebSitesi.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -23,25 +24,26 @@ if (builder.Environment.IsDevelopment())
 else
 {
     builder.Configuration.AddEnvironmentVariables();
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(5000);
+    });
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownProxies.Add(IPAddress.Parse("127.0.0.1"));
+    });
 }
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5000);
-});
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // Add KnownProxies or KnownNetworks if you want to limit trusted proxies
-});
+
 connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseMySql(connectionString,
-            new MySqlServerVersion(new Version(8, 0, 42)),
-            mysqlOptions => mysqlOptions.CommandTimeout(10)));
+            ServerVersion.AutoDetect(connectionString),
+            mysqlOptions => mysqlOptions.CommandTimeout(10))
+        );
         
-
 builder.Services.Configure<IyzipayOptions>(options =>
 {
     options.BaseUrl = builder.Configuration["IyzipayOptions:BaseUrl"];
@@ -157,6 +159,7 @@ var localizationOptions = new RequestLocalizationOptions
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseRequestLocalization(localizationOptions);
 
 app.UseSession();
@@ -173,7 +176,6 @@ else
 }
 
 app.UseStaticFiles();
-app.UseForwardedHeaders();
 app.UseRouting();
 
 app.UseAuthentication();

@@ -25,21 +25,16 @@ namespace BirileriWebSitesi.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IBasketService _basketService;
-        private readonly IOrderService _orderService;
-        private readonly IProductService _productService;
-        private readonly IUserService _userService;
-        private readonly IUserAuditService _userAuditService;
-        private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
         private readonly IServiceProvider _serviceProvider;
         private string? authCookie = string.Empty;
         string MyCart = string.Empty;
-        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger,
+                               IServiceProvider serviceProvider )
         {
             _context = context;
             _logger = logger;
+            _serviceProvider = serviceProvider;
         }
         
         public IActionResult Index()
@@ -188,6 +183,9 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 string? userID = string.Empty;
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                var _productService = _serviceProvider.GetRequiredService<IProductService>();
+                var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                 if (User.Identity.IsAuthenticated)
                 {
                     userID = _userManager.GetUserId(User);
@@ -415,7 +413,7 @@ namespace BirileriWebSitesi.Controllers
                     totalProduct = result.Keys.FirstOrDefault().ToString();
                     return Ok(new { message = "Ürün Sepete Eklendi", totalProduct });
                 }
-
+                var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                 //db
                 result =  await _basketService.AddItemToBasketAsync(userId, productCode, price, quantity);
                 if (result.Values.FirstOrDefault() == "Ürün Sepete Eklenirken Hata ile Karşılaşıldı")
@@ -438,7 +436,8 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 string? userID = string.Empty;
-                if(User.Identity.IsAuthenticated)
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                if (User.Identity.IsAuthenticated)
                 {
                     userID = _userManager.GetUserId(User);
                 }
@@ -462,6 +461,7 @@ namespace BirileriWebSitesi.Controllers
 
                 //db
                 int result = 0;
+                var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                 result =  await _basketService.CountDistinctBasketItems(userID);
                 message = result.ToString();
                 return Ok(new { message });
@@ -482,6 +482,9 @@ namespace BirileriWebSitesi.Controllers
                 string? userID = string.Empty;
                 Dictionary<int, string> result = new();
                 int totalProductCount = 0;
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                var _productService = _serviceProvider.GetRequiredService<IProductService>();
+                var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                 if (User.Identity.IsAuthenticated)
                 {
                     userID = _userManager.GetUserId(User);
@@ -544,6 +547,9 @@ namespace BirileriWebSitesi.Controllers
                 string? userID = string.Empty;
                 Dictionary<int, string> result = new();
                 int totalProductCount = 0;
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                var _productService = _serviceProvider.GetRequiredService<IProductService>();
+                var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                 if (User.Identity.IsAuthenticated)
                 {
                     userID = _userManager.GetUserId(User);
@@ -753,6 +759,7 @@ namespace BirileriWebSitesi.Controllers
                 string? phone = string.Empty;
 
                 IdentityUser? user = new();
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
                 if (User.Identity.IsAuthenticated)
                 {
                     userID = _userManager.GetUserId(User);
@@ -773,7 +780,7 @@ namespace BirileriWebSitesi.Controllers
                 //    TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
                 //    return RedirectToAction("Index", "Home");
                 //}
-
+                var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
@@ -893,6 +900,7 @@ namespace BirileriWebSitesi.Controllers
 
                     return BadRequest(new { success = false, message = "Sipariş Oluşturulurken Hata İle Karşılaşıldı.", errors });
                 }
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
                 string? buyerID = _userManager.GetUserId(User);
 
                 if (string.IsNullOrEmpty(buyerID))
@@ -954,6 +962,7 @@ namespace BirileriWebSitesi.Controllers
 
                 //save order info
                 Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, true, 1);
+                var _orderService = _serviceProvider.GetRequiredService<IOrderService>();
                 string orderResult = await _orderService.SaveOrderInfoAsync(order);
                 int orderID = 0;
                 if (!Int32.TryParse(orderResult, out orderID))
@@ -1017,12 +1026,13 @@ namespace BirileriWebSitesi.Controllers
                     _logger.LogError("ModelState is not valid, PlaceOrder controller");
                     return BadRequest(new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı.", errors });
                 }
-
+                var _userManager = _serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
                 string? buyerID = _userManager.GetUserId(User);
 
-            
+                var _userAuditService = _serviceProvider.GetRequiredService<IUserAuditService>();
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
-                if(userAudit == null)
+                var _orderService = _serviceProvider.GetRequiredService<IOrderService>();
+                if (userAudit == null)
                     return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
                 //if (string.IsNullOrEmpty(userAudit.Ip))
                 //    return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
@@ -1063,7 +1073,7 @@ namespace BirileriWebSitesi.Controllers
                     else
                     {
                         resultString = await _orderService.ProcessOrderAsync(model);
-
+                        var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
@@ -1095,6 +1105,7 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 var iyzipayService = _serviceProvider.GetRequiredService<IIyzipayPaymentService>();
+                var _orderService = _serviceProvider.GetRequiredService<IOrderService>();
                 ThreedsPayment payment = await iyzipayService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
 
 
@@ -1120,6 +1131,7 @@ namespace BirileriWebSitesi.Controllers
                 {
                     TempData["SuccessMessage"] = "Siparişiniz Başarıyla İşleme Alındı.";
 
+                    var _basketService = _serviceProvider.GetRequiredService<IBasketService>();
                     await _basketService.DeleteBasketAsync(Convert.ToInt32(payment.BasketId));
                     await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved");
                     await _orderService.RecordPayment(paymentLog);
@@ -1152,7 +1164,8 @@ namespace BirileriWebSitesi.Controllers
                 if (string.IsNullOrEmpty(model.BinNumber))
                     return BadRequest(new { success = false, message = "Kart Numarası Boş Olamaz." });
 
-                    InstallmentDetail installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
+                var _orderService = _serviceProvider.GetRequiredService<IOrderService>();
+                InstallmentDetail installmentInfo = await _orderService.GetInstallmentInfoAsync(model.BinNumber, model.Price);
                 if(installmentInfo == null)
                     return StatusCode(500, new { success = false, message = "Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
 
@@ -1214,8 +1227,8 @@ namespace BirileriWebSitesi.Controllers
                     return Ok(new { success = false, message = "Mesaj boş olamaz." });
                 if(string.IsNullOrEmpty(subject))
                     return Ok(new { success = false, message = "Konu boş olamaz." });
-                
-                   bool result = await _emailSender.SendContactUsEmailAsync(username,emailAddress,phone,message,subject);
+                var _emailSender = _serviceProvider.GetRequiredService<IEmailSender>();
+                bool result = await _emailSender.SendContactUsEmailAsync(username,emailAddress,phone,message,subject);
                 if (result)
                     return Ok(new { success = true, message = "Kayıt Başarılı!" });
                 else

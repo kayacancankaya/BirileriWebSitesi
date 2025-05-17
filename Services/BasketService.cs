@@ -16,6 +16,7 @@ namespace BirileriWebSitesi.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<BasketService> _logger;
         private string MyCart = string.Empty;
         public BasketService(ApplicationDbContext context,
                              IServiceProvider serviceProvider)
@@ -61,8 +62,9 @@ namespace BirileriWebSitesi.Services
                 result.Add(totalDistinctProduct, "Ürün Sepete Eklendi.");
                 return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex,ex.Message.ToString());
                 Dictionary<int,string> result = new Dictionary<int,string>();
                 result.Add(0, "Ürün Sepete Eklenirken Hata İle Karşılaşıldı");
                 return result;
@@ -88,8 +90,9 @@ namespace BirileriWebSitesi.Services
 
                 return basket;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 return basket;
             }
 
@@ -97,56 +100,101 @@ namespace BirileriWebSitesi.Services
 
         public async Task<int> CountTotalBasketItems(string userId)
         {
+            try
+            {
+
             var totalItems = await _context.Baskets
                                     .Where(basket => basket.BuyerId == userId)
                                     .SelectMany(item => item.Items)
                                     .SumAsync(sum => sum.Quantity);
 
             return totalItems;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return -1;
+            }
         }
         
         public async Task<int> CountDistinctBasketItems(string userId)
         {
-            var totalDistinctItems = await _context.Baskets
-                                    .Where(basket => basket.BuyerId == userId)
-                                    .SelectMany(item => item.Items)
-                                    .CountAsync();
+            try
+            {
+                var totalDistinctItems = await _context.Baskets
+                                        .Where(basket => basket.BuyerId == userId)
+                                        .SelectMany(item => item.Items)
+                                        .CountAsync();
 
-            return totalDistinctItems;
+                return totalDistinctItems;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return -1;
+            }
         }
 
         public async Task DeleteBasketAsync(string userID)
         {
-            var basket = await _context.Baskets.Where(i => i.BuyerId == userID).FirstOrDefaultAsync();
-            if (basket != null)
+            try
             {
-                _context.Baskets.Remove(basket);
-                await _context.SaveChangesAsync();
+
+                var basket = await _context.Baskets.Where(i => i.BuyerId == userID).FirstOrDefaultAsync();
+                if (basket != null)
+                {
+                    _context.Baskets.Remove(basket);
+                    await _context.SaveChangesAsync();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
             }
         }
         public async Task DeleteBasketAsync(int orderID)
         {
-            var userID = await _context.Orders.Where(i => i.Id == orderID).Select(b => b.BuyerId).FirstOrDefaultAsync();
-            var basket = await _context.Baskets.Where(i => i.BuyerId == userID).FirstOrDefaultAsync();
-            if (basket != null)
+            try
             {
-                _context.Baskets.Remove(basket);
-                await _context.SaveChangesAsync();
+                var userID = await _context.Orders.Where(i => i.Id == orderID).Select(b => b.BuyerId).FirstOrDefaultAsync();
+                var basket = await _context.Baskets.Where(i => i.BuyerId == userID).FirstOrDefaultAsync();
+                if (basket != null)
+                {
+                    _context.Baskets.Remove(basket);
+                    await _context.SaveChangesAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+            }
+            
         }
         public async Task<Basket> GetBasketAsync(string userID)
         {
-            var basket = await _context.Baskets.Where(i => i.BuyerId == userID)
-                                .Include(i=>i.Items)
-                                .ThenInclude(v=>v.ProductVariant)
-                                .FirstOrDefaultAsync();
-            if (basket == null)
+            try
             {
-                basket = new Basket(userID);
-                await _context.Baskets.AddAsync(basket);
-                await _context.SaveChangesAsync();
+
+                var basket = await _context.Baskets.Where(i => i.BuyerId == userID)
+                                    .Include(i=>i.Items)
+                                    .ThenInclude(v=>v.ProductVariant)
+                                    .FirstOrDefaultAsync();
+                if (basket == null)
+                {
+                    basket = new Basket(userID);
+                    await _context.Baskets.AddAsync(basket);
+                    await _context.SaveChangesAsync();
+                }
+                return basket;
             }
-            return basket;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
         }
         public async Task<bool> RemoveBasketItemAsync(string userID,string productCode)
         {
@@ -165,35 +213,41 @@ namespace BirileriWebSitesi.Services
                 return false;
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, ex.Message.ToString());
                 return false;
             }
         }
-        public async Task<bool> ChangeBasketAmountAsync(string productCode, decimal unitPrice, int quantity, string buyerID)
-        {
-            return true;
-        }
+    
         public async Task<Basket> SetQuantities(string userID, Dictionary<string, int> quantities)
         {
-            var basket = await _context.Baskets.Where(b=>b.BuyerId == userID)
-                                              .Include(b=>b.Items)
-                                              .FirstOrDefaultAsync();
-
-            if (basket == null) return null;
-
-            foreach (var item in basket.Items)
+            try
             {
-                if (quantities.TryGetValue(item.ProductCode, out var quantity))
+
+                var basket = await _context.Baskets.Where(b=>b.BuyerId == userID)
+                                                  .Include(b=>b.Items)
+                                                  .FirstOrDefaultAsync();
+
+                if (basket == null) return null;
+
+                foreach (var item in basket.Items)
                 {
-                    item.SetQuantity(quantity);
+                    if (quantities.TryGetValue(item.ProductCode, out var quantity))
+                    {
+                        item.SetQuantity(quantity);
+                    }
                 }
+                basket.RemoveEmptyItems();
+                _context.Baskets.Update(basket);
+                await _context.SaveChangesAsync();
+                return basket;
             }
-            basket.RemoveEmptyItems();
-            _context.Baskets.Update(basket);
-            await _context.SaveChangesAsync();
-            return basket;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
 
         }
         public async Task<Basket> SetQuantity(string userID, string productCode, int quantity)
@@ -273,9 +327,9 @@ namespace BirileriWebSitesi.Services
                     _context.Add(basket);
                 await _context.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                return;
+                _logger.LogError(ex, ex.Message.ToString());
             }
         }
     }
