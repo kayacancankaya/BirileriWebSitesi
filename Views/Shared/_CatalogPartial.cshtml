@@ -11,6 +11,7 @@
         <div class="row clearfix">
             @foreach (Catalog item in Model)
             {
+                string avifPath = string.Format("~/images/resource/{0}.avif", item.CatalogName).Replace(" ", "");
                 string imagePath = string.Format("~/images/resource/{0}.jpg", item.CatalogName).Replace(" ", "");
                 string pdfPath = string.Format("~/pdfs/{0}.pdf", item.CatalogName).Replace(" ", "");
 
@@ -35,7 +36,11 @@
                         </div>
                         <div class="lower-box">
                             <div class="image">
-                                <img src="@Url.Content(imagePath)" alt="@item.CatalogName" />
+                                <picture>
+                                    <source srcset="@Url.Content(avifPath)" type="image/avif">
+                                    <img loading="lazy" alt="@item.CatalogName" src="@Url.Content(imagePath)" />
+                                </picture>
+
                                 <div class="overlay-box">
                                     <div class="text">@item.CatalogDescription</div>
                                     <a asp-controller="Home" asp-action="Shop" class="link-btn"><span class="fa fa-link"></span></a>

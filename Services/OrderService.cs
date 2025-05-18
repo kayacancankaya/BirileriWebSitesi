@@ -33,7 +33,6 @@ namespace BirileriWebSitesi.Services
             _context = context;
             _logger = logger;
             _serviceProvider = serviceProvider;
-            _logger.LogWarning("order service created");
         }
 
         public Task<Dictionary<Address, Address>> GetAddress(string userId)

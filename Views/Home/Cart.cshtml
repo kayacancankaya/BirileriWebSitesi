@@ -19,6 +19,12 @@
     @Html.Partial("_PartialCart",Model)
 </section>
 <!--End Cart Section-->
+@section FancyBox {
+    <script src="~/js/jquery.fancybox.js" defer></script>
+}
+@section TouchSpin{
+    <script src="~/js/jquery.bootstrap-touchspin.js" defer></script>
+}
 @section AdditionalScripts{
     <script>
         $(document).ready(function (){

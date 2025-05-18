@@ -11,9 +11,8 @@
     @RenderSection("Keywords", required: true)
     <!-- Stylesheets -->
     <link href="~/css/bootstrap.css" rel="stylesheet">
-    <link href="~/plugins/revolution/css/settings.css" rel="stylesheet" type="text/css"><!-- REVOLUTION SETTINGS STYLES -->
-    <link href="~/plugins/revolution/css/layers.css" rel="stylesheet" type="text/css"><!-- REVOLUTION LAYERS STYLES -->
-    <link href="~/plugins/revolution/css/navigation.css" rel="stylesheet" type="text/css"><!-- REVOLUTION NAVIGATION STYLES -->
+    @RenderSection("RevolutionCSS", required: false)
+    
     <link href="~/css/style.css" rel="stylesheet">
     <link href="~/css/responsive.css" rel="stylesheet">
 
@@ -173,7 +172,14 @@
             <div class="clearfix">
                 <!--Top Left-->
                 <div class="logo top-left pull-left " >
-                    <a asp-controller="Home" asp-action="Index" class="img-responsive"><img src="~/images/logo-small.png" alt="logo" title="brand-logo"></a>
+                    <a asp-controller="Home" asp-action="Index" class="img-responsive">
+                        <picture>
+                            <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif">
+                            <img alt="Logo" loading="lazy" 
+                                 src="@Url.Content("~/images/logo-small.png")" />
+                        </picture>
+                       
+                    </a>
                 </div>
                 <!--Top Right-->
                 <div class="top-right pull-right ">
@@ -209,7 +215,7 @@
                                     <span class="icon-bar"></span>
                                 </button>
                             </div>
-                            <div class="navbar-collapse collapse clearfix" id="navbarSupportedContent1">
+                            <div class="navbar-collapse collapse clearfix" id="navbarSupportedContent">
                                 <ul class="navigation clearfix">
                                     <li class="dropdown main-page">
                                         <a asp-controller="Home" asp-action="Index">Ana Sayfa</a>
@@ -260,7 +266,14 @@
                 <div class="auto-container clearfix">
                     <!--Logo-->
                     <div class="logo pull-left">
-                        <a asp-controller="Home" asp-action="Index" class="img-responsive"><img src="~/images/logo-small.png" alt="logo" title="brand-logo"></a>
+                        <a asp-controller="Home" asp-action="Index" class="img-responsive">
+                            <picture>
+                                <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif">
+                                <img alt="Logo" loading="lazy" 
+                                     src="@Url.Content("~/images/logo-small.png")" />
+                            </picture>
+                            
+                        </a>
                     </div>
 
                     <!--Right Col-->
@@ -473,7 +486,7 @@
                 <div class="auto-container">
                     <div class="copyright">&copy; Copyright @DateTime.Now.Year. Tüm Hakları Saklıdır. 
                         <a href="https://smartifyyb.com/">
-                            <img src="~/images/smartify.png" alt="Smartify Logo">
+                            <img src="~/images/smartify.avif" alt="Smartify Logo" loading="lazy" type="image/avif">
                         </a>
                         tarafından tasarlandı.
                     </div>
@@ -487,35 +500,7 @@
     <!--Scroll to top-->
     <div class="scroll-to-top scroll-to-target" data-target="html"><span class="icon fa fa-angle-double-up"></span></div>
 
-    <!-- Color Palate / Color Switcher -->
-   @*  <div class="color-palate">
-        <div class="color-trigger">
-            <i class="fa fa-gear"></i>
-        </div>
-        <div class="color-palate-head">
-            <h6>RENGİNİ Seç</h6>
-        </div>
-        <div class="various-color clearfix">
-            <div class="colors-list">
-                <span class="palate default-color active" data-theme-file="~/css/color-themes/default-theme.css"></span>
-                <span class="palate teal-color" data-theme-file="~/css/color-themes/teal-theme.css"></span>
-                <span class="palate green-color" data-theme-file="~/css/color-themes/green-theme.css"></span>
-                <span class="palate aqua-color" data-theme-file="~/css/color-themes/aqua-theme.css"></span>
-                <span class="palate pink-color" data-theme-file="~/css/color-themes/pink-theme.css"></span>
-                <span class="palate orange-color" data-theme-file="~/css/color-themes/orange-theme.css"></span>
-                <span class="palate lime-color" data-theme-file="~/css/color-themes/lime-theme.css"></span>
-                <span class="palate red-color" data-theme-file="~/css/color-themes/red-theme.css"></span>
-            </div>
-        </div>
-
-        <ul class="rtl-version option-box"> <li class="rtl">RTL Version</li> <li>LTR Version</li> </ul>
-
-        <div class="palate-foo">
-            <span>Yazı rengini değiştirebilirsiniz.</span>
-        </div>
-
-    </div> *@
-    <!-- /.End Of Color Palate -->
+  
     <!-- - - - - - - - - - - - - - Alerts - - - - - - - - - - - - - - - - -->
 
     <div class="alert alert-success hidden modal " id="SuccessDiv">
@@ -602,43 +587,25 @@
     <input type="hidden" value="0" id="cart-counter" />
     
     <script src="~/js/jquery.js"></script>
-    <!--Revolution Slider-->
-    <script src="~/plugins/revolution/js/jquery.themepunch.revolution.min.js"></script>
-    <script src="~/plugins/revolution/js/jquery.themepunch.tools.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.actions.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.carousel.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.kenburn.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.layeranimation.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.migration.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.navigation.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.parallax.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.slideanims.min.js"></script>
-    <script src="~/plugins/revolution/js/extensions/revolution.extension.video.min.js"></script>
-    <script src="~/js/main-slider-script.js"></script>
 
-    <script src="~/js/popper.min.js"></script>
-    <script src="~/js/bootstrap.min.js"></script>
-    <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script src="~/js/jquery.fancybox.js"></script>
-    <script src="~/js/owl.js"></script>
-    <script src="~/js/wow.js"></script>
-    <script src="~/js/appear.js"></script>
-    <script src="~/js/isotope.js"></script>
-    <script src="~/js/jquery-ui.js"></script>
-    <script src="~/js/jquery.bootstrap-touchspin.js"></script>
-    <script src="~/js/script.js"></script>
-  @*   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script> *@
-    @* <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
- *@
-    <!--Google Map APi Key-->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCIJ_QKHN-bi6_1C9f5eYE3pZs1zhQIo5o"></script>
-    <script src="~/js/map-script.js"></script>
-    <!--End Google Map APi-->
-    <!--Color Switcher-->
-    <script src="~/js/color-settings.js"></script>
+    @RenderSection("RevolutionSlider", required: false)
+    
+
+    @* <script src="~/js/popper.min.js"></script> *@
+    <script src="~/js/bootstrap.min.js" defer></script>
+    @* <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script> *@
+    @RenderSection("FancyBox", required: false)
+    
+    @* <script src="~/js/owl.js" defer></script> *@
+    @* <script src="~/js/wow.js" defer></script> *@
+    @* <script src="~/js/appear.js" defer></script> *@
+    @* <script src="~/js/isotope.js" defer></script> *@
+    <script src="~/js/jquery-ui.js" defer></script>
+    @RenderSection("TouchSpin", required: false)
+    
+    <script src="~/js/script.js" defer></script>
+   
+  
     <!--Show Warning If Exists-->
     @if (TempData["WarningMessage"] != null)
     {
@@ -683,7 +650,6 @@
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
-                        console.log(xhr.responseText);
 
                     }
                 });

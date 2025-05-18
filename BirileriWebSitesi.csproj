@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\images\background\5.avif" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Iyzipay" Version="2.1.67" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
@@ -29,5 +33,9 @@
     <PackageReference Include="MySql.Data" Version="9.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="wwwroot\images\background\5.avif" />
   </ItemGroup>
 </Project>
