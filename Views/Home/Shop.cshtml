@@ -1,6 +1,7 @@
 ﻿@model BirileriWebSitesi.Models.ViewModels.ShopViewModel
 @section Title {
     <meta name="title" content="İthal Ürünler | Toptan ve Perakende Satış">
+    <title>İthal Ürünler | Toptan ve Perakende Satış</title>
 }
 @section Description {
     <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
@@ -47,7 +48,9 @@
         </div>
     </div>
 </div>
-
+@section JqueryUi {
+    <script src="~/js/jquery-ui.min.js" defer></script>
+}
 @section AdditionalScripts {
     <script>
         $(document).ready(function () {

@@ -1,10 +1,11 @@
 ﻿
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 
 <!-- Mirrored from expert-themes.com/html/global-industry/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 20 Jan 2025 11:54:23 GMT -->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     @RenderSection("Title", required: true);
     @RenderSection("Description", required: true)
@@ -151,7 +152,12 @@
             color: #ffb200;
             background-color: #333333;
         }
-        
+
+        .footer-widget .text {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
 
  
     </style>
@@ -174,9 +180,9 @@
                 <div class="logo top-left pull-left " >
                     <a asp-controller="Home" asp-action="Index" class="img-responsive">
                         <picture>
-                            <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif">
+                            <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif" width="auto" height="30">
                             <img alt="Logo" loading="lazy" 
-                                 src="@Url.Content("~/images/logo-small.png")" />
+                                 src="@Url.Content("~/images/logo-small.png")" height="30" />
                         </picture>
                        
                     </a>
@@ -347,7 +353,7 @@
                                 <div class="footer-column col-lg-4 col-md-6 col-sm-12">
                                     <div class="footer-widget logo-widget">
                                         <div class="logo">
-                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="Birileri İthalat Logo" /></a>
+                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="Birileri İthalat Logo" width="150" height="50" /></a>
                                         </div>
                                         <div class="text">
                                             Birileri Dış Ticaret  olarak, uluslararası kalite standartlarına uygun şekilde ithalat gerçekleştiriyoruz.
@@ -459,7 +465,7 @@
                                                     <div class="form-group">
                                                         <span class="alert-text" ></span>
                                                         <input type="email" name="email" class="subscribe-input" value="" placeholder="Email Adresi" required>
-                                                        <button type="submit" class="theme-btn subscribe-btn"><span class="fa fa-send"></span></button>
+                                                        <button id="subscribe-btn-home" type="submit" class="theme-btn subscribe-btn"><span class="fa fa-send"></span></button>
                                                     </div>
 
                                             </div>
@@ -486,7 +492,7 @@
                 <div class="auto-container">
                     <div class="copyright">&copy; Copyright @DateTime.Now.Year. Tüm Hakları Saklıdır. 
                         <a href="https://smartifyyb.com/">
-                            <img src="~/images/smartify.avif" alt="Smartify Logo" loading="lazy" type="image/avif">
+                            <img src="~/images/smartify.png" alt="Smartify Logo" loading="lazy" width="auto" height="30">
                         </a>
                         tarafından tasarlandı.
                     </div>
@@ -531,7 +537,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
-                    <h5 class="modal-title" id="warningModalLabel">Uyarı</h5>
+                    <h5 class="modal-title" id="warningModalLabelH">Uyarı</h5>
                 </div>
                 <div class="modal-body">
                     @TempData["WarningMessage"]
@@ -550,7 +556,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-success">
-                    <h5 class="modal-title" id="warningModalLabel">Başarılı</h5>
+                    <h5 class="modal-title" id="successModalLabelH">Başarılı</h5>
                 </div>
                 <div class="modal-body">
                     @TempData["SuccessMessage"]
@@ -569,7 +575,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title" id="warningModalLabel">Hata</h5>
+                    <h5 class="modal-title" id="dangerModalLabelH">Hata</h5>
                 </div>
                 <div class="modal-body">
                     @TempData["DangerMessage"]
@@ -600,7 +606,7 @@
     @* <script src="~/js/wow.js" defer></script> *@
     @* <script src="~/js/appear.js" defer></script> *@
     @* <script src="~/js/isotope.js" defer></script> *@
-    <script src="~/js/jquery-ui.js" defer></script>
+    @RenderSection("JqueryUi", required: false)
     @RenderSection("TouchSpin", required: false)
     
     <script src="~/js/script.js" defer></script>
