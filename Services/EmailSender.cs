@@ -72,7 +72,7 @@ namespace BirileriWebSitesi.Services
                 mimeMessage.Body = new TextPart("html") { Text = htmlMessage };
 
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync(_configuration["SMTP:Host"], 465, MailKit.Security.SecureSocketOptions.SslOnConnect);
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
