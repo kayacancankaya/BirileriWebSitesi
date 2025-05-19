@@ -159,6 +159,11 @@
             max-width: 100%;
         }
 
+        .logo-image {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
  
     </style>
     <!-- Responsive -->
@@ -180,9 +185,9 @@
                 <div class="logo top-left pull-left " >
                     <a asp-controller="Home" asp-action="Index" class="img-responsive">
                         <picture>
-                            <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif" width="auto" height="30">
-                            <img alt="Logo" loading="lazy" 
-                                 src="@Url.Content("~/images/logo-small.png")" height="30" />
+                            <source srcset="@Url.Content("~/images/logo-small.avif")" class="logo-image" type="image/avif" width="auto" height="30">
+                            <img alt="Logo" loading="lazy" class="logo-image"
+                                 src="@Url.Content("~/images/logo-small.png")" />
                         </picture>
                        
                     </a>
@@ -274,8 +279,8 @@
                     <div class="logo pull-left">
                         <a asp-controller="Home" asp-action="Index" class="img-responsive">
                             <picture>
-                                <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif">
-                                <img alt="Logo" loading="lazy" 
+                                <source srcset="@Url.Content("~/images/logo-small.avif")" type="image/avif" class="logo-image">
+                                <img alt="Logo" loading="lazy" class="logo-image"
                                      src="@Url.Content("~/images/logo-small.png")" />
                             </picture>
                             
@@ -353,7 +358,7 @@
                                 <div class="footer-column col-lg-4 col-md-6 col-sm-12">
                                     <div class="footer-widget logo-widget">
                                         <div class="logo">
-                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="Birileri İthalat Logo" width="150" height="50" /></a>
+                                            <a href="index.html"><img src="~/images/footer-logo.png" alt="Birileri İthalat Logo" class="logo-image" /></a>
                                         </div>
                                         <div class="text">
                                             Birileri Dış Ticaret  olarak, uluslararası kalite standartlarına uygun şekilde ithalat gerçekleştiriyoruz.
@@ -465,7 +470,7 @@
                                                     <div class="form-group">
                                                         <span class="alert-text" ></span>
                                                         <input type="email" name="email" class="subscribe-input" value="" placeholder="Email Adresi" required>
-                                                        <button id="subscribe-btn-home" type="submit" class="theme-btn subscribe-btn"><span class="fa fa-send"></span></button>
+                                                        <button aria-label="Subsribe" type="submit" class="theme-btn subscribe-btn"><span class="fa fa-send"></span></button>
                                                     </div>
 
                                             </div>
@@ -492,7 +497,7 @@
                 <div class="auto-container">
                     <div class="copyright">&copy; Copyright @DateTime.Now.Year. Tüm Hakları Saklıdır. 
                         <a href="https://smartifyyb.com/">
-                            <img src="~/images/smartify.png" alt="Smartify Logo" loading="lazy" width="auto" height="30">
+                            <img src="~/images/smartify.png" alt="Smartify Logo" loading="lazy" style="width:150;height:auto;object-fit:initial;">
                         </a>
                         tarafından tasarlandı.
                     </div>
