@@ -5,8 +5,6 @@ using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Services;
 using BirileriWebSitesi.Areas;
 using BirileriWebSitesi.Models;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 using Microsoft.AspNetCore.StaticFiles;
@@ -194,5 +192,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-
+Console.WriteLine("Birileri Web Sitesi is starting...");
 app.Run();
