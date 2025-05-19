@@ -5,11 +5,11 @@ using BirileriWebSitesi.Interfaces;
 
 namespace BirileriWebSitesi.Services
 {
-    public class SmtpEmailSender : IEmailSender
+    public class EmailSender : IEmailSender
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<SmtpEmailSender> _logger;
-        public SmtpEmailSender(IConfiguration configuration, ILogger<SmtpEmailSender> logger)
+        private readonly ILogger<EmailSender> _logger;
+        public EmailSender(IConfiguration configuration, ILogger<EmailSender> logger)
         {
             _configuration = configuration;
             _logger = logger;
@@ -46,7 +46,7 @@ namespace BirileriWebSitesi.Services
             }
             
         }
-        public async Task<bool> SendContactUsEmailAsync(string username, string email,string? phone, string message, string? subject)
+        public async Task<string> SendContactUsEmailAsync(string username, string email,string? phone, string message, string? subject)
         {
             try
             {
@@ -77,14 +77,14 @@ namespace BirileriWebSitesi.Services
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
 
-                return true;
+                return "Mail Gönderildi";
 
                 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message.ToString());
-                return false;
+                return ex.Message.ToString();
+                
             }
             
         }

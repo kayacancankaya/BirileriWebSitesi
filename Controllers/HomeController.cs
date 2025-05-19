@@ -1228,16 +1228,16 @@ namespace BirileriWebSitesi.Controllers
                 if(string.IsNullOrEmpty(subject))
                     return Ok(new { success = false, message = "Konu boş olamaz." });
                 var _emailSender = _serviceProvider.GetRequiredService<IEmailSender>();
-                bool result = await _emailSender.SendContactUsEmailAsync(username,emailAddress,phone,message,subject);
-                if (result)
-                    return Ok(new { success = true, message = "Kayıt Başarılı!" });
+                string result = await _emailSender.SendContactUsEmailAsync(username,emailAddress,phone,message,subject);
+                if (result == "Mail Gönderildi")
+                    return Ok(new { success = true, message = result });
                 else
-                    return Ok(new { success = false, message = "Email Gönderilirken Hata ile Karşılaşıldı." });
+                    return Ok(new { success = false, message = result });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return StatusCode(500, new { success = false, message = "Kayıt esnasında hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
+                return StatusCode(500, new { success = false, message = ex.Message.ToString() });
             }
         }
 
