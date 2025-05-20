@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using NuGet.Protocol.Core.Types;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 namespace BirileriWebSitesi.Controllers
 {
     public class HomeController : Controller
@@ -56,31 +57,33 @@ namespace BirileriWebSitesi.Controllers
             }
         }
         //-------------shop-------------//
-        public IActionResult Shop()
+        public async Task<IActionResult> Shop()
         {
             try
             {
 
                 //get all categories
-                IEnumerable<Catalog> catalogs = _context.Catalogs.ToList();
+                IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
                 //initiate view model
                 PaginationViewModel pagination = new PaginationViewModel();
                 IEnumerable<Product> products = new List<Product>();
                 // get products
-                products = _context.Products.Where(a => a.IsActive == true)
+                products = await _context.Products.Where(a => a.IsActive == true)
                                             .Take(PaginationViewModel.PageSize)
                                             .Include(d=>d.Discounts)
                                              .OrderByDescending(p=>p.Popularity)
-                                             .ToList();
+                                             .ToListAsync();
                 //get total products
-                pagination.TotalCount = _context.Products.Where(a => a.IsActive == true).Count();
+                pagination.TotalCount = await _context.Products.Where(a => a.IsActive == true).CountAsync();
                 if(products == null)
                    return View("NotFound");
 
                 //get popular products
-                IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
-                                                                        .Where(a=>a.IsActive == true)
-                                                                         .Take(3);
+                IEnumerable<Product> popularProducts = await _context.Products
+                                                      .Where(p => p.IsActive)
+                                                      .OrderByDescending(p => p.Popularity)
+                                                      .Take(3)
+                                                      .ToListAsync();
 
                 //assign values to vievmodel
                 pagination.CurrentPage = 1;
@@ -103,14 +106,14 @@ namespace BirileriWebSitesi.Controllers
                return View("NotFound");
             }
         }
-        public IActionResult ShopFiltered(int catalogID, string searchFilter, int pageNumber, decimal minPrice, decimal maxPrice)
+        public async Task<IActionResult> ShopFiltered(int catalogID, string searchFilter, int pageNumber, decimal minPrice, decimal maxPrice)
         {
             try
             {
                 IEnumerable<Product> products = new List<Product>();
                 int totalCount = 0;
                 int totalPage = 0;
-                IQueryable<Product> query = _context.Products
+                IQueryable<Product> query =  _context.Products
                                                     .Where(n => n.BasePrice >= minPrice && n.BasePrice <= maxPrice &&
                                                                 (catalogID == 0 || n.CatalogId == catalogID) &&
                                                                 n.IsActive == true);
@@ -122,24 +125,24 @@ namespace BirileriWebSitesi.Controllers
 
                 }
 
-                products = query
+                products = await query
                     .OrderBy(n => n.ProductCode) // ensure stable ordering before Skip/Take
                     .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
                     .Take(PaginationViewModel.PageSize)
                     .Include(d => d.Discounts)
-                    .ToList();
+                    .ToListAsync();
 
                 //get total products
-                totalCount = query
+                totalCount = await query
                                 .OrderBy(n => n.ProductCode) // ensure stable ordering before Skip/Take
-                                .Count();
+                                .CountAsync();
                 //filter related discounts
 
                 foreach (Product product in products)
                 {
-                    product.Discounts = product.Discounts.OrderByDescending(d => d.StartDate)
-                                                            .Where(d => d.StartDate <= DateTime.Now &&
+                    product.Discounts = product.Discounts.Where(d => d.StartDate <= DateTime.Now &&
                                                                         d.EndDate >= DateTime.Now)
+                                                            .OrderByDescending(d => d.StartDate)
                                                             .ToList();
                     if (product.Discounts == null)
                         product.Discounts = new List<Discount>();
