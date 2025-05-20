@@ -248,6 +248,7 @@
                 if (isCorporate) {
                     $("#is-billing-same").prop("checked", false);
                     $("#is-billing-same").prop("disabled", true);
+                   $("#billing-address-div").css("display", "block");
                     $.ajax({
                         type: "GET",
                         url: "/Home/_PartialIsCorporate",
