@@ -655,9 +655,9 @@ namespace BirileriWebSitesi.Controllers
                     variantCode = variantCode + item.Key;
                     variantName = variantName + " " + item.Value;
                 }
-
+                string imagePath = await _context.ProductVariants.Where(v => v.ProductCode == variantCode).Select(f => f.ImagePath).FirstOrDefaultAsync();
                 string filePath = string.Format("~/images/resource/products/{0}/1.jpg",
-                                                await _context.ProductVariants.Where(v => v.ProductCode == variantCode).Select(f => f.ImagePath).FirstOrDefaultAsync());
+                                                imagePath);
                 
                 ProductDetailedVariantImageViewModel imageModel = new();
                 imageModel.FilePath = filePath;
