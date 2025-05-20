@@ -229,7 +229,7 @@
             }
             $(document).on("change", "#is-billing-same", function () {
                 var isBillingSame = $(this).is(":checked");
-            
+                
                 if (isBillingSame) {
                     $("#billing-address-div").css("display", "none");
                 }   
@@ -247,23 +247,27 @@
                 var isCorporate = $(this).is(":checked");
                 if (isCorporate) {
                     $("#is-billing-same").prop("checked", false);
+                    $("#is-billing-same").prop("disabled", true);
+                    $.ajax({
+                        type: "GET",
+                        url: "/Home/_PartialIsCorporate",
+                        data: {
+                            firstName : firstName,
+                            lastName : lastName,
+                            corporateName : corporateName,
+                            vATNumber : vATNumber,
+                            vATState : vATState,
+                            isCorporate : isCorporate,
+                        },
+                        success: function (result) {
+                            $("#is-corporate-div").html(result);
+                        }
+                    });
                 }
-
-                $.ajax({
-                    type: "POST",
-                    url: "/Home/_PartialIsCorporate",
-                    data: {
-                        firstName : firstName,
-                        lastName : lastName,
-                        corporateName : corporateName,
-                        vATNumber : vATNumber,
-                        vATState : vATState,
-                        isCorporate : isCorporate,
-                    },
-                    success: function (result) {
-                        $("#is-corporate-div").html(result);
-                    }
-                })
+                else {
+                    $("#billing-address-div").css("display", "none");
+                    $("#is-billing-same").prop("disabled", false); 
+                }
             });
 
             $(document).on("click", "#proceed-to-payment", function (e) {
