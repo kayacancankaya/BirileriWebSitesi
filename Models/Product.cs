@@ -8,14 +8,14 @@ namespace BirileriWebSitesi.Models
     {
         [Key]
         [Required]
-        public string ProductCode { get; set; }
+        public string ProductCode { get; set; } = string.Empty;
         [Required]
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
         public string? ProductNameEng { get; set; }
         public string? ProductNameSpa { get; set; }
 
         [Required]
-        public string ProductDescription { get; set; }
+        public string ProductDescription { get; set; } = string.Empty;
 
         [Required]
         public int CatalogId { get; set; }

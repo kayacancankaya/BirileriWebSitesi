@@ -165,7 +165,7 @@
                                     </ul>
 
                                     <!--Tabs Container-->
-                                    <div class="tabs-content">
+                                    <div class="tabs-content" id="prod-details-div">
 
                                         <!--Tab-->
                                         <div class="tab" id="prod-details">
@@ -219,21 +219,20 @@
                 });
             }
 
-          $('.tab-btn').on('click', function () {
+                  $('.tab-btn').on('click', function () {
             var tabId = $(this).data('tab');
             var $tab = $(tabId);
 
-            // Toggle visibility
-            if ($tab.is(':visible')) {
-                $tab.slideUp(); // or .hide()
-                $(this).removeClass('active');
+            // If this tab is already active, hide it
+            if ($tab.hasClass('active-tab')) {
+                $tab.removeClass('active-tab');
+                $("#prod-details-div").css('display','block');
             } else {
-                $('.tabs-content .tab').slideUp(); // hide all tabs
-                $('.tab-btn').removeClass('active');
-                $tab.slideDown(); // or .show()
-                $(this).addClass('active');
+                $tab.addClass('active-tab');
+                $("#prod-details-div").css('display','none');
             }
         });
+
 
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();
@@ -287,10 +286,11 @@
                 var price = $('#variant-price').text();
                 var quantity = 1;
 
-
                 var button = $(this);
                 $.ajax({
                     type: "POST",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    async: true,
                     url: "/Home/AddToCart",
                     data: {
                         userId: userId,
@@ -299,13 +299,21 @@
                         quantity: quantity
                     },
                     success: function (response) {
-
-                        showAlert(button, response.message, "success");
-                        let currentItem = response.totalProduct;
-                        $(".cart .cart-count").text(currentItem);
+                        if(response.success)
+                        {
+                               showAlert(button, response.message, "success");
+                                let currentItem = response.totalProduct;
+                                $(".cart .cart-count").text(currentItem);
+                        }
+                         else{
+                            showAlert(button, response.message, "error");
+                            let currentItem = response.totalProduct;
+                            $(".cart .cart-count").text(currentItem);
+                        }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
+
                         showAlert(button, response.message, "danger");
                     }
                 });

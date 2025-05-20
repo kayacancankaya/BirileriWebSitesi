@@ -59,7 +59,7 @@
             // next button clicked
             $(document).on("click", ".pagination-next", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchString = $(".product-search-button").val();
+                let searchString = $("#product-search").val();
                 let pageNumber = parseInt($("#page-number").val()) + 1;
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
@@ -80,8 +80,7 @@
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
-                        console.log(xhr.responseText);
-
+                     
                         showAlert(button,response.message, "danger");
                     }
                 });
@@ -89,7 +88,7 @@
             //previous button clicked
             $(document).on("click", ".pagination-previous", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchString = $(".product-search-button").val();
+                let searchFilter = $("#product-search").val();
                 let pageNumber = parseInt($("#page-number").val()) - 1;
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
@@ -119,7 +118,7 @@
             //page number button clicked
             $(document).on("click", ".pagination-number", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchString = $(".product-search-button").val();
+                let searchFilter = $("#product-search").val();
                 let pageNumber = parseInt($(this).text());
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
@@ -149,7 +148,7 @@
             //filter by price clicked
             $(document).on("click", ".filter-by-price-button", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchString = $(".product-search-button").val();
+                let searchString = $("#product-search").val();
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
                 var button = $(this);
@@ -159,7 +158,7 @@
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: 1,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -169,7 +168,6 @@
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
-                        console.log(xhr.responseText);
 
                         showAlert(button,response.message, "danger");
                     }
@@ -178,18 +176,18 @@
             //product search clicked
             $(document).on("click", ".product-search-button", function () {
                  let catalogID = $("#catalog-id").val();
-                let searchString = $(".product-search-button").val();
+                let searchString = $("#product-search").val();
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
                 var button = $(this);
-               
+
 
                 $.ajax({
                     type: "POST",
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: 1,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -208,7 +206,7 @@
             //filter by catalog clicked
             $(document).on("click", ".filter-by-catalog", function () {
                 let catalogID = $(this).data("id");
-                let searchString = $(".product-search-button").val();
+                let searchString = $("#product-search").val();
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
                 var button = $(this);
@@ -219,7 +217,7 @@
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: 1,
                         minPrice: minPrice,
                         maxPrice: maxPrice,

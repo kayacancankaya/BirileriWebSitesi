@@ -239,16 +239,20 @@
 
             })
             $(document).on("change", "#is-corporate", function () {
+             
                 var firstName = $("#billing-first-name").val();
                 var lastName = $("#billing-last-name").val();
                 var corporateName = $("#corporate").val();
                 var vATNumber = $("#vat").val();
                 var vATState = $("#vat-state").val();
                 var isCorporate = $(this).is(":checked");
+                
                 if (isCorporate) {
                     $("#is-billing-same").prop("checked", false);
                     $("#is-billing-same").prop("disabled", true);
-                   $("#billing-address-div").css("display", "block");
+                    $("#billing-address-div").css("display", "block");
+
+                    $("#billing-address-div").css("display", "block");
                     $.ajax({
                         type: "GET",
                         url: "/Home/_PartialIsCorporate",

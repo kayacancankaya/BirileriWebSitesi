@@ -20,15 +20,14 @@
         <!--Shop Item-->
         @foreach (Product item in Model.products)
         {
-            firstVariant = item.ProductVariants.FirstOrDefault();
-            decimal discountedPrice = firstVariant.Discounts.FirstOrDefault() == null ? decimal.Zero : firstVariant.Discounts.FirstOrDefault().DiscountAmount;
-            decimal actualPrice = firstVariant.Price;
-            if (firstVariant.Discounts != null)
+            decimal discountedPrice = item.Discounts.FirstOrDefault() == null ? decimal.Zero : item.Discounts.FirstOrDefault().DiscountAmount;
+            decimal actualPrice = item.BasePrice;
+            if (item.Discounts != null)
             {
-                if (firstVariant.Discounts.Any())
+                if (item.Discounts.Any())
                 {
-                    if (firstVariant.Discounts.Select(d => d.DiscountType).FirstOrDefault() == "Percentage")
-                        discountedPrice = firstVariant.Price * discountedPrice;
+                    if (item.Discounts.Select(d => d.DiscountType).FirstOrDefault() == "Percentage")
+                        discountedPrice = item.BasePrice * discountedPrice;
                     actualPrice = discountedPrice;
                 }
             }
@@ -49,11 +48,11 @@
                             @if (item.Discounts.Any())
                             {
                                 <span class="discount actual-price">@discountedPrice</span>
-                                <span> @firstVariant.Price ₺ </span>
+                                <span> @item.BasePrice ₺ </span>
                             }
                             else
                             {
-                                <span class="actual-price">@firstVariant.Price ₺</span>
+                                <span class="actual-price">@item.BasePrice ₺</span>
                             }
                             <span style="color:black">/ adet</span> <br />
                             <span style="color:black">Minimum Sipariş Adedi</span>
@@ -64,7 +63,7 @@
                             <div class="pull-left">
                                 
                                     <input type="hidden" class="user-id" value="@userId" />
-                                    <input type="hidden" class="product-code" value="@firstVariant.ProductCode" />
+                                <input type="hidden" class="product-code" value="@item.ProductCode" />
                                     <input type="hidden" class="price" value="@actualPrice" />
                                     <input type="hidden" class="quantity" value="@item.MinOrder" />
                                     <span class="alert-text"></span>
