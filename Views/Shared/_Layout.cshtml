@@ -7,13 +7,15 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    @RenderSection("Title", required: true);
+    @RenderSection("Title", required: true)
     @RenderSection("Description", required: true)
     @RenderSection("Keywords", required: true)
     <!-- Stylesheets -->
     <link href="~/css/bootstrap.css" rel="stylesheet">
     @RenderSection("RevolutionCSS", required: false)
-    
+
+    <link rel="icon" type="image/png" href="~/images/logo-resim.ico" />
+
     <link href="~/css/style.css" rel="stylesheet">
     <link href="~/css/responsive.css" rel="stylesheet">
 
@@ -23,8 +25,6 @@
     <!--Color Themes-->
     <link id="theme-color-file" href="~/css/color-themes/default-theme.css" rel="stylesheet">
 
-    <link rel="shortcut icon" href="~/images/favicon.png" type="image/x-icon">
-    <link rel="icon" href="~/images/favicon.png" type="image/x-icon">
     @RenderSection("CSS", required: false)
     <style>
         <!-- alert modal -->
