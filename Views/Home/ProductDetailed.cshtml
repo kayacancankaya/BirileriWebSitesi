@@ -199,7 +199,7 @@
     </div>
 </div>
 @section FancyBox {
-    <script src="~/js/jquery.fancybox.js" defer></script>
+    <script src="~/js/jquery.fancybox.min.js" defer></script>
 }
 <!--End Sidebar Page Container-->
 @section AdditionalScripts {
@@ -218,25 +218,40 @@
                     buttonup_txt: '+'
                 });
             }
+
+          $('.tab-btn').on('click', function () {
+            var tabId = $(this).data('tab');
+            var $tab = $(tabId);
+
+            // Toggle visibility
+            if ($tab.is(':visible')) {
+                $tab.slideUp(); // or .hide()
+                $(this).removeClass('active');
+            } else {
+                $('.tabs-content .tab').slideUp(); // hide all tabs
+                $('.tab-btn').removeClass('active');
+                $tab.slideDown(); // or .show()
+                $(this).addClass('active');
+            }
+        });
+
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();
                 // Remove active class from siblings and add it to the clicked button
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
                 var button = $(this);
-                // Collect all selected variant attributes
+              
                 var variantAttributes = {};
 
                 $(".variant-group").each(function () {
-                    var globalVariantKey = $(this).find(".variant-button.active").data("key"); // Fixed here
+                    var globalVariantKey = $(this).find(".variant-button.active").data("key"); 
                     var activeVariant = $(this).find(".variant-button.active").text().trim();
 
                     if (globalVariantKey && activeVariant) {
                         variantAttributes[globalVariantKey] = activeVariant;
                     }
                 });
-
-                console.log("Selected Variants:", variantAttributes); // Debugging
 
                 var productCode = $("#product-code").val();
                 var productName = $("#product-name").val();
@@ -274,7 +289,6 @@
 
 
                 var button = $(this);
-                console.log(productCode);
                 $.ajax({
                     type: "POST",
                     url: "/Home/AddToCart",
@@ -288,13 +302,10 @@
 
                         showAlert(button, response.message, "success");
                         let currentItem = response.totalProduct;
-                        console.log(currentItem);
                         $(".cart .cart-count").text(currentItem);
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
-                        console.log(xhr.responseText);
-
                         showAlert(button, response.message, "danger");
                     }
                 });
