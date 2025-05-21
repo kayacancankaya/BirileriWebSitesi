@@ -225,20 +225,23 @@ namespace BirileriWebSitesi.Controllers
                 initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
-                initialVariantImage.FilePath = string.Format("images/resource/products/{0}/1.jpg", product.ProductVariants.First().ImagePath);
+                initialVariantImage.FilePath = string.Format("images/resource/products/{0}/1.jpg", productVariant);
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
                 //get related products
-                List<string> relatedProductCodes = _context.RelatedProducts.Where(c => c.ProductCode == productCode).Select(r => r.RelatedProductCode).ToList();
+                List<string> relatedProductCodes = await _context.RelatedProducts.Where(c => c.ProductCode == productCode)
+                                                                                 .Select(r => r.RelatedProductCode)
+                                                                                 .ToListAsync();
                 List<Product> relatedProducts = new List<Product>();
 
-                relatedProducts = _context.Products
+                relatedProducts = await _context.Products
                                         .Where(p => relatedProductCodes.Contains(p.ProductCode))
-                                        .ToList();
+                                        .ToListAsync();
 
-                IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
-                                                                        .Where(a => a.IsActive == true)
-                                                                         .Take(3);
+                IEnumerable<Product> popularProducts = await _context.Products.Where(a => a.IsActive == true)
+                                                                        .OrderByDescending(p => p.Popularity)
+                                                                        .Take(3)
+                                                                        .ToListAsync();
 
                 ProductDetailedViewModel model = new();
                 model.Product = product;
@@ -293,9 +296,8 @@ namespace BirileriWebSitesi.Controllers
                     variantCode = variantCode + item.Key;
                     variantName = variantName + " " + item.Value;
                 }
-                string imagePath = await _context.ProductVariants.Where(v => v.ProductCode == variantCode).Select(f => f.ImagePath).FirstOrDefaultAsync();
-                string filePath = string.Format("images/resource/products/{0}/1.jpg",
-                                                imagePath);
+               string filePath = string.Format("images/resource/products/{0}/1.jpg",
+                                                variantCode);
 
                 ProductDetailedVariantImageViewModel imageModel = new();
                 imageModel.FilePath = filePath;
@@ -323,7 +325,7 @@ namespace BirileriWebSitesi.Controllers
                 return BadRequest(new { success = false, message = "Beklenmeyen Bir Hata Oluştu" });
             }
         }
-        public IActionResult Catalog(int catalogID)
+        public async Task<IActionResult> Catalog(int catalogID)
         {
             try
             {
@@ -332,14 +334,14 @@ namespace BirileriWebSitesi.Controllers
                 int totalPage = 0;
                 int pageNumber = 1;
                 // get products
-                products = _context.Products
+                products = await _context.Products
                                      .Where(n => n.CatalogId == catalogID &&
                                                  n.IsActive == true)
                                      .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
                                      .Take(PaginationViewModel.PageSize)
                                      .Include(d => d.Discounts)
                                      .Include(p => p.ProductVariants)
-                                     .ToList();
+                                     .ToListAsync();
 
                 //filter related discounts
 
@@ -353,10 +355,10 @@ namespace BirileriWebSitesi.Controllers
                         product.Discounts = new List<Discount>();
                 }
                 //get total products
-                totalCount = _context.Products
+                totalCount = await _context.Products
                                      .Where(n => n.CatalogId == catalogID &&
                                                  n.IsActive == true)
-                                     .Count();
+                                     .CountAsync();
 
                 totalPage = (int)Math.Ceiling((double)totalCount / PaginationViewModel.PageSize);
 
@@ -370,15 +372,16 @@ namespace BirileriWebSitesi.Controllers
 
 
                 //get all categories
-                IEnumerable<Catalog> catalogs = _context.Catalogs.ToList();
+                IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
 
                 if (products == null)
                     return View("NotFound");
 
                 //get popular products
-                IEnumerable<Product> popularProducts = _context.Products.OrderByDescending(p => p.Popularity)
-                                                                        .Where(a => a.IsActive == true)
-                                                                         .Take(3);
+                IEnumerable<Product> popularProducts = _context.Products.Where(a => a.IsActive == true)
+                                                                        .OrderByDescending(p => p.Popularity)
+                                                                        .Take(3)
+                                                                        .ToListAsync();
 
 
                 ShopViewModel shop = new ShopViewModel();
@@ -788,11 +791,11 @@ namespace BirileriWebSitesi.Controllers
                     orderItems.Add(orderItem);
                 }
 
-                Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.OrderByDescending(i => i.Id)
-                                                                .Where(i => i.UserId == userID &&
-                                                                          i.IsBilling == false &&
-                                                                          i.SetAsDefault == true)
-                                                                .FirstOrDefaultAsync();
+                Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
+                                                                                                   i.IsBilling == false &&
+                                                                                                   i.SetAsDefault == true)
+                                                                                        .OrderByDescending(i => i.Id)
+                                                                                        .FirstOrDefaultAsync();
 
                 if (shipToAddress == null)
                 {
@@ -804,11 +807,11 @@ namespace BirileriWebSitesi.Controllers
                     shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
                 }
 
-                Models.OrderAggregate.Address? billingAddress = await _context.Addresses.OrderByDescending(i => i.Id)
-                                                                .Where(i => i.UserId == userID &&
-                                                                          i.IsBilling == true &&
-                                                                          i.SetAsDefault == true)
-                                                                .FirstOrDefaultAsync();
+                Models.OrderAggregate.Address? billingAddress = await _context.Addresses.Where(i => i.UserId == userID &&
+                                                                                                      i.IsBilling == true &&
+                                                                                                    i.SetAsDefault == true)
+                                                                                        .OrderByDescending(i => i.Id)
+                                                                                        .FirstOrDefaultAsync();
 
                 if (billingAddress == null)
                 {
