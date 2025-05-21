@@ -225,7 +225,7 @@ namespace BirileriWebSitesi.Controllers
                 initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
-                string imagePath = await _context.Products.Where(p=>p.ProductCode == productVariant)
+                string imagePath = await _context.ProductVariants.Where(p=>p.ProductCode == productVariant)
                                                             .Select(i=>i.ImagePath)
                                                             .FirstOrDefaultAsync();
                 initialVariantImage.FilePath = string.Format("~/images/resource/products/{0}/1.jpg", imagePath);
@@ -299,8 +299,11 @@ namespace BirileriWebSitesi.Controllers
                     variantCode = variantCode + item.Key;
                     variantName = variantName + " " + item.Value;
                 }
-               string filePath = string.Format("images/resource/products/{0}/1.jpg",
-                                                variantCode);
+                string imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
+                                                                    .Select(i => i.ImagePath)
+                                                                    .FirstOrDefaultAsync();
+               string filePath = string.Format("~/images/resource/products/{0}/1.jpg",
+                                                imagePath);
 
                 ProductDetailedVariantImageViewModel imageModel = new();
                 imageModel.FilePath = filePath;
