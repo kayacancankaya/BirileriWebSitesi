@@ -42,11 +42,11 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
-                authCookie = Request.Cookies[".AspNetCore.Identity.Application"];
-                if (authCookie != null)
-                    TempData["Cookie"] = "exists";
-                else
-                    TempData["Cookie"] = "not exists";
+                //authCookie = Request.Cookies[".AspNetCore.Identity.Application"];
+                //if (authCookie != null)
+                //    TempData["Cookie"] = "exists";
+                //else
+                //    TempData["Cookie"] = "not exists";
 
                 return View();
             }
@@ -167,14 +167,14 @@ namespace BirileriWebSitesi.Controllers
                 return StatusCode(500, new { success = false, message = "Filtreleme işlemi esnasında hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
-        public IActionResult ProductDetailed(string productCode)
+        public async Task<IActionResult> ProductDetailed(string productCode)
         {
             try
             {
                 //get product
-                Product? product = _context.Products.Where(c => c.ProductCode == productCode)
+                Product? product = await _context.Products.Where(c => c.ProductCode == productCode)
                                                     .Include(v => v.ProductVariants)
-                                                    .FirstOrDefault();
+                                                    .FirstOrDefaultAsync();
 
                 if (product == null)
                     return View("NotFound");
@@ -196,7 +196,7 @@ namespace BirileriWebSitesi.Controllers
 
                     //fetch global variants
                     variantKey = productVariant.Substring(i, 3);
-                    variantValue = _context.Variants.Where(v => v.VariantCode == variantKey).Select(n => n.VariantName).FirstOrDefault();
+                    variantValue = await _context.Variants.Where(v => v.VariantCode == variantKey).Select(n => n.VariantName).FirstOrDefaultAsync();
                     if (!string.IsNullOrEmpty(variantValue) &&
                         !globalVariants.ContainsKey(variantKey))
                         globalVariants.Add(variantKey, variantValue);
@@ -205,9 +205,9 @@ namespace BirileriWebSitesi.Controllers
                     foreach (var variant in product.ProductVariants)
                     {
                         variantAttribute = variant.ProductCode.Substring(i + 3, 3);
-                        variantAttributeValue = _context.VariantAttributes.Where(v => v.VariantCode == variantKey &&
+                        variantAttributeValue = await _context.VariantAttributes.Where(v => v.VariantCode == variantKey &&
                                                                                     v.VariantAttributeCode == variantAttribute)
-                                                                            .Select(n => n.VariantAttributeName).FirstOrDefault();
+                                                                            .Select(n => n.VariantAttributeName).FirstOrDefaultAsync();
                         //get first names of first variants to display initializing page
                         if (counter == 0)
                         {
