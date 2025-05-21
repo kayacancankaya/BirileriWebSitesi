@@ -378,7 +378,7 @@ namespace BirileriWebSitesi.Controllers
                     return View("NotFound");
 
                 //get popular products
-                IEnumerable<Product> popularProducts = _context.Products.Where(a => a.IsActive == true)
+                IEnumerable<Product> popularProducts = await _context.Products.Where(a => a.IsActive == true)
                                                                         .OrderByDescending(p => p.Popularity)
                                                                         .Take(3)
                                                                         .ToListAsync();
