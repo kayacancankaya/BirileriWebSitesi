@@ -1,0 +1,61 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: publish
+
+on:
+  # push:
+   # branches: [ "master" ]
+    
+  workflow_dispatch:
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Release
+      run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishReadyToRun=true -o ./publish
+      
+    - name: Stop app on server
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PASSWORD }}
+        port: ${{ secrets.VM_PORT }}
+        script: |
+          cd /home/birileri/apps/birileriwebsitesi
+          sudo systemctl stop birileri.service
+      
+    - name: Rsync publish folder to server (only changed files)
+  uses: appleboy/ssh-action@v1
+  with:
+    host: ${{ secrets.VM_HOST }}
+    username: ${{ secrets.VM_USER }}
+    password: ${{ secrets.VM_PASSWORD }}
+    port: ${{ secrets.VM_PORT }}
+    script: |
+      rsync -az --delete --progress -e "ssh -p ${{ secrets.VM_PORT }}" ./publish/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/birileri/apps/birileriwebsitesi
+
+    - name: Run app on server
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PASSWORD }}
+        port: ${{ secrets.VM_PORT }}
+        script: |
+          cd /home/birileri/apps/birileriwebsitesi
+          chmod +x BirileriWebSitesi
+          sudo systemctl daemon-reload
+          sudo systemctl start birileri.service
