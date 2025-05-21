@@ -290,7 +290,7 @@ namespace BirileriWebSitesi.Controllers
                     string.IsNullOrEmpty(productName) ||
                     variantAttributes == null)
                 {
-                    return BadRequest(new { success = false, message = "Varyant Seçeneði Bulunamadı." });
+                    return BadRequest(new { success = false, message = "Varyant Seçeneği Bulunamadı." });
                 }
                 string variantCode = productCode;
                 string variantName = productName;

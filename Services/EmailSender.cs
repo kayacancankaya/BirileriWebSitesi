@@ -72,8 +72,9 @@ namespace BirileriWebSitesi.Services
                 mimeMessage.Body = new TextPart("html") { Text = htmlMessage };
                 using var smtp = new SmtpClient
                 {
-                    Timeout = 10000 // Timeout in milliseconds (10 seconds)
+                        Timeout = 10000 // Timeout in milliseconds (10 seconds)
                 };
+                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                 await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
