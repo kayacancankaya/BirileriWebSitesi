@@ -9,7 +9,7 @@
     @foreach (Product item in Model)
     {
         <div class="post">
-            <figure class="post-thumb"><a href="shop-single.html"> <img src="@Url.Content(string.Format("~/images/resource/products/{0}/1.jpg", item.ProductCode))" alt="@item.ProductName" /></a></figure>
+            <figure class="post-thumb"><a href="shop-single.html"> <img loading="lazy" src="@Url.Content(string.Format("~/images/resource/products/{0}/1.jpg", item.ProductCode))" alt="@item.ProductName" /></a></figure>
             <h4><a asp-controller="Home" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">@item.ProductName</a></h4>
             <div class="rating"><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
             <div class="price">@item.BasePrice ₺</div>

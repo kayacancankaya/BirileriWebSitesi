@@ -1276,7 +1276,7 @@ namespace BirileriWebSitesi.Controllers
                 return View("NotFound");
             }
         }
-        public IActionResult IWannaMakeALongDistanceCall()
+        public IActionResult DistanceSellingAgreement()
         {
             try
             {
