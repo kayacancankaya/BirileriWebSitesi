@@ -225,7 +225,10 @@ namespace BirileriWebSitesi.Controllers
                 initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
-                initialVariantImage.FilePath = string.Format("images/resource/products/{0}/1.jpg", productVariant);
+                string imagePath = await _context.Products.Where(p=>p.ProductCode == productVariant)
+                                                            .Select(i=>i.ImagePath)
+                                                            .FirstOrDefaultAsync();
+                initialVariantImage.FilePath = string.Format("images/resource/products/{0}/1.jpg", imagePath);
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
                 //get related products
