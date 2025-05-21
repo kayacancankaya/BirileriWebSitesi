@@ -38,14 +38,14 @@ jobs:
           sudo systemctl stop birileri.service
       
     - name: Rsync publish folder to server (only changed files)
-  uses: appleboy/ssh-action@v1
-  with:
-    host: ${{ secrets.VM_HOST }}
-    username: ${{ secrets.VM_USER }}
-    password: ${{ secrets.VM_PASSWORD }}
-    port: ${{ secrets.VM_PORT }}
-    script: |
-      rsync -az --delete --progress -e "ssh -p ${{ secrets.VM_PORT }}" ./publish/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/birileri/apps/birileriwebsitesi
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PASSWORD }}
+        port: ${{ secrets.VM_PORT }}
+        script: |
+          rsync -az --delete --progress -e "ssh -p ${{ secrets.VM_PORT }}" ./publish/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/birileri/apps/birileriwebsitesi
 
     - name: Run app on server
       uses: appleboy/ssh-action@v1
