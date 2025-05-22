@@ -70,7 +70,7 @@
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: pageNumber,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -88,7 +88,7 @@
             //previous button clicked
             $(document).on("click", ".pagination-previous", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchFilter = $("#product-search").val();
+                let searchString = $("#product-search").val();
                 let pageNumber = parseInt($("#page-number").val()) - 1;
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
@@ -99,7 +99,7 @@
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: pageNumber,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -118,7 +118,7 @@
             //page number button clicked
             $(document).on("click", ".pagination-number", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchFilter = $("#product-search").val();
+                let searchString = $("#product-search").val();
                 let pageNumber = parseInt($(this).text());
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
@@ -129,7 +129,7 @@
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: pageNumber,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
