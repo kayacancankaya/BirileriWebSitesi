@@ -56,9 +56,10 @@ namespace BirileriWebSitesi.Services
 
 
                 var mimeMessage = new MimeMessage();
-                mimeMessage.From.Add(new MailboxAddress("Birileri", "sender@birilerigt.com"));
-                mimeMessage.To.Add(MailboxAddress.Parse("info@birilerigt.com"));
-                mimeMessage.Cc.Add(MailboxAddress.Parse("kayacan.kirpikli@birilerigt.com"));
+                mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
+                mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
 
                 mimeMessage.Subject = subjectString ?? "";
 
@@ -73,8 +74,8 @@ namespace BirileriWebSitesi.Services
                 using var smtp = new SmtpClient();
                 
 
-                await smtp.ConnectAsync("mail.kurumsaleposta.com", 587, SecureSocketOptions.None);
-                await smtp.AuthenticateAsync("sender@birilerigt.com", "NAtro,604053");
+                await smtp.ConnectAsync(_configuration["SMTP:Host"], Convert.ToInt32(_configuration["SMTP:Port"]), SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Host"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
 
