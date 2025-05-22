@@ -56,10 +56,10 @@ namespace BirileriWebSitesi.Services
 
 
                 var mimeMessage = new MimeMessage();
-                mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
-                mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
-                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
-                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
+                mimeMessage.From.Add(new MailboxAddress("Birileri", "sender@birlerigt.com"));
+                mimeMessage.To.Add(MailboxAddress.Parse("info@birilerigt.com"));
+                mimeMessage.Cc.Add(MailboxAddress.Parse("kayacan.kirpikli@birilerigt.com"));
+
                 mimeMessage.Subject = subjectString ?? "";
 
                 string htmlMessage = $"Birileri Girişimci Takımı'ndan gelen iletişim formu mesajı:<br><br>" +
@@ -70,14 +70,11 @@ namespace BirileriWebSitesi.Services
                     $"<strong>Mesaj:</strong> {message}<br>";
 
                 mimeMessage.Body = new TextPart("html") { Text = htmlMessage };
-                using var smtp = new SmtpClient
-                {
-                        Timeout = 10000 // Timeout in milliseconds (10 seconds)
-                };
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                using var smtp = new SmtpClient();
+                
 
                 await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
-                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.AuthenticateAsync("sender@birilerigt.com", "NAtro,604053");
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
 
