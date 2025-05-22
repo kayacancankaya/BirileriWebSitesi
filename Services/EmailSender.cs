@@ -73,7 +73,7 @@ namespace BirileriWebSitesi.Services
                 using var smtp = new SmtpClient();
                 
 
-                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 587, SecureSocketOptions.None);
                 await smtp.AuthenticateAsync("sender@birilerigt.com", "NAtro,604053");
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
