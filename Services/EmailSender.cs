@@ -56,7 +56,7 @@ namespace BirileriWebSitesi.Services
 
 
                 var mimeMessage = new MimeMessage();
-                mimeMessage.From.Add(new MailboxAddress("Birileri", "sender@birlerigt.com"));
+                mimeMessage.From.Add(new MailboxAddress("Birileri", "sender@birilerigt.com"));
                 mimeMessage.To.Add(MailboxAddress.Parse("info@birilerigt.com"));
                 mimeMessage.Cc.Add(MailboxAddress.Parse("kayacan.kirpikli@birilerigt.com"));
 
