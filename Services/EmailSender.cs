@@ -2,8 +2,6 @@
 using MailKit.Security;
 using MimeKit;
 using BirileriWebSitesi.Interfaces;
-using MySqlX.XDevAPI;
-using System.Security.Authentication;
 
 namespace BirileriWebSitesi.Services
 {
@@ -62,6 +60,7 @@ namespace BirileriWebSitesi.Services
                 mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
                 mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
                 mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
+
                 mimeMessage.Subject = subjectString ?? "";
 
                 string htmlMessage = $"Birileri Girişimci Takımı'ndan gelen iletişim formu mesajı:<br><br>" +
@@ -73,14 +72,10 @@ namespace BirileriWebSitesi.Services
 
                 mimeMessage.Body = new TextPart("html") { Text = htmlMessage };
                 using var smtp = new SmtpClient();
-
-                smtp.Timeout = 10000; // Timeout in milliseconds (10 seconds)
-                        //CheckCertificateRevocation = false,
-                        //SslProtocols = SslProtocols.Ssl3 | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13
                 
 
-                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
-                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.ConnectAsync(_configuration["SMTP:Host"], Convert.ToInt32(_configuration["SMTP:Port"]), SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Host"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
 
