@@ -2,6 +2,8 @@
 using MailKit.Security;
 using MimeKit;
 using BirileriWebSitesi.Interfaces;
+using MySqlX.XDevAPI;
+using System.Security.Authentication;
 
 namespace BirileriWebSitesi.Services
 {
@@ -70,11 +72,12 @@ namespace BirileriWebSitesi.Services
                     $"<strong>Mesaj:</strong> {message}<br>";
 
                 mimeMessage.Body = new TextPart("html") { Text = htmlMessage };
-                using var smtp = new SmtpClient
-                {
-                        Timeout = 10000 // Timeout in milliseconds (10 seconds)
-                };
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                using var smtp = new SmtpClient();
+
+                smtp.Timeout = 10000; // Timeout in milliseconds (10 seconds)
+                        //CheckCertificateRevocation = false,
+                        //SslProtocols = SslProtocols.Ssl3 | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13
+                
 
                 await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);

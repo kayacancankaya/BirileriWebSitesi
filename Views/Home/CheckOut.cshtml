@@ -121,7 +121,7 @@
                     
                     <div class="row clearfix" id="is-corporate-main-div" >
                         <div id="is-corporate-div">
-                            @Html.Partial("_PartialIsCorporate",Model.BillingAddress)
+                            @Html.PartialAsync("_PartialIsCorporate",Model.BillingAddress)
                         </div>
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">

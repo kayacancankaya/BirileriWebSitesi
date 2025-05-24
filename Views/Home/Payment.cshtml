@@ -214,9 +214,9 @@
                        
                             <button class="dropdown-toggle">Ön Bilgilendirme Formu</button>
                             <div class="dropdown-content">
-                                @Html.Partial("_PartialOnBilgilendirmeFormu", Model)
+                                @Html.PartialAsync("_PartialOnBilgilendirmeFormu", Model)
                                 <div class="dropdown-content">
-                                    @Html.Partial("_PartialOnBilgilendirmeFormu", Model)
+                                    @Html.PartialAsync("_PartialOnBilgilendirmeFormu", Model)
                                 </div>
                             </div>
                         </div>
@@ -225,14 +225,14 @@
                             <input type="checkbox" checked class="dropdown-checkbox">
                             <button class="dropdown-toggle">Mesafeli Satış Sözleşmesi</button>
                             <div class="dropdown-content">
-                                @Html.Partial("_PartialMesafeliSatisSozlesmesi", Model)
+                                @Html.PartialAsync("_PartialMesafeliSatisSozlesmesi", Model)
                             </div>
                         </div>
                         <div class="dropdown-item">
                             <input type="checkbox" checked class="dropdown-checkbox">
                             <button class="dropdown-toggle">KVKK Aydınlatma Metni</button>
                             <div class="dropdown-content">
-                                @Html.Partial("_PartialAydinlatmaMetni", Model)
+                                @Html.PartialAsync("_PartialAydinlatmaMetni", Model)
                             </div>
                         </div>
                         <div class="dropdown-item section">

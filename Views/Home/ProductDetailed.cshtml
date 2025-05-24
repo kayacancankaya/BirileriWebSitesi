@@ -99,12 +99,12 @@
                         <div class="basic-details">
                             <div class="row clearfix">
                                 <div class="image-column col-lg-6 col-md-12 col-sm-12" id="variant-image">
-                                    @Html.Partial("_PartialProductVariantImage", Model.ProductVariantImage)
+                                    @Html.PartialAsync("_PartialProductVariantImage", Model.ProductVariantImage)
                                 </div>
                                 <div class="info-column col-lg-6 col-md-12 col-sm-12">
 
                                     <div class="details-header" id="variant-info">
-                                        @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
+                                        @Html.PartialAsync("_PartialProductVariantInfo", Model.ProductVariantInfo)
                                     </div>
                                     <!--variant list-->
                                     <div class="product-variants">
@@ -189,8 +189,8 @@
                 <aside class="sidebar">
 
 
-                    @Html.Partial("_PartialPopularProductsWidget", Model.PopularProducts)
-                    @Html.Partial("_PartialRelatedProductsWidget", Model.RelatedProducts)
+                    @Html.PartialAsync("_PartialPopularProductsWidget", Model.PopularProducts)
+                    @Html.PartialAsync("_PartialRelatedProductsWidget", Model.RelatedProducts)
 
                 </aside>
             </div>
@@ -256,7 +256,8 @@
                 var productName = $("#product-name").val();
                 $.ajax({
                     type: "GET",
-                    url: "/Home/GetPartialViewsForProductVariant",
+                    url: "/Shop/GetPartialViewsForProductVariant",
+                    async: true,
                     data: {
                         productCode: productCode,
                         productName: productName,
@@ -291,7 +292,7 @@
                     type: "POST",
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     async: true,
-                    url: "/Home/AddToCart",
+                    url: "/Shop/AddToCart",
                     data: {
                         userId: userId,
                         productCode: productCode,

@@ -19,7 +19,7 @@
             <div class="content-side col-lg-9 col-md-8 col-sm-12">
                 <div class="our-shop">
                     <div id="product-content">
-                        @Html.Partial("_PartialProductCard",Model.productCard)
+                        @Html.PartialAsync("_PartialProductCard",Model.productCard)
                     </div>
                 </div>
             </div>
@@ -37,11 +37,11 @@
                     </div>
 
                     <!--Category Widget-->
-                    @Html.Partial("_PartialCategoryWidget", Model.Catalogs)
+                    @Html.PartialAsync("_PartialCategoryWidget", Model.Catalogs)
 
-                    @Html.Partial("_PartialPriceFilterWidget")
+                    @Html.PartialAsync("_PartialPriceFilterWidget")
                     
-                    @Html.Partial("_PartialPopularProductsWidget",Model.PopularProducts)
+                    @Html.PartialAsync("_PartialPopularProductsWidget",Model.PopularProducts)
 
                 </aside>
             </div>
@@ -66,8 +66,9 @@
                 var button = $(this);
 
                 $.ajax({
-                    type: "POST",
-                    url: "/Home/ShopFiltered",
+                    type: "GET",
+                    url: "/Shop/ShopFiltered",
+                    async: true,
                     data: {
                         catalogID: catalogID,
                         searchString: searchString,
@@ -88,18 +89,19 @@
             //previous button clicked
             $(document).on("click", ".pagination-previous", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchFilter = $("#product-search").val();
+                let searchString = $("#product-search").val();
                 let pageNumber = parseInt($("#page-number").val()) - 1;
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
                 var button = $(this);
 
                 $.ajax({
-                    type: "POST",
+                    type: "GET",
+                    async: true,
                     url: "/Home/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: pageNumber,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -118,18 +120,19 @@
             //page number button clicked
             $(document).on("click", ".pagination-number", function () {
                 let catalogID = $("#catalog-id").val();
-                let searchFilter = $("#product-search").val();
+                let searchString = $("#product-search").val();
                 let pageNumber = parseInt($(this).text());
                 let minPrice = $(".price-range-slider").slider("values", 0);
                 let maxPrice = $(".price-range-slider").slider("values", 1);
                 var button = $(this);
 
                 $.ajax({
-                    type: "POST",
-                    url: "/Home/ShopFiltered",
+                    type: "GET",
+                    async: true,
+                    url: "/Shop/ShopFiltered",
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: pageNumber,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -154,8 +157,9 @@
                 var button = $(this);
 
                 $.ajax({
-                    type: "POST",
-                    url: "/Home/ShopFiltered",
+                    type: "GET",
+                    async: true,
+                    url: "/Shop/ShopFiltered",
                     data: {
                         catalogID: catalogID,
                         searchFilter: searchString,
@@ -183,8 +187,9 @@
 
 
                 $.ajax({
-                    type: "POST",
-                    url: "/Home/ShopFiltered",
+                    type: "GET",
+                    async: true,
+                    url: "/Shop/ShopFiltered",
                     data: {
                         catalogID: catalogID,
                         searchFilter: searchString,
@@ -213,8 +218,9 @@
                 var clickedItem = $(this).parent();
 
                 $.ajax({
-                    type: "POST",
-                    url: "/Home/ShopFiltered",
+                    type: "GET",
+                    async: true,
+                    url: "/Shop/ShopFiltered",
                     data: {
                         catalogID: catalogID,
                         searchFilter: searchString,
@@ -248,7 +254,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Home/AddToCart",
+                    url: "/Cart/AddToCart",
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     async: true,
                     data: {

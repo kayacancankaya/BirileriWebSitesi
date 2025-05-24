@@ -8,10 +8,19 @@ using BirileriWebSitesi.Models;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 using Microsoft.AspNetCore.StaticFiles;
+using System.Diagnostics;
+
+var counter = Stopwatch.StartNew();
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+
+
+Console.WriteLine($"[Startup] Builder initialization: {counter.ElapsedMilliseconds} ms");
+
+
 builder.Logging.AddConsole();
+
+Console.WriteLine($"[Startup] Adding Console: {counter.ElapsedMilliseconds} ms");
 
 var config = builder.Configuration;
 string? connectionString = string.Empty;
@@ -34,6 +43,8 @@ else
     });
 }
 
+Console.WriteLine($"[Startup] Env: {counter.ElapsedMilliseconds} ms");
+
 
 connectionString = builder.Configuration["BirileriConnectionString"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -42,7 +53,8 @@ connectionString = builder.Configuration["BirileriConnectionString"] ?? throw ne
             ServerVersion.AutoDetect(connectionString),
             mysqlOptions => mysqlOptions.CommandTimeout(10))
         );
-        
+Console.WriteLine($"[Startup] Db: {counter.ElapsedMilliseconds} ms");
+
 builder.Services.Configure<IyzipayOptions>(options =>
 {
     options.BaseUrl = builder.Configuration["IyzipayOptions:BaseUrl"];
@@ -50,6 +62,7 @@ builder.Services.Configure<IyzipayOptions>(options =>
     options.SecretKey = builder.Configuration["IyzipayOptions:SecretKey"];
 });
 
+Console.WriteLine($"[Startup] Iyzi: {counter.ElapsedMilliseconds} ms");
 
 builder.Services.Configure<IpInfoSettings>(options =>
 {
@@ -81,29 +94,39 @@ builder.Services.AddAuthentication()
            twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
            twitterOptions.RetrieveUserDetails = true;
        });
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+Console.WriteLine($"[Startup] Iyzi: {counter.ElapsedMilliseconds} ms");
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage"); // Secure areas
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login"); // Allow anonymous login
 });
+
+Console.WriteLine($"[Startup] Razor: {counter.ElapsedMilliseconds} ms");
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+Console.WriteLine($"[Startup] Session: {counter.ElapsedMilliseconds} ms");
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders()
     .AddDefaultUI()
     .AddErrorDescriber<TurkishIdentityErrorDescriber>();
+
+Console.WriteLine($"[Startup] Identity: {counter.ElapsedMilliseconds} ms");
 builder.Services.AddControllersWithViews();
+
+Console.WriteLine($"[Startup] MVC: {counter.ElapsedMilliseconds} ms");
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
+
+Console.WriteLine($"[Startup] Json: {counter.ElapsedMilliseconds} ms");
 
 builder.Services.AddScoped<IBasketService, BasketService>(); 
 builder.Services.AddScoped<IProductService, ProductService>(); 
@@ -113,6 +136,7 @@ builder.Services.AddScoped<IUserAuditService, UserAuditService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IIyzipayPaymentService, IyziPayPaymentService>();
 
+Console.WriteLine($"[Startup] Local Services: {counter.ElapsedMilliseconds} ms");
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -134,7 +158,8 @@ builder.Services.Configure<IdentityOptions>(options =>
     "abc�defg�hijklmno�pqrstu�vwxyzABC�DEFGHI�JKLMNO�PQRSTU�VWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = true;
 });
-Console.WriteLine("Using identity options: ");
+
+Console.WriteLine($"[Startup] Identity Options: {counter.ElapsedMilliseconds} ms");
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
@@ -148,6 +173,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.IsEssential = true;
 });
 
+Console.WriteLine($"[Startup] Cookies: {counter.ElapsedMilliseconds} ms");
 var supportedCultures = new[] { "tr-TR" };
 var localizationOptions = new RequestLocalizationOptions
 {
@@ -156,12 +182,19 @@ var localizationOptions = new RequestLocalizationOptions
     SupportedUICultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList()
 };
 
+Console.WriteLine($"[Startup] Localization: {counter.ElapsedMilliseconds} ms");
 var app = builder.Build();
 
+Console.WriteLine($"[Startup] Build: {counter.ElapsedMilliseconds} ms");
 app.UseForwardedHeaders();
+
+Console.WriteLine($"[Startup] ForwardedHeadears: {counter.ElapsedMilliseconds} ms");
 app.UseRequestLocalization(localizationOptions);
 
+Console.WriteLine($"[Startup] Localization: {counter.ElapsedMilliseconds} ms");
 app.UseSession();
+
+Console.WriteLine($"[Startup] Session: {counter.ElapsedMilliseconds} ms");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -173,24 +206,41 @@ else
   // the default hsts value is 30 days. you may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
   app.UseHsts();
 }
+
+Console.WriteLine($"[Startup] Exc Handl: {counter.ElapsedMilliseconds} ms");
 // Set up custom content types - associating file extension to MIME type
 var provider = new FileExtensionContentTypeProvider();
 // Add new mappings
 provider.Mappings[".avif"] = "image/avif";
 
+Console.WriteLine($"[Startup] Aviif: {counter.ElapsedMilliseconds} ms");
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = provider
 });
 
+Console.WriteLine($"[Startup] StaticFiles: {counter.ElapsedMilliseconds} ms");
 app.UseRouting();
 
+Console.WriteLine($"[Startup] Routing: {counter.ElapsedMilliseconds} ms");
 app.UseAuthentication();
+
+Console.WriteLine($"[Startup] Authorize: {counter.ElapsedMilliseconds} ms");
 app.UseAuthorization();
 
+Console.WriteLine($"[Startup] Authenticate: {counter.ElapsedMilliseconds} ms");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+Console.WriteLine($"[Startup] Map Controller: {counter.ElapsedMilliseconds} ms");
 app.MapRazorPages();
-Console.WriteLine("Birileri Web Sitesi is starting...");
+
+Console.WriteLine($"[Startup] Map Razor: {counter.ElapsedMilliseconds} ms");
+
 app.Run();
+
+Console.WriteLine($"[Startup] Run: {counter.ElapsedMilliseconds} ms");
+
+
+counter.Stop();

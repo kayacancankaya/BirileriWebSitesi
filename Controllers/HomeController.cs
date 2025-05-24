@@ -4,38 +4,25 @@ using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.BasketAggregate;
 using BirileriWebSitesi.Models.OrderAggregate;
 using BirileriWebSitesi.Models.ViewModels;
-using BirileriWebSitesi.Services;
 using Iyzipay.Model;
-using Iyzipay.Request;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using NuGet.Protocol.Core.Types;
 using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
 namespace BirileriWebSitesi.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context;
-        private readonly IServiceProvider _serviceProvider;
-        private string? authCookie = string.Empty;
-        string MyCart = string.Empty;
-        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger,
-                               IServiceProvider serviceProvider )
+       
+        public HomeController( ILogger<HomeController> logger )
         {
-            _context = context;
             _logger = logger;
-            _serviceProvider = serviceProvider;
         }
         
         public IActionResult Index()
@@ -56,368 +43,19 @@ namespace BirileriWebSitesi.Controllers
                 return View("NotFound");
             }
         }
-        //-------------shop-------------//
-        public async Task<IActionResult> Shop()
+        public IActionResult _CatalogPartial()
         {
             try
             {
-
-                //get all categories
-                IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
-                //initiate view model
-                PaginationViewModel pagination = new PaginationViewModel();
-                IEnumerable<Product> products = new List<Product>();
-                // get products
-                products = await _context.Products.Where(a => a.IsActive == true)
-                                            .Take(PaginationViewModel.PageSize)
-                                            .Include(d=>d.Discounts)
-                                             .OrderByDescending(p=>p.Popularity)
-                                             .ToListAsync();
-                //get total products
-                pagination.TotalCount = await _context.Products.Where(a => a.IsActive == true).CountAsync();
-                if(products == null)
-                   return View("NotFound");
-
-                //get popular products
-                IEnumerable<Product> popularProducts = await _context.Products
-                                                      .Where(p => p.IsActive)
-                                                      .OrderByDescending(p => p.Popularity)
-                                                      .Take(3)
-                                                      .ToListAsync();
-
-                //assign values to vievmodel
-                pagination.CurrentPage = 1;
-                pagination.TotalPage = (int)Math.Ceiling((double)pagination.TotalCount / PaginationViewModel.PageSize);
-
-                ShopViewModel shop = new ShopViewModel();
-                ProductCardViewModel productCard = new ProductCardViewModel();
-                productCard.products = products;
-                productCard.pagination = pagination;
-                shop.productCard = productCard;
-                shop.Catalogs = catalogs;
-                shop.PopularProducts = popularProducts;
-                
-                return View(shop);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-               return View("NotFound");
-            }
-        }
-        public async Task<IActionResult> ShopFiltered(int catalogID, string searchFilter, int pageNumber, decimal minPrice, decimal maxPrice)
-        {
-            try
-            {
-                IEnumerable<Product> products = new List<Product>();
-                int totalCount = 0;
-                int totalPage = 0;
-                IQueryable<Product> query =  _context.Products
-                                                    .Where(n => n.BasePrice >= minPrice && n.BasePrice <= maxPrice &&
-                                                                (catalogID == 0 || n.CatalogId == catalogID) &&
-                                                                n.IsActive == true);
-
-                if (!string.IsNullOrEmpty(searchFilter))
-                {
-                    //string loweredFilter = searchFilter.ToLower();
-                    query = query.Where(n => EF.Functions.Like(n.ProductName, $"%{searchFilter}%"));
-
-                }
-
-                products = await query
-                    .OrderBy(n => n.ProductCode) // ensure stable ordering before Skip/Take
-                    .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
-                    .Take(PaginationViewModel.PageSize)
-                    .Include(d => d.Discounts)
-                    .ToListAsync();
-
-                //get total products
-                totalCount = await query
-                                .OrderBy(n => n.ProductCode) // ensure stable ordering before Skip/Take
-                                .CountAsync();
-                //filter related discounts
-
-                foreach (Product product in products)
-                {
-                    product.Discounts = product.Discounts.Where(d => d.StartDate <= DateTime.Now &&
-                                                                        d.EndDate >= DateTime.Now)
-                                                            .OrderByDescending(d => d.StartDate)
-                                                            .ToList();
-                    if (product.Discounts == null)
-                        product.Discounts = new List<Discount>();
-                }
-
-                totalPage = (int)Math.Ceiling((double)totalCount / PaginationViewModel.PageSize);
-
-                ProductCardViewModel model = new();
-                model.products = products;
-                PaginationViewModel pagination = new();
-                pagination.TotalCount = totalCount;
-                pagination.TotalPage = totalPage;
-                pagination.CurrentPage = pageNumber;
-                model.pagination = pagination;
-
-
-                return PartialView("_PartialProductCard", model);
-
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { success = false, message = "Filtreleme işlemi esnasında hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
-            }
-        }
-        public async Task<IActionResult> ProductDetailed(string productCode)
-        {
-            try
-            {
-                //get product
-                Product? product = await _context.Products.Where(c => c.ProductCode == productCode)
-                                                    .Include(v => v.ProductVariants)
-                                                    .FirstOrDefaultAsync();
-
-                if (product == null)
-                    return View("NotFound");
-
-                string productVariant = product.ProductVariants.OrderBy(c => c.ProductCode).FirstOrDefault().ProductCode;
-                Dictionary<string, string> globalVariants = new Dictionary<string, string>();
-                string? variantKey = string.Empty;
-                string? variantValue = string.Empty;
-                Dictionary<string, string> variantAttributes = new Dictionary<string, string>();
-                string? variantAttribute = string.Empty;
-                string? variantAttributeValue = string.Empty;
-                int counter = 0;
-                string initialVariantName = string.Empty;
-                for (int i = 11; i < productVariant.Length; i += 6)
-                {
-                    if (productVariant.Substring(productVariant.Length - 1, 1) == "B" &&
-                        i + 1 == productVariant.Length)
-                        break;
-
-                    //fetch global variants
-                    variantKey = productVariant.Substring(i, 3);
-                    variantValue = await _context.Variants.Where(v => v.VariantCode == variantKey).Select(n => n.VariantName).FirstOrDefaultAsync();
-                    if (!string.IsNullOrEmpty(variantValue) &&
-                        !globalVariants.ContainsKey(variantKey))
-                        globalVariants.Add(variantKey, variantValue);
-                    //fetch variant attributes of global variant 
-                    counter = 0;
-                    foreach (var variant in product.ProductVariants)
-                    {
-                        variantAttribute = variant.ProductCode.Substring(i + 3, 3);
-                        variantAttributeValue = await _context.VariantAttributes.Where(v => v.VariantCode == variantKey &&
-                                                                                    v.VariantAttributeCode == variantAttribute)
-                                                                            .Select(n => n.VariantAttributeName).FirstOrDefaultAsync();
-                        //get first names of first variants to display initializing page
-                        if (counter == 0)
-                        {
-                            initialVariantName = string.Format("{0} {1}", initialVariantName, variantAttributeValue);
-                            counter++;
-                        }
-                        if (!string.IsNullOrEmpty(variantAttributeValue) &&
-                            !variantAttributes.ContainsKey(variantKey + variantAttribute))
-                            variantAttributes.Add(variantKey + variantAttribute, variantAttributeValue);
-                    }
-                }
-                //get variant info to display initializing page
-                ProductDetailedVariantInfoViewModel initialVariantInfo = new();
-                initialVariantInfo.VariantName = product.ProductName + " " + initialVariantName;
-                initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
-                //get image path of variant to display initializing page
-                ProductDetailedVariantImageViewModel initialVariantImage = new();
-                string imagePath = await _context.ProductVariants.Where(p=>p.ProductCode == productVariant)
-                                                            .Select(i=>i.ImagePath)
-                                                            .FirstOrDefaultAsync();
-                initialVariantImage.FilePath = string.Format("~/images/resource/products/{0}/1.jpg", imagePath);
-                initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
-
-                //get related products
-                List<string> relatedProductCodes = await _context.RelatedProducts.Where(c => c.ProductCode == productCode)
-                                                                                 .Select(r => r.RelatedProductCode)
-                                                                                 .ToListAsync();
-                List<Product> relatedProducts = new List<Product>();
-
-                relatedProducts = await _context.Products
-                                        .Where(p => relatedProductCodes.Contains(p.ProductCode))
-                                        .ToListAsync();
-
-                IEnumerable<Product> popularProducts = await _context.Products.Where(a => a.IsActive == true)
-                                                                        .OrderByDescending(p => p.Popularity)
-                                                                        .Take(3)
-                                                                        .ToListAsync();
-
-                ProductDetailedViewModel model = new();
-                model.Product = product;
-                model.GlobalVariants = globalVariants;
-                model.VariantAttributes = variantAttributes;
-                model.RelatedProducts = relatedProducts;
-                model.PopularProducts = popularProducts;
-                model.ProductVariantInfo = initialVariantInfo;
-                model.ProductVariantImage = initialVariantImage;
-                return View(model);
-
-            }
-            catch (Exception ex)
-            {
-                string err = ex.Message.ToString();
-                return View("NotFound");
-            }
-        }
-        public IActionResult _PartialProductCard(IEnumerable<Product> products)
-        {
-            try
-            {
-
-                if (products == null)
-                    return Ok(new { success = false, message = "Ürün Bulunamadı." });
-                if (!products.Any())
-                    return Ok(new { success = false, message = "Ürün Bulunamadı." });
-
-
-                return PartialView("_PartialProductCard", products);
-
-            }
-            catch (Exception)
-            {
-                return Ok(new { success = false, message = "Ürün Listelenirken Hata ile Karşılaşıldı." });
-            }
-        }
-        public async Task<IActionResult> GetPartialViewsForProductVariant(string productCode, string productName, Dictionary<string, string> variantAttributes)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(productCode) ||
-                    string.IsNullOrEmpty(productName) ||
-                    variantAttributes == null)
-                {
-                    return BadRequest(new { success = false, message = "Varyant Seçeneği Bulunamadı." });
-                }
-                string variantCode = productCode;
-                string variantName = productName;
-                foreach (var item in variantAttributes)
-                {
-                    variantCode = variantCode + item.Key;
-                    variantName = variantName + " " + item.Value;
-                }
-                string imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
-                                                                    .Select(i => i.ImagePath)
-                                                                    .FirstOrDefaultAsync();
-               string filePath = string.Format("~/images/resource/products/{0}/1.jpg",
-                                                imagePath);
-
-                ProductDetailedVariantImageViewModel imageModel = new();
-                imageModel.FilePath = filePath;
-                imageModel.ProductVariantName = variantName;
-                decimal variantPrice = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
-                                                                     .Select(p => p.Price)
-                                                                     .FirstOrDefaultAsync();
-
-                ProductDetailedVariantInfoViewModel infoModel = new();
-                infoModel.VariantCode = variantCode;
-                infoModel.VariantName = variantName;
-                infoModel.VariantPrice = variantPrice;
-
-
-                var imagePartial = RenderPartialViewToString("_PartialProductVariantImage", imageModel);
-                var infoPartial = RenderPartialViewToString("_PartialProductVariantInfo", infoModel);
-
-                // Return JSON response with both partial views
-                return Json(new { imagePartial, infoPartial });
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return BadRequest(new { success = false, message = "Beklenmeyen Bir Hata Oluştu" });
-            }
-        }
-        public async Task<IActionResult> Catalog(int catalogID)
-        {
-            try
-            {
-                IEnumerable<Product> products = new List<Product>();
-                int totalCount = 0;
-                int totalPage = 0;
-                int pageNumber = 1;
-                // get products
-                products = await _context.Products
-                                     .Where(n => n.CatalogId == catalogID &&
-                                                 n.IsActive == true)
-                                     .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
-                                     .Take(PaginationViewModel.PageSize)
-                                     .Include(d => d.Discounts)
-                                     .Include(p => p.ProductVariants)
-                                     .ToListAsync();
-
-                //filter related discounts
-
-                foreach (Product product in products)
-                {
-                    product.Discounts = product.Discounts.OrderByDescending(d => d.StartDate)
-                                                            .Where(d => d.StartDate <= DateTime.Now &&
-                                                                        d.EndDate >= DateTime.Now)
-                                                            .ToList();
-                    if (product.Discounts == null)
-                        product.Discounts = new List<Discount>();
-                }
-                //get total products
-                totalCount = await _context.Products
-                                     .Where(n => n.CatalogId == catalogID &&
-                                                 n.IsActive == true)
-                                     .CountAsync();
-
-                totalPage = (int)Math.Ceiling((double)totalCount / PaginationViewModel.PageSize);
-
-                ProductCardViewModel model = new();
-                model.products = products;
-                PaginationViewModel pagination = new();
-                pagination.TotalCount = totalCount;
-                pagination.TotalPage = totalPage;
-                pagination.CurrentPage = pageNumber;
-                model.pagination = pagination;
-
-
-                //get all categories
-                IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
-
-                if (products == null)
-                    return View("NotFound");
-
-                //get popular products
-                IEnumerable<Product> popularProducts = await _context.Products.Where(a => a.IsActive == true)
-                                                                        .OrderByDescending(p => p.Popularity)
-                                                                        .Take(3)
-                                                                        .ToListAsync();
-
-
-                ShopViewModel shop = new ShopViewModel();
-                ProductCardViewModel productCard = new ProductCardViewModel();
-                productCard.products = products;
-                productCard.pagination = pagination;
-                shop.productCard = productCard;
-                shop.Catalogs = catalogs;
-                shop.PopularProducts = popularProducts;
-
-                return View("Shop", shop);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-        public async Task<IActionResult> _CatalogPartial()
-        {
-            try
-            {
-
-                IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
-                if (catalogs == null)
-                    return BadRequest();
-                if (!catalogs.Any())
-                    return BadRequest();
-                return PartialView("_CatalogPartial", catalogs);
+                List<string> Catalogs = new List<string> {
+                   "Spor Malzemeleri",
+                   "Ofis ve Kırtasiye Ürünleri",
+                   "Pet Shop Ürünleri",
+                   "Ev Gereçleri",
+                   "Elektronik Ürünler",
+                   "Oyuncak & Hobi Ürünleri"
+                };
+                return PartialView("_CatalogPartial", Catalogs);
             }
             catch (Exception ex)
             {
@@ -425,6 +63,137 @@ namespace BirileriWebSitesi.Controllers
                 return BadRequest();
             }
         }
+        public IActionResult OpenPdf(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath))
+                    return View("NotFound");
+
+                filePath = Uri.UnescapeDataString(filePath);
+
+                string rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+                string fullPath = Path.Combine(rootPath, Path.GetFileName(filePath)); // Prevent directory traversal
+
+                if (!System.IO.File.Exists(fullPath))
+                    return View("NotFound");
+
+                var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+                return File(stream, "application/pdf");
+
+            }
+            catch (Exception)
+            {
+
+                return View("NotFound");
+            }
+        }
+        public IActionResult _PartialEcommerceService()
+        {
+            try
+            {
+                return PartialView("_PartialEcommerceService");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return BadRequest();
+            }
+        }
+        public IActionResult Privacy()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+        }
+        public IActionResult CookiePolicy()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+        }
+        public IActionResult DistanceSellingAgreement()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+        }
+        public IActionResult KVKK()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+        }
+        public IActionResult About()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+        }
+        public IActionResult _PartialContactUs()
+        {
+            try
+            {
+                return PartialView("_PartialContactUs");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return BadRequest();
+            }
+        }
+
+        public IActionResult ContactUs()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return View("NotFound");
+            }
+        }
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        public IActionResult NotFound()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> Cart()
         {
             try
@@ -708,43 +477,6 @@ namespace BirileriWebSitesi.Controllers
                 _logger.LogError(ex, ex.Message.ToString());
                 string message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
                 return BadRequest(new { message });
-            }
-        }
-        public IActionResult _PartialEcommerceService()
-        {
-            try
-            {
-                return PartialView("_PartialEcommerceService");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return BadRequest();
-            }
-        }
-        public IActionResult OpenPdf(string filePath)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(filePath))
-                    return View("NotFound");
-
-                filePath = Uri.UnescapeDataString(filePath);
-
-                string rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
-                string fullPath = Path.Combine(rootPath, Path.GetFileName(filePath)); // Prevent directory traversal
-
-                if (!System.IO.File.Exists(fullPath))
-                    return View("NotFound");
-
-                var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-                return File(stream, "application/pdf");
-
-            }
-            catch (Exception)
-            {
-
-                return View("NotFound");
             }
         }
 
@@ -1247,422 +979,6 @@ namespace BirileriWebSitesi.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message.ToString() });
             }
         }
-
-        //-------------mail ends-------------//
-
-
-        //-------------other pages -------------//
-        public IActionResult Privacy()
-        {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-        public IActionResult CookiePolicy()
-        {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-        public IActionResult DistanceSellingAgreement()
-        {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-        public IActionResult KVKK()
-        {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-        public IActionResult About()
-        {
-           try
-            {
-                authCookie = Request.Cookies["AuthToken"];
-                if (authCookie != null)
-                    TempData["Cookie"] = "exists";
-                else
-                    TempData["Cookie"] = "not exists";
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-        public IActionResult _PartialContactUs()
-        {
-            try
-            {
-                return PartialView("_PartialContactUs");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return BadRequest();
-            }
-        }
-
-        public IActionResult ContactUs()
-        {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
-            }
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-        public IActionResult NotFound()
-        {
-            return View();
-        }
-        //-------------other pages ends -------------//
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        private string RenderPartialViewToString(string viewName, object model)
-        {
-            this.ViewData.Model = model;
-            using (var writer = new StringWriter())
-            {
-                var viewEngine = this.HttpContext.RequestServices.GetService(typeof(ICompositeViewEngine)) as ICompositeViewEngine;
-                var viewResult = viewEngine.FindView(this.ControllerContext, viewName, false);
-
-                if (viewResult.Success == false)
-                {
-                    throw new Exception($"Ýlgili sayfa bulunamadı.");
-                }
-
-                var viewContext = new ViewContext(
-                    this.ControllerContext,
-                    viewResult.View,
-                    this.ViewData,
-                    this.TempData,
-                    writer,
-                    new HtmlHelperOptions()
-                );
-
-                viewResult.View.RenderAsync(viewContext).Wait();
-                return writer.GetStringBuilder().ToString();
-            }
-        }
-        public Dictionary<int, string> AddBasketCookie(string productCode, decimal quantity)
-        {
-            try
-            {
-
-                var cookieOptions = new CookieOptions();
-                //returns result as int different product count in basket and cookie as string
-                Dictionary<int, string> result = new();
-                cookieOptions = new CookieOptions();
-                cookieOptions.Expires = DateTime.Now.AddDays(30);
-                cookieOptions.Path = "/";
-
-                string? cookie = HttpContext.Request.Cookies["MyCart"];
-                string myCart = string.Empty;
-                if (cookie == null)
-                {
-
-                    result = UpdateCookieAddProduct(productCode, quantity, string.Empty);
-                    if (result.Values.FirstOrDefault() == "HATA")
-                    { 
-                        return result; 
-                    }
-
-                    HttpContext.Response.Cookies.Append("MyCart", result.Values.FirstOrDefault(), cookieOptions);
-                    return result;
-
-                }
-                else
-                {
-                    result = UpdateCookieAddProduct(productCode, quantity, cookie);
-
-                    if (result.Values.FirstOrDefault() == "HATA")
-                    { 
-                        return result; 
-                    }
-                    HttpContext.Response.Cookies.Append("MyCart", result.Values.FirstOrDefault(), cookieOptions);
-
-                    return result;
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                Dictionary<int, string> result = new();
-                result.Add(0, "HATA");
-                return result; ;
-            }
-        }
-        public Dictionary<int,string> UpdateCookie(string productCode, decimal quantity, string cookie)
-        {
-            try
-            {
-                bool exists = false;
-                //how many items in cookie,cookie
-                Dictionary<int, string> result = new();
-                if (cookie == "")
-                {
-                    MyCart = productCode + ";" + quantity.ToString();
-                    result.Add(1,MyCart);
-                    return result;
-                }
-                else
-                {
-                    string[] MyCartArray = cookie.Split('&');
-                    string updatedExistingID = string.Empty;
-                    bool firstItem = true;
-                    int totalProductCount = 0;
-                    foreach (string item in MyCartArray)
-                    {
-                        string[] existingID = item.Split(';');
-
-                        if (existingID[0] == productCode)
-                        {
-                            exists = true;
-                            existingID[1] =  quantity.ToString();
-                        }
-                        //eðer ilk ürün ise & ekleme
-                        if (firstItem)
-                            updatedExistingID = updatedExistingID + string.Join(";", existingID);
-                        else
-                            updatedExistingID = updatedExistingID + "&" + string.Join(";", existingID);
-
-                        firstItem = false;
-                    }
-                    if (!exists)
-                    {
-                        totalProductCount = MyCartArray.Count() + 1;
-                        MyCart = cookie + "&" + productCode + ";" + quantity.ToString();
-                        result.Add(totalProductCount,MyCart);
-                        return result;
-                    }
-
-                    else
-                    {
-                        totalProductCount = MyCartArray.Count();
-                        MyCart = updatedExistingID;
-                        result.Add(totalProductCount, MyCart);
-                        return result;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                Dictionary<int, string> result = new();
-                result.Add(0, "HATA");
-                return result;
-            }
-        }
-        public Dictionary<int,string> UpdateCookieAddProduct(string productCode, decimal quantity, string cookie)
-        {
-            try
-            {
-                bool exists = false;
-                //how many items in cookie,cookie
-                Dictionary<int, string> result = new();
-                if (cookie == "")
-                {
-                    MyCart = productCode + ";" + quantity.ToString();
-                    result.Add(1,MyCart);
-                    return result;
-                }
-                else
-                {
-                    string[] MyCartArray = cookie.Split('&');
-                    string updatedExistingID = string.Empty;
-                    bool firstItem = true;
-                    int totalProductCount = 0;
-                    foreach (string item in MyCartArray)
-                    {
-                        string[] existingID = item.Split(';');
-
-                        if (existingID[0] == productCode)
-                        {
-                            exists = true;
-                            existingID[1] = (Convert.ToDecimal(existingID[1]) + quantity).ToString();
-                        }
-                        //eðer ilk ürün ise & ekleme
-                        if (firstItem)
-                            updatedExistingID = updatedExistingID + string.Join(";", existingID);
-                        else
-                            updatedExistingID = updatedExistingID + "&" + string.Join(";", existingID);
-
-                        firstItem = false;
-                    }
-                    if (!exists)
-                    {
-                        totalProductCount = MyCartArray.Count() + 1;
-                        MyCart = cookie + "&" + productCode + ";" + quantity.ToString();
-                        result.Add(totalProductCount,MyCart);
-                        return result;
-                    }
-
-                    else
-                    {
-                        totalProductCount = MyCartArray.Count();
-                        MyCart = updatedExistingID;
-                        result.Add(totalProductCount, MyCart);
-                        return result;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                Dictionary<int, string> result = new();
-                result.Add(0, "HATA");
-                return result;
-            }
-        }
-        public Dictionary<int, string> RemoveCookie(string productCode, string cookie)
-        {
-            try
-            {
-                bool found = false;
-                //how many items in cookie,cookie
-                Dictionary<int, string> result = new();
-               
-                string[] MyCartArray = cookie.Split('&');
-                string removedVersion = string.Empty;
-                bool firstItem = true;
-                int totalProductCount = 0;
-                foreach (string item in MyCartArray)
-                {
-                    string[] existingID = item.Split(';');
-
-                    if (existingID[0] == productCode)
-                        found = true;
-                    
-                    //eðer ilk ürün ise & ekleme
-                    if (firstItem && !found)
-                        removedVersion = removedVersion + string.Join(";", existingID);
-                    else if (string.IsNullOrEmpty(removedVersion) && !found)
-                        removedVersion = string.Join(";", existingID);
-                    else if (!found)
-                        removedVersion = removedVersion + "&" + string.Join(";", existingID);
-
-                    firstItem = false;
-                    found = false;
-                }
-                
-                    totalProductCount = MyCartArray.Count() - 1;
-                    result.Add(totalProductCount, removedVersion);
-                    return result;
-                
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                //returns result as int different product count in basket and cookie as string
-                Dictionary<int, string> result = new();
-                result.Add(0, "HATA");
-                return result;
-            }
-        }
-        public Dictionary<string, int> GetProductsFromCookie(string cookie)
-        {
-            try
-            {
-                string[] MyCartArray = cookie.Split('&');
-                Dictionary<string, int> result = new();
-                string productCode = string.Empty;
-                int quantity = 0;
-                foreach (string item in MyCartArray)
-                {
-                    string[] existingID = item.Split(';');
-
-                    if (string.IsNullOrEmpty(existingID[0]))
-                        productCode = string.Empty;
-                    else
-                        productCode = existingID[0];
-                    if (Int32.TryParse(existingID[1],out quantity) == false)
-                        quantity = 0;
-                    else
-                        quantity = Convert.ToInt32(existingID[1]);
-
-                    result.Add(productCode, quantity);
-                    
-                }
-                return result;
-                
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                //returns result as int different product count in basket and cookie as string
-                Dictionary<string, int> result = new();
-                result.Add("HATA", 0);
-                return result;
-            }
-        }
-        
-        public string GetFirstName(string fullName)
-        {
-            if (string.IsNullOrWhiteSpace(fullName))
-                return string.Empty;
-
-            var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            return parts.Length > 0 ? parts[0] : string.Empty;
-        }
-        public string GetLastName(string fullName)
-        {
-            if (string.IsNullOrWhiteSpace(fullName))
-                return string.Empty;
-
-            var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            return parts.Length > 1 ? parts[^1] : string.Empty;
-        }
-
 
     }
 }

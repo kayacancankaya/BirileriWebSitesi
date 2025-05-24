@@ -38,12 +38,12 @@
                         <img loading="lazy" src="@Url.Content(string.Format("~/images/resource/products/{0}/1.jpg", item.ProductCode))" alt="@item.ProductName" />
                         <div class="overlay-box">
                             <ul class="cart-option">
-                                <li><a asp-controller="Home" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode"><span class="fa fa-link"></span></a></li>
+                                <li><a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode"><span class="fa fa-link"></span></a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="lower-content">
-                        <h3> <a asp-controller="Home" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">@item.ProductName</a></h3>
+                        <h3> <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">@item.ProductName</a></h3>
                         <div class="price">
                             @if (item.Discounts.Any())
                             {
@@ -93,7 +93,7 @@
 else
 {
     <p>Aramanıza Ait Sonuç Bulunamadı.</p>
-    <a asp-controller="Home" asp-action="Shop">Alışverişe Devam Edin</a>
+    <a asp-controller="Shop" asp-action="Index">Alışverişe Devam Edin</a>
 }
 
-@Html.Partial("_PartialPaginationWidget", Model.pagination)
+@Html.PartialAsync("_PartialPaginationWidget", Model.pagination)
