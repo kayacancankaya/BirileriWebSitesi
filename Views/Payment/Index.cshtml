@@ -214,9 +214,9 @@
                        
                             <button class="dropdown-toggle">Ön Bilgilendirme Formu</button>
                             <div class="dropdown-content">
-                                @Html.PartialAsync("_PartialOnBilgilendirmeFormu", Model)
+                                @Html.Partial("_PartialOnBilgilendirmeFormu", Model)
                                 <div class="dropdown-content">
-                                    @Html.PartialAsync("_PartialOnBilgilendirmeFormu", Model)
+                                    @Html.Partial("_PartialOnBilgilendirmeFormu", Model)
                                 </div>
                             </div>
                         </div>
@@ -225,14 +225,14 @@
                             <input type="checkbox" checked class="dropdown-checkbox">
                             <button class="dropdown-toggle">Mesafeli Satış Sözleşmesi</button>
                             <div class="dropdown-content">
-                                @Html.PartialAsync("_PartialMesafeliSatisSozlesmesi", Model)
+                                @Html.Partial("_PartialMesafeliSatisSozlesmesi", Model)
                             </div>
                         </div>
                         <div class="dropdown-item">
                             <input type="checkbox" checked class="dropdown-checkbox">
                             <button class="dropdown-toggle">KVKK Aydınlatma Metni</button>
                             <div class="dropdown-content">
-                                @Html.PartialAsync("_PartialAydinlatmaMetni", Model)
+                                @Html.Partial("_PartialAydinlatmaMetni", Model)
                             </div>
                         </div>
                         <div class="dropdown-item section">
@@ -334,12 +334,12 @@
                     const binNumber = cardNumber.substring(0, 6);
                     var price = parseFloat($("#total-amount").val());
                     $.ajax({
-                        url: "/Home/CheckInstallment",
+                        url: "/Payment/CheckInstallment",
                         type: "POST",
                         contentType: "application/json",
                         data: JSON.stringify({ binNumber: binNumber, price: price }),
                         success: function (response) {
-                            console.log(response.installments.force3Ds)
+
                                 if(response.installments.force3Ds === 1){
                                     force3ds = 1;
                                     $("#3d-payment").prop("checked", true);
@@ -495,10 +495,10 @@
                         Country: "",
                         Force3Ds:force3Ds,
                     };
-                    console.log(JSON.stringify(data));
+
                     // Send AJAX request
                     $.ajax({
-                        url: "/Home/PlaceOrder",
+                        url: "/Payment/PlaceOrder",
                         type: "POST",
                         contentType: "application/json",
                         dataType: "JSON",

@@ -3,18 +3,11 @@
     public class CookieHelper
     {
         string MyCart { get; set; } = string.Empty;
-        public Dictionary<int, string> AddBasketCookie(string cookie, string productCode, decimal quantity)
+        public static Dictionary<int, string> AddBasketCookie(string? cookie, string productCode, decimal quantity)
         {
             try
             {
-
-                var cookieOptions = new CookieOptions();
-                //returns result as int different product count in basket and cookie as string
                 Dictionary<int, string> result = new();
-                cookieOptions = new CookieOptions();
-                cookieOptions.Expires = DateTime.Now.AddDays(30);
-                cookieOptions.Path = "/";
-
                 if (cookie == null)
                 {
 
@@ -23,8 +16,7 @@
                     {
                         return result;
                     }
-
-                    HttpContext.Response.Cookies.Append("MyCart", result.Values.FirstOrDefault(), cookieOptions);
+                    
                     return result;
 
                 }
@@ -36,7 +28,6 @@
                     {
                         return result;
                     }
-                    HttpContext.Response.Cookies.Append("MyCart", result.Values.FirstOrDefault(), cookieOptions);
 
                     return result;
 
@@ -50,10 +41,11 @@
                 return result; ;
             }
         }
-        public Dictionary<int, string> UpdateCookie(string productCode, decimal quantity, string cookie)
+        public static Dictionary<int, string> UpdateCookie(string productCode, decimal quantity, string cookie)
         {
             try
             {
+                string MyCart = string.Empty;
                 bool exists = false;
                 //how many items in cookie,cookie
                 Dictionary<int, string> result = new();
@@ -110,7 +102,7 @@
                 return result;
             }
         }
-        public Dictionary<int, string> UpdateCookieAddProduct(string productCode, decimal quantity, string cookie)
+        public static Dictionary<int, string> UpdateCookieAddProduct(string productCode, decimal quantity, string cookie)
         {
             try
             {
@@ -171,7 +163,7 @@
                 return result;
             }
         }
-        public Dictionary<int, string> RemoveCookie(string productCode, string cookie)
+        public static Dictionary<int, string> RemoveCookie(string productCode, string cookie)
         {
             try
             {
@@ -215,7 +207,7 @@
                 return result;
             }
         }
-        public Dictionary<string, int> GetProductsFromCookie(string cookie)
+        public static Dictionary<string, int> GetProductsFromCookie(string cookie)
         {
             try
             {

@@ -133,7 +133,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>(); 
 builder.Services.AddScoped<IUserService, UserService>(); 
 builder.Services.AddScoped<IUserAuditService, UserAuditService>(); 
-builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IIyzipayPaymentService, IyziPayPaymentService>();
 
 Console.WriteLine($"[Startup] Local Services: {counter.ElapsedMilliseconds} ms");

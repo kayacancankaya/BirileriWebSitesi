@@ -183,6 +183,7 @@ namespace BirileriWebSitesi.Controllers
                 }
                 //get variant info to display initializing page
                 ProductDetailedVariantInfoViewModel initialVariantInfo = new();
+                initialVariantInfo.VariantCode = productVariant;
                 initialVariantInfo.VariantName = product.ProductName + " " + initialVariantName;
                 initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
                 //get image path of variant to display initializing page
@@ -320,14 +321,21 @@ namespace BirileriWebSitesi.Controllers
                 return writer.GetStringBuilder().ToString();
             }
         }
-        public async Task<IActionResult> Catalog(int catalogID)
+        public async Task<IActionResult> Catalog(string catalogName)
         {
             try
             {
+                if(string.IsNullOrEmpty(catalogName))
+                {
+                    return View("NotFound");
+                }
                 IEnumerable<Product> products = new List<Product>();
                 int totalCount = 0;
                 int totalPage = 0;
                 int pageNumber = 1;
+                int catalogID = await _context.Catalogs.Where(_context => _context.CatalogName == catalogName)
+                                                .Select(c => c.Id)
+                                                .FirstOrDefaultAsync();
                 // get products
                 products = await _context.Products
                                      .Where(n => n.CatalogId == catalogID &&
@@ -335,7 +343,6 @@ namespace BirileriWebSitesi.Controllers
                                      .Skip((pageNumber - 1) * PaginationViewModel.PageSize)
                                      .Take(PaginationViewModel.PageSize)
                                      .Include(d => d.Discounts)
-                                     .Include(p => p.ProductVariants)
                                      .ToListAsync();
 
                 //filter related discounts

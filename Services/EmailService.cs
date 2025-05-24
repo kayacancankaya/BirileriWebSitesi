@@ -2,16 +2,14 @@
 using MailKit.Security;
 using MimeKit;
 using BirileriWebSitesi.Interfaces;
-using MySqlX.XDevAPI;
-using System.Security.Authentication;
 
 namespace BirileriWebSitesi.Services
 {
-    public class EmailSender : IEmailSender
+    public class EmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<EmailSender> _logger;
-        public EmailSender(IConfiguration configuration, ILogger<EmailSender> logger)
+        private readonly ILogger<EmailService> _logger;
+        public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
         {
             _configuration = configuration;
             _logger = logger;

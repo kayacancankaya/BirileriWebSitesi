@@ -121,7 +121,7 @@
                     
                     <div class="row clearfix" id="is-corporate-main-div" >
                         <div id="is-corporate-div">
-                            @Html.PartialAsync("_PartialIsCorporate",Model.BillingAddress)
+                            @Html.Partial("_PartialIsCorporate",Model.BillingAddress)
                         </div>
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
@@ -255,7 +255,8 @@
                     $("#billing-address-div").css("display", "block");
                     $.ajax({
                         type: "GET",
-                        url: "/Home/_PartialIsCorporate",
+                        url: "/Order/_PartialIsCorporate",
+                        async: true,
                         data: {
                             firstName : firstName,
                             lastName : lastName,
@@ -401,7 +402,7 @@
 
                 // Send AJAX request
                 $.ajax({
-                    url: "/Home/ProceedToPayment",
+                    url: "/Order/ProceedToPayment",
                     type: "POST",
                     contentType: "application/json",
                     dataType: "JSON",

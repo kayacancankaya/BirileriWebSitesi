@@ -251,7 +251,7 @@
                                         <a asp-controller="Home" asp-action="About">Hakkında</a>
                                     </li>
                                     <li class="dropdown cart">
-                                        <a asp-controller="Home" asp-action="Cart">
+                                        <a asp-controller="Cart" asp-action="Index">
                                             <div class="cart-container">
                                             <span class="cart-icon">🛒</span>
                                             <span class="cart-count" id="itemCount">0</span>
@@ -322,7 +322,7 @@
                                         <a asp-controller="Home" asp-action="About">Hakkında</a>
                                     </li>
                                     <li class="dropdown cart">
-                                        <a asp-controller="Home" asp-action="Cart">
+                                        <a asp-controller="Cart" asp-action="Index">
                                             <div class="cart-container">
                                                 <span class="cart-icon">🛒</span>
                                                 <span class="cart-count" id="cartCount">0</span>
@@ -374,27 +374,29 @@
                                             <h2>Hizmetler</h2>
                                         </div>
                                         <ul class="footer-lists">
-                                            <li><a asp-controller="Home" asp-action="Catalog"
-                                                    asp-route-catalogId="1">Spor Malzemeleri</a></li>
-                                            <li>
-                                                <a asp-controller="Home" asp-action="Catalog"
-                                                   asp-route-catalogId="2">Ofis ve Kırtarsiye Ürünleri</a>
+
+                                            <li><a asp-controller="Shop" asp-action="Catalog"
+                                                   asp-route-catalogName="Spor Malzemeleri">Spor Malzemeleri</a>
                                             </li>
                                             <li>
-                                                <a asp-controller="Home" asp-action="Catalog"
-                                                   asp-route-catalogId="3">Pet Shop Ürünleri</a>
+                                                <a asp-controller="Shop" asp-action="Catalog"
+                                                   asp-route-catalogName="Ofis ve Kırtasiye Ürünleri">Ofis ve Kırtarsiye Ürünleri</a>
                                             </li>
                                             <li>
-                                                <a asp-controller="Home" asp-action="Catalog"
-                                                   asp-route-catalogId="4">Ev Gereçleri</a>
+                                                <a asp-controller="Shop" asp-action="Catalog"
+                                                   asp-route-catalogName="Pet Shop Ürünleri">Pet Shop Ürünleri</a>
                                             </li>
                                             <li>
-                                                <a asp-controller="Home" asp-action="Catalog"
-                                                   asp-route-catalogId="5">Elektronik Ürünler</a>
+                                                <a asp-controller="Shop" asp-action="Catalog"
+                                                   asp-route-catalogName="Ev Gereçleri">Ev Gereçleri</a>
                                             </li>
                                             <li>
-                                                <a asp-controller="Home" asp-action="Catalog"
-                                                   asp-route-catalogId="6">Oyuncak ve Hobi Ürünleri</a>
+                                                <a asp-controller="Shop" asp-action="Catalog"
+                                                   asp-route-catalogName="Elektronik Ürünler">Elektronik Ürünler</a>
+                                            </li>
+                                            <li>
+                                                <a asp-controller="Shop" asp-action="Catalog"
+                                                   asp-route-catalogName="Oyuncak & Hobi Ürünleri">Oyuncak ve Hobi Ürünleri</a>
                                             </li>
                                         </ul>
                                     </div>
@@ -408,10 +410,10 @@
                                         </div>
                                         <!--Forms Footer Column-->
                                         <ul class="footer-lists">
-                                            <li><a asp-controller="home" asp-action="CookiePolicy">Çerez Politikası</a></li>
-                                            <li><a asp-controller="home" asp-action="Privacy">Gizlilik Politikası</a></li>
-                                            <li><a asp-controller="home" asp-action="IWannaMakeALongDistanceCall">Mesafeli Satış Sözleşmesi</a></li>
-                                            <li><a asp-controller="home" asp-action="KVKK">KVKK Aydınlatma Metni</a></li>
+                                            <li><a asp-controller="Home" asp-action="CookiePolicy">Çerez Politikası</a></li>
+                                            <li><a asp-controller="Home" asp-action="Privacy">Gizlilik Politikası</a></li>
+                                            <li><a asp-controller="Home" asp-action="DistanceSellingAgreement">Mesafeli Satış Sözleşmesi</a></li>
+                                            <li><a asp-controller="Home" asp-action="KVKK">KVKK Aydınlatma Metni</a></li>
 
                                         </ul>
                                     </div>
@@ -653,7 +655,7 @@
            
                 $.ajax({
                     type: "POST",
-                    url: "/Home/InitializeCartNumber",
+                    url: "/Cart/InitializeCartNumber",
                     async: true,
                     success: function (response) {
                         let currentItem = response.message;
@@ -686,8 +688,9 @@
                 $(".subscribe-btn").prop("disabled", true);
                 $.ajax({
                     type: "POST",
-                    url: "/Home/Subscribe",
+                    url: "/Email/Subscribe",
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    async: true,
                     data: {
                         emailAddress: emailAddress,
                     },
@@ -743,8 +746,8 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Home/SendEmail",
-
+                    url: "/Email/SendEmail",
+                    async: true,
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
                     data: {
                         emailAddress: emailAddress,

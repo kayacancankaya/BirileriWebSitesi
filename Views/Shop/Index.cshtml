@@ -19,7 +19,7 @@
             <div class="content-side col-lg-9 col-md-8 col-sm-12">
                 <div class="our-shop">
                     <div id="product-content">
-                        @Html.PartialAsync("_PartialProductCard",Model.productCard)
+                        @Html.Partial("_PartialProductCard",Model.productCard)
                     </div>
                 </div>
             </div>
@@ -37,11 +37,11 @@
                     </div>
 
                     <!--Category Widget-->
-                    @Html.PartialAsync("_PartialCategoryWidget", Model.Catalogs)
+                    @Html.Partial("_PartialCategoryWidget", Model.Catalogs)
 
-                    @Html.PartialAsync("_PartialPriceFilterWidget")
+                    @Html.Partial("_PartialPriceFilterWidget")
                     
-                    @Html.PartialAsync("_PartialPopularProductsWidget",Model.PopularProducts)
+                    @Html.Partial("_PartialPopularProductsWidget",Model.PopularProducts)
 
                 </aside>
             </div>
@@ -71,7 +71,7 @@
                     async: true,
                     data: {
                         catalogID: catalogID,
-                        searchString: searchString,
+                        searchFilter: searchString,
                         pageNumber: pageNumber,
                         minPrice: minPrice,
                         maxPrice: maxPrice,
@@ -98,7 +98,7 @@
                 $.ajax({
                     type: "GET",
                     async: true,
-                    url: "/Home/ShopFiltered",
+                    url: "/Shop/ShopFiltered",
                     data: {
                         catalogID: catalogID,
                         searchFilter: searchString,

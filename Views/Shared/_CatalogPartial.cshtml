@@ -1,4 +1,4 @@
-﻿@model IEnumerable<String>
+﻿@model Dictionary<string,string>
 <!--Catalogs Section-->
 <section class="services-section">
     <div class="auto-container">
@@ -9,21 +9,21 @@
             <div class="text">Hizmet verdiğimiz faaliyet alanlarındaki kataloglarımızı inceleyebilirsiniz.</div>
         </div>
         <div class="row clearfix">
-            @foreach (Catalog item in Model)
+            @foreach (var item in Model)
             {
-                string avifPath = string.Format("~/images/resource/{0}.avif", item.CatalogName).Replace(" ", "");
-                string imagePath = string.Format("~/images/resource/{0}.jpg", item.CatalogName).Replace(" ", "");
-                string pdfPath = string.Format("~/pdfs/{0}.pdf", item.CatalogName).Replace(" ", "");
+                string avifPath = string.Format("~/images/resource/{0}.avif", item.Key).Replace(" ", "");
+                string imagePath = string.Format("~/images/resource/{0}.jpg", item.Key).Replace(" ", "");
+                string pdfPath = string.Format("~/pdfs/{0}.pdf", item.Key).Replace(" ", "");
 
                 // Kategorilere özel ikonları belirleme
-                string iconClass = item.CatalogName switch
+                string iconClass = item.Key switch
                 {
-                    "Spor Malzemeleri" => "flaticon-dumbbell",
-                    "Ofis ve Kırtasiye Ürünleri" => "flaticon-pencil-case",
-                    "Pet Shop Ürünleri" => "flaticon-pawprint",
+                    "Spor Malzemeleri" => "flaticon-award",
+                    "Ofis ve Kırtasiye Ürünleri" => "flaticon-pencil",
+                    "Pet Shop Ürünleri" => "flaticon-heart",
                     "Ev Gereçleri" => "flaticon-house",
                     "Elektronik Ürünler" => "flaticon-smartphone",
-                    "Oyuncak & Hobi Ürünleri" => "flaticon-toys",
+                    "Oyuncak & Hobi Ürünleri" => "flaticon-play-button",
                     _ => "flaticon-box" // Varsayılan ikon
                 };
 
@@ -32,18 +32,18 @@
                     <div class="inner-box">
                         <div class="upper-box">
                             <span class="icon @iconClass"></span>
-                            <h3><a href="@Url.Action("OpenPdf", "Home", new { filePath = pdfPath })" target="_blank">@item.CatalogName</a></h3>
+                            <h3><a href="@Url.Action("OpenPdf", "Home", new { filePath = pdfPath })" target="_blank">@item.Key</a></h3>
                         </div>
                         <div class="lower-box">
                             <div class="image">
                                 <picture>
                                     <source srcset="@Url.Content(avifPath)" type="image/avif">
-                                    <img class="catalog-image" loading="lazy" alt="@item.CatalogName" src="@Url.Content(imagePath)" />
+                                    <img class="catalog-image" loading="lazy" alt="@item.Key" src="@Url.Content(imagePath)" />
                                 </picture>
 
                                 <div class="overlay-box">
-                                    <div class="text">@item.CatalogDescription</div>
-                                    <a asp-controller="Home" asp-action="Shop" class="link-btn"><span class="fa fa-link"></span></a>
+                                    <div class="text">@item.Value</div>
+                                    <a asp-controller="Shop" asp-action="Catalog" asp-route-catalogName="@item.Key" class="link-btn"><span class="fa fa-link"></span></a>
                                 </div>
                             </div>
                         </div>
