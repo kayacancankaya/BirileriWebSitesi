@@ -18,7 +18,7 @@
         public bool? IsCorporate { get; set; }
         public string Country { get; set; } = string.Empty;
 
-        public int VATnumber { get; set; }
+        public string? VATnumber { get; set; }
         public string? VATstate { get; set; }
     }
 }

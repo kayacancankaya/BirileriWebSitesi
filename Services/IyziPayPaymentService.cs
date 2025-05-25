@@ -3,6 +3,7 @@ using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.OrderAggregate;
 using Iyzipay.Model;
 using Iyzipay.Request;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 
@@ -169,7 +170,7 @@ namespace BirileriWebSitesi.Services
                 }
                 buyer.GsmNumber = order.BillingAddress.Phone;
                 buyer.Email = order.BillingAddress.EmailAddress;
-                buyer.IdentityNumber = order.BillingAddress.VATnumber.ToString() == string.Empty ? "0000000000000" : order.BillingAddress.VATnumber.ToString();
+                buyer.IdentityNumber = order.BillingAddress.VATnumber == string.Empty ? "00000000000" : order.BillingAddress.VATnumber;
                 buyer.LastLoginDate = model.LastLoginDate.ToString("yyyy-MM-dd HH:mm:ss");
                 buyer.RegistrationDate = model.RegistrationDate.ToString("yyyy-MM-dd HH:mm:ss");
                 buyer.RegistrationAddress = order.BillingAddress.AddressDetailed;
@@ -249,7 +250,16 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
-                request.CallbackUrl = "https://birilerigt.com/Home/Payment3dsCallBack";
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                bool isProduction = environment == "Production";
+                if (isProduction)
+                {
+                    request.CallbackUrl = "https://birilerigt.com/Payment/Payment3dsCallBack";
+                }
+                else
+                {
+                    request.CallbackUrl = "https://localhost:44332/Payment/Payment3dsCallBack";
+                }
                 ThreedsInitialize threedsInit = await ThreedsInitialize.Create(request, options);
                 if (threedsInit.Status == "success")
                 {
@@ -277,7 +287,7 @@ namespace BirileriWebSitesi.Services
                     SecretKey = _iyzipayOptions.Value.SecretKey,
                     BaseUrl = _iyzipayOptions.Value.BaseUrl
                 };
-                _logger.LogWarning("iyzipay options created");
+
             }
             catch (Exception ex)
             {

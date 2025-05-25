@@ -29,14 +29,14 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public bool IsBilling { get; set; }
         public bool IsBillingSame { get; set; } = false;
         public bool IsCorporate { get; set; } = false;
-        public int VATnumber { get; set; } = 0;
+        public string VATnumber { get; set; } = string.Empty;
         public string VATstate { get; set; } = string.Empty;
         public bool SetAsDefault { get; set; } = false;
 
 #pragma warning disable CS8618 // Required by Entity Framework
         public Address() { }
 
-        public Address(string address, string street, string city, string state, string country, string zipcode, bool isBilling, bool isBillingSame, int vATnumber, string vATstate,
+        public Address(string address, string street, string city, string state, string country, string zipcode, bool isBilling, bool isBillingSame, string vATnumber, string vATstate,
                         string firstName, string lastName, string email, string phone, bool isCorporate, string corporateName)
         {
             AddressDetailed = address;

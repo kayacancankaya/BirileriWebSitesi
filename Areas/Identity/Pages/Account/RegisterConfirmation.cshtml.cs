@@ -4,7 +4,9 @@
 
 using System;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using BirileriWebSitesi.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -18,12 +20,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
     public class RegisterConfirmationModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _sender;
+        private readonly IEmailService _emailService;
 
-        public RegisterConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<IdentityUser> userManager, IEmailService service)
         {
             _userManager = userManager;
-            _sender = sender;
+            _emailService = service;
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public string EmailConfirmationUrl { get; set; }
-
+       
         public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
         {
             if (email == null)
@@ -60,18 +62,42 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
             Email = email;
             // Once you add a real email sender, you should remove this code that lets you confirm the account
-            DisplayConfirmAccountLink = true;
-            if (DisplayConfirmAccountLink)
+            //DisplayConfirmAccountLink = true;
+            //if (DisplayConfirmAccountLink)
+            //{
+            //    var userId = await _userManager.GetUserIdAsync(user);
+            //    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            //    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            //    EmailConfirmationUrl = Url.Page(
+            //        "/Account/ConfirmEmail",
+            //        pageHandler: null,
+            //        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+            //        protocol: Request.Scheme);
+            //}
+            var userId = await _userManager.GetUserIdAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            // Build the confirmation URL
+            var callbackUrl = Url.Page(
+                "/Account/ConfirmEmail",
+                pageHandler: null,
+                values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                protocol: Request.Scheme);
+
+            // Email content
+            var subject = "Hesabınızı Onaylayın";
+            var htmlMessage = $"Lütfen hesabınızı onaylamak için  <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Buraya Tıklayınız...</a>.";
+
+            // Send the email
+            bool result = await _emailService.SendEmailAsync(email, subject, htmlMessage);
+
+            if(result == false)
             {
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                EmailConfirmationUrl = Url.Page(
-                    "/Account/ConfirmEmail",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                    protocol: Request.Scheme);
+                TempData["ErrorMessage"] = "Doğrulama maili gönderilemedi. Lütfen daha sonra tekrar deneyiniz.";
+                return RedirectToPage("/Account/Register");
             }
+
 
             return Page();
         }

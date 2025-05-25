@@ -15,6 +15,7 @@ namespace BirileriWebSitesi.Models.BasketAggregate
         public decimal UnitPrice { get; private set; } = decimal.Zero;
         [Required]
         public int Quantity { get; private set; } 
+
         [Required]
         [ForeignKey(nameof(Basket))]
         public string BuyerID { get; private set; }
@@ -28,12 +29,14 @@ namespace BirileriWebSitesi.Models.BasketAggregate
             ProductName = productName;
             ImagePath = imagePath;
             SetQuantity(quantity);
+
         }
 
         public void AddQuantity(int quantity)
         {   
             Quantity += quantity;
         }
+
 
         public void SetQuantity(int quantity)
         {

@@ -24,15 +24,15 @@ namespace BirileriWebSitesi.Services
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> _logger;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IIyzipayPaymentService _iyziPay;
 
         public OrderService (ApplicationDbContext context, ILogger<OrderService> logger,
                                 UserManager<IdentityUser> user,
-                                IServiceProvider serviceProvider)
+                                IIyzipayPaymentService iyzipay)
         {
             _context = context;
             _logger = logger;
-            _serviceProvider = serviceProvider;
+            _iyziPay = iyzipay;
         }
 
         public Task<Dictionary<Address, Address>> GetAddress(string userId)
@@ -69,7 +69,7 @@ namespace BirileriWebSitesi.Services
                     if (string.IsNullOrEmpty(order.BillingAddress.LastName))
                         return "Fatura Adresi Soy İsim Bulunamadı.";
                     order.BillingAddress.CorporateName = string.Empty;
-                    order.BillingAddress.VATnumber = 0;
+                    order.BillingAddress.VATnumber = "11111111111";
                 }
                 else
                 {
@@ -77,7 +77,7 @@ namespace BirileriWebSitesi.Services
                         return "Şirket İsmi Bulunamadı.";
                     if (string.IsNullOrEmpty(order.BillingAddress.VATstate))
                         return "Vergi Dairesi Bulunamadı.";
-                    if (order.BillingAddress.VATnumber == 0)
+                    if (string.IsNullOrEmpty(order.BillingAddress.VATnumber))
                         return "Vergi Numarası Bulunamadı.";
                     order.BillingAddress.FirstName = string.Empty;
                     order.BillingAddress.LastName = string.Empty;
@@ -100,28 +100,28 @@ namespace BirileriWebSitesi.Services
                 }
                     //update address
                     //check if addresses exists
-                //bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);
-                //if(result)
-                //{
-                //    _context.Addresses.Update(order.ShipToAddress);
-                //    await _context.SaveChangesAsync();
-                //}
-                //else
-                //{
-                //    await _context.Addresses.AddAsync(order.ShipToAddress);
-                //    await _context.SaveChangesAsync();
-                //}
-                //result = await CheckIfAddressExistsAsync(order.BillingAddress);
-                //if(result)
-                //{
-                //    _context.Addresses.Update(order.BillingAddress);
-                //    await _context.SaveChangesAsync();
-                //}
-                //else
-                //{
-                //    await _context.Addresses.AddAsync(order.BillingAddress);
-                //    await _context.SaveChangesAsync();
-                //}
+                bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);
+                if(result)
+                {
+                    _context.Addresses.Update(order.ShipToAddress);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    await _context.Addresses.AddAsync(order.ShipToAddress);
+                    await _context.SaveChangesAsync();
+                }
+                result = await CheckIfAddressExistsAsync(order.BillingAddress);
+                if(result)
+                {
+                    _context.Addresses.Update(order.BillingAddress);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    await _context.Addresses.AddAsync(order.BillingAddress);
+                    await _context.SaveChangesAsync();
+                }
                         
                 
                 foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
@@ -156,8 +156,8 @@ namespace BirileriWebSitesi.Services
                
                 if(checkString != "success")
                     return "Ödeme Esnasında Hata ile Karşılaşıldı.";
-                var iyzipayService = _serviceProvider.GetRequiredService<IIyzipayPaymentService>();
-                string htmlResult = await iyzipayService.IyziPayCreate3dsReqAsync(order, model);
+               
+                string htmlResult = await _iyziPay.IyziPayCreate3dsReqAsync(order, model);
                 
                 if (htmlResult.TrimStart().StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase))
                     order.Status = (int)ApprovalStatus.Pending;
@@ -186,8 +186,7 @@ namespace BirileriWebSitesi.Services
                 if (checkString != "success")
                     return checkString;
 
-                var iyzipayService = _serviceProvider.GetRequiredService<IIyzipayPaymentService>();
-                Payment payment = await iyzipayService.IyziPayCreateReqAsync(order, model);
+                Payment payment = await _iyziPay.IyziPayCreateReqAsync(order, model);
 
                if (payment.Status == "success")
                    order.Status = (int)ApprovalStatus.Approved;
@@ -319,7 +318,7 @@ namespace BirileriWebSitesi.Services
                     if (string.IsNullOrEmpty(order.BillingAddress.LastName))
                         return "Fatura Adresi Soy İsim Bulunamadı.";
                     order.BillingAddress.CorporateName = string.Empty;
-                    order.BillingAddress.VATnumber = 0;
+                    order.BillingAddress.VATnumber = "11111111111";
                 }
                 else
                 {
@@ -327,7 +326,7 @@ namespace BirileriWebSitesi.Services
                         return "Şirket İsmi Bulunamadı.";
                     if (string.IsNullOrEmpty(order.BillingAddress.VATstate))
                         return "Vergi Dairesi Bulunamadı.";
-                    if (order.BillingAddress.VATnumber == 0)
+                    if (string.IsNullOrEmpty(order.BillingAddress.VATnumber))
                         return "Vergi Numarası Bulunamadı.";
                     order.BillingAddress.FirstName = string.Empty;
                     order.BillingAddress.LastName = string.Empty;

@@ -91,7 +91,7 @@ namespace BirileriWebSitesi.Controllers
                     fullName = await _userManager.GetUserNameAsync(user);
                     firstName = StringHelper.GetFirstName(fullName);
                     lastName = StringHelper.GetLastName(fullName);
-                    shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
+                    shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, string.Empty, string.Empty, firstName, lastName, email, phone, false, string.Empty);
                 }
 
                 Models.OrderAggregate.Address? billingAddress = await _context.Addresses.Where(i => i.UserId == userID &&
@@ -107,7 +107,7 @@ namespace BirileriWebSitesi.Controllers
                     fullName = await _userManager.GetUserNameAsync(user);
                     firstName = StringHelper.GetFirstName(fullName);
                     lastName = StringHelper.GetLastName(fullName);
-                    billingAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, firstName, lastName, email, phone, false, string.Empty);
+                    billingAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, firstName, lastName, email, phone, false, string.Empty);
 
                 }
 
@@ -134,14 +134,14 @@ namespace BirileriWebSitesi.Controllers
                 if (ModelState.IsValid)
                     return PartialView(address);
 
-                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(address);
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, 0, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
             }
         }
@@ -242,7 +242,7 @@ namespace BirileriWebSitesi.Controllers
 
                 HttpContext.Session.SetString("PaymentViewModel", JsonConvert.SerializeObject(payment));
 
-                return Json(new { success = true, redirectUrl = Url.Action("Payment", "Payment") });
+                return Json(new { success = true, redirectUrl = Url.Action("Index", "Payment") });
 
             }
             catch (Exception ex)

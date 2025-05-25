@@ -32,7 +32,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
         private readonly ILogger<ExternalLoginModel> _logger;
         private readonly IBasketService _basketService;
         private readonly ApplicationDbContext _dbContext;
@@ -41,7 +41,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender,
+            IEmailService emailService,
             IBasketService basketService,
             ApplicationDbContext dbContext)
         {
@@ -50,7 +50,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _logger = logger;
-            _emailSender = emailSender;
+            _emailService = emailService;
             _basketService = basketService;
             _dbContext = dbContext;
         }
@@ -199,8 +199,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        await _emailService.SendEmailAsync(Input.Email, "Mailinizi Onaylayın",
+                            $"Lütfen <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>buraya tıklayarak </a>mailinizi onaylayın.");
 
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)

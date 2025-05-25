@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using BirileriWebSitesi.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,16 +20,16 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender)
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -123,11 +124,15 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
                     pageHandler: null,
                     values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
                     protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(
-                    Input.NewEmail,
-                    "Emailinizi Onaylatın",
-                    $"Lüftfen <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'> buraya tıklayarak </a> hesabınızı onaylatın.");
-
+                var result = await _emailService.SendEmailAsync(
+                                    Input.NewEmail,
+                                    "Emailinizi Onaylayın",
+                                    $"Lüftfen <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'> buraya tıklayarak </a> hesabınızı onaylayın.");
+                if(!result)
+                {
+                    StatusMessage = "Emailiniz değiştirilemedi. Lütfen daha sonra tekrar deneyiniz.";
+                    return RedirectToPage();
+                }
                 StatusMessage = "Onay emaili gönderildi. Lütfen mail kutunuzu kontrol ediniz.";
                 return RedirectToPage();
             }
@@ -159,11 +164,15 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
+            var result = await _emailService.SendEmailAsync(
                 email,
                 "Emailinizi onaylayın",
                 $"Lütfen buraya <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'> buraya tıklayarak</a> hesabınızı onaylatın.");
-
+            if(!result)
+            {
+                StatusMessage = "Doğrulama emaili gönderilemedi. Lütfen daha sonra tekrar deneyiniz.";
+                return RedirectToPage();
+            }
             StatusMessage = "Doğrulama Emaili Gönderildi. Lütfen Emailinizi Kontrol Ediniz.";
             return RedirectToPage();
         }

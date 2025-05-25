@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+	  <!--<RuntimeFrameworkVersion>8.0.16</RuntimeFrameworkVersion>-->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-BirileriWebSitesi-ac1261df-88df-4163-9fb0-39d857b64b7c</UserSecretsId>

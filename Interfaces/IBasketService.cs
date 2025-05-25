@@ -12,7 +12,6 @@ namespace BirileriWebSitesi.Interfaces
         Task DeleteBasketAsync(int orderID);
         Task<bool> RemoveBasketItemAsync(string userID,string productCode);
         Task<Basket> SetQuantity(string userID,string productCode,int quantity); 
-        Task<Basket> SetQuantities(string userID, Dictionary<string, int> quantities);
         Task TransferBasketAsync(string cart, string userID);
         Task<Basket> GetBasketAsync(string userID);
         

@@ -26,7 +26,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly Microsoft.AspNetCore.Identity.UI.Services.IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
         private readonly IBasketService _basketService;
         private readonly ApplicationDbContext _dbContext;
 
@@ -35,7 +35,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            Microsoft.AspNetCore.Identity.UI.Services.IEmailSender emailSender,
+            IEmailService emailService,
             IBasketService basketService,
             ApplicationDbContext dbContext)
         {
@@ -44,7 +44,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            _emailSender = emailSender;
+            _emailService = emailService;
             _basketService = basketService;
             _dbContext = dbContext;
         }
@@ -103,11 +103,16 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-
+        [TempData]
+        public string ErrorMessage { get; set; }
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                ModelState.AddModelError(string.Empty, ErrorMessage);
+            }
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -143,9 +148,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
-
-                    await _emailSender.SendEmailAsync(Input.Email, "Mailinizi Onaylayın.",
-                        $"Buraya Tıklayarak <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>mailinizi onaylayın.</a>.");
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

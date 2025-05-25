@@ -9,12 +9,11 @@ namespace BirileriWebSitesi.Models.BasketAggregate
     {
         [Key] 
         public string BuyerId { get; private set; }
-        private readonly List<BasketItem> _items = new List<BasketItem>();
-        public IReadOnlyCollection<BasketItem> Items => _items.AsReadOnly();
+        public List<BasketItem> Items { get; private set; } = new List<BasketItem>();
         [Required]
-        public int TotalItems => _items.Sum(i => i.Quantity);
+        public int TotalItems { get; set; }
         [Required]
-        public decimal TotalAmount => Convert.ToDecimal(_items.Sum(i => i.Quantity * i.UnitPrice));
+        public decimal TotalAmount { get; set; }
 
         public Basket(string buyerId)
         {
@@ -24,7 +23,7 @@ namespace BirileriWebSitesi.Models.BasketAggregate
         {
             if (!Items.Any(p => p.ProductCode == productCode))
             {
-                _items.Add(new BasketItem(productCode, quantity, unitPrice,buyerID,productName,imagePath));
+                Items.Add(new BasketItem(productCode, quantity, unitPrice,buyerID,productName,imagePath));
                 return;
             }
             var existingItem = Items.First(p => p.ProductCode == productCode);
@@ -33,12 +32,8 @@ namespace BirileriWebSitesi.Models.BasketAggregate
 
         public void RemoveEmptyItems()
         {
-            _items.RemoveAll(i => i.Quantity == 0);
+            Items.RemoveAll(i => i.Quantity == 0);
         }
 
-        public void SetNewBuyerId(string buyerId)
-        {
-            BuyerId = buyerId;
-        }
     }
 }

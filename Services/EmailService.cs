@@ -2,6 +2,8 @@
 using MailKit.Security;
 using MimeKit;
 using BirileriWebSitesi.Interfaces;
+using Azure.Core;
+using Humanizer;
 
 namespace BirileriWebSitesi.Services
 {
@@ -15,28 +17,24 @@ namespace BirileriWebSitesi.Services
             _logger = logger;
         }
 
-        public async Task<bool> SendEmailAsync(string email, string subject,string from, string type)
+        public async Task<bool> SendEmailAsync(string to, string subject, string htmlMessage)
         {
             try
             {
-                //using var client = new SmtpClient();
-                //client.Host = _configuration["Smtp:Host"];
-                //client.Port = int.Parse(_configuration["Smtp:Port"]);
-                //client.Credentials = new NetworkCredential(
-                //    _configuration["Smtp:Username"],
-                //    _configuration["Smtp:Password"]);
-                //client.EnableSsl = true;
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
+                email.To.Add(MailboxAddress.Parse(to));
+                email.Subject = subject;
 
-                //var message = new MailMessage
-                //{
-                //    From = new MailAddress(from),
-                //    Subject = subject,
-                //    Body = subject,
-                //    IsBodyHtml = true,
-                //};
-                //message.To.Add(email);
+                var builder = new BodyBuilder { HtmlBody = htmlMessage };
+                email.Body = builder.ToMessageBody();
 
-                //await client.SendMailAsync(message);
+                using var smtp = new SmtpClient();
+                smtp.Timeout = 10000; // Timeout in milliseconds (10 seconds)
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
                 return true;
             }
             catch (Exception ex)
@@ -75,10 +73,9 @@ namespace BirileriWebSitesi.Services
                 {
                         Timeout = 10000 // Timeout in milliseconds (10 seconds)
                 };
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                await smtp.ConnectAsync(_configuration["SMTP:Host"], Convert.ToInt32(_configuration["SMTP:Port"]), SecureSocketOptions.SslOnConnect);
-                await smtp.AuthenticateAsync(_configuration["SMTP:Host"], _configuration["SMTP:Password"]);
+                await smtp.ConnectAsync(_configuration["SMTP:Host"], Convert.ToInt32(_configuration["SMTP:Port"]), SecureSocketOptions.None);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
 

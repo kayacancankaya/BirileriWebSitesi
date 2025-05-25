@@ -48,8 +48,6 @@ namespace BirileriWebSitesi.Data
             modelBuilder.Entity<Basket>()
                          .HasKey(c => c.BuyerId);
             modelBuilder.Entity<BasketItem>()
-                         .HasKey(c => c.ProductCode);
-            modelBuilder.Entity<BasketItem>()
                         .HasKey(bi => new { bi.ProductCode, bi.BuyerID });
             modelBuilder.Entity<Order>()
                          .HasKey(c => c.Id); 
@@ -123,17 +121,6 @@ namespace BirileriWebSitesi.Data
              .HasForeignKey(rp => rp.ProductCode)
              .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<RelatedProduct>()
-         .HasOne(rp => rp.Product)
-         .WithMany(p => p.RelatedProducts)
-         .HasForeignKey(rp => rp.ProductCode)
-         .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<RelatedProduct>()
-                .HasOne(rp => rp.RelatedProducts)
-                .WithMany()
-                .HasForeignKey(rp => rp.RelatedProductCode)
-                .OnDelete(DeleteBehavior.NoAction);
 
 
             // Variant Primary Key

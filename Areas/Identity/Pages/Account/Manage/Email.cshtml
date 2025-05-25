@@ -20,7 +20,7 @@
         <div class="row clearfix">
             
             <div class="column col-lg-6 col-md-12 col-sm-12">
-                <h3>Email</h3>
+                <h3>Email Güncelle</h3>
                 <partial name="_StatusMessage" for="StatusMessage" />
                 <div class="row">
                     <div>
@@ -29,11 +29,16 @@
                             @if (Model.IsEmailConfirmed)
                             {
                                 <div class="form-floating mb-3 input-group">
-                                    <label asp-for="Email" class="form-label"></label>
-                                    <input asp-for="Email" class="form-control" placeholder="Lütfen mail adresinizi giriniz." disabled />
+                                    <div class="mb-2">
+                                        <label asp-for="Email" class="form-label w-100 fw-bold" style="display: block;">Email</label>
+                                    </div>
+
+                                    <div class="input-group mb-3">
+                                        <input asp-for="Email" class="form-control" placeholder="Lütfen mail adresinizi giriniz." disabled />
                                         <div class="input-group-append">
                                             <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
                                         </div>
+                                    </div>
                                 </div>
                             }
                             else
@@ -47,7 +52,7 @@
                             }
                             <div class="form-floating mb-3">
                                 <label asp-for="Input.NewEmail" class="form-label"></label>
-                                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
+                                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Lütfen yeni mailinizi giriniz." />
                                 <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
                             </div>
                             <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="w-100 btn btn-lg btn-primary">Email Değiştir</button>

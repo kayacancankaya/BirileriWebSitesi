@@ -1,6 +1,7 @@
 ﻿using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Helpers;
 using BirileriWebSitesi.Interfaces;
+using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.BasketAggregate;
 using BirileriWebSitesi.Services;
 using Microsoft.AspNetCore.Http;
@@ -91,7 +92,16 @@ namespace BirileriWebSitesi.Controllers
                     quantity <= 0)
                     return Ok(new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
 
-                //cookie 
+                //check if it is not a variant if so get its variant
+                var isExists = await _context.Products.Where(p => p.ProductCode == productCode).AnyAsync();
+                if(isExists)
+                {
+                    productCode = await _context.ProductVariants.Where(p => p.BaseProduct == productCode)
+                                                           .OrderBy(p => p.ProductCode)
+                                                           .Select(p => p.ProductCode)
+                                                           .FirstOrDefaultAsync();
+                }
+                    //cookie 
                 if (userId == "0")
                 {
                     string cart = Request.Cookies["MyCart"];

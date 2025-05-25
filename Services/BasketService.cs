@@ -15,14 +15,14 @@ namespace BirileriWebSitesi.Services
     public class BasketService : IBasketService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IProductService _productService;
         private readonly ILogger<BasketService> _logger;
-        private string MyCart = string.Empty;
+      
         public BasketService(ApplicationDbContext context,
-                             IServiceProvider serviceProvider)
+                             IProductService productService)
         {
             _context = context;
-            _serviceProvider = serviceProvider;
+            _productService = productService;
         }
 
         public async Task<Dictionary<int,string>> AddItemToBasketAsync(string userId, string productCode, decimal price, int quantity)
@@ -47,7 +47,7 @@ namespace BirileriWebSitesi.Services
                     await _context.Baskets.AddAsync(basket);
                     await _context.SaveChangesAsync();
                 }
-                var _productService = _serviceProvider.GetRequiredService<IProductService>();
+
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);    
                 basket.AddItem(productCode, price, quantity,userId,productName,imagePath);
@@ -55,7 +55,7 @@ namespace BirileriWebSitesi.Services
                                                                         i.ProductCode == productCode)
                                                                     .FirstOrDefault();
                 basketItem.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == productCode).FirstOrDefaultAsync();
-
+                basket = UpdateTotals(basket, quantity, quantity * price, "Add");
                 _context.Baskets.Update(basket);
                 await _context.SaveChangesAsync();
                 int totalDistinctProduct = await CountDistinctBasketItems(userId);
@@ -75,7 +75,6 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
-                var _productService = _serviceProvider.GetRequiredService<IProductService>();
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);
                 basket.AddItem(productCode, price, quantity, "0", productName, imagePath);
@@ -185,6 +184,7 @@ namespace BirileriWebSitesi.Services
                 if (basket == null)
                 {
                     basket = new Basket(userID);
+
                     await _context.Baskets.AddAsync(basket);
                     await _context.SaveChangesAsync();
                 }
@@ -204,10 +204,20 @@ namespace BirileriWebSitesi.Services
                 var basketItem = await _context.BasketItems.Where(i => i.BuyerID == userID &&
                                                                         i.ProductCode == productCode)
                                                                     .FirstOrDefaultAsync();
+                int totalQuantity = basketItem.Quantity;
+                decimal totalAmount = basketItem.UnitPrice * basketItem.Quantity;
                 if (basketItem != null)
                 {
                     _context.BasketItems.Remove(basketItem);
-                     await _context.SaveChangesAsync();
+                    var basket = await _context.Baskets.Where(b => b.BuyerId == userID)
+                                                      .Include(b => b.Items)
+                                                      .FirstOrDefaultAsync();
+                    if (basket != null)
+                    {
+                        basket = UpdateTotals(basket,totalQuantity,totalAmount,"Remove");
+                        _context.Baskets.Update(basket);
+                    }
+                    await _context.SaveChangesAsync();
                     return true;
                 }
                 return false;
@@ -220,36 +230,6 @@ namespace BirileriWebSitesi.Services
             }
         }
     
-        public async Task<Basket> SetQuantities(string userID, Dictionary<string, int> quantities)
-        {
-            try
-            {
-
-                var basket = await _context.Baskets.Where(b=>b.BuyerId == userID)
-                                                  .Include(b=>b.Items)
-                                                  .FirstOrDefaultAsync();
-
-                if (basket == null) return null;
-
-                foreach (var item in basket.Items)
-                {
-                    if (quantities.TryGetValue(item.ProductCode, out var quantity))
-                    {
-                        item.SetQuantity(quantity);
-                    }
-                }
-                basket.RemoveEmptyItems();
-                _context.Baskets.Update(basket);
-                await _context.SaveChangesAsync();
-                return basket;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message.ToString());
-                return null;
-            }
-
-        }
         public async Task<Basket> SetQuantity(string userID, string productCode, int quantity)
         {
             var basket = await _context.Baskets.Where(b=>b.BuyerId == userID)
@@ -259,15 +239,19 @@ namespace BirileriWebSitesi.Services
             var basketItem = basket.Items
                             .Where(p=>p.ProductCode == productCode)
                             .FirstOrDefault();
-
             if (basket == null) return null;
             if (basketItem == null) return null;
 
-            basketItem.SetQuantity(quantity);
+            decimal price = basketItem?.UnitPrice ?? 0;
+            int oldQuantity = basketItem?.Quantity ?? 0;
+            int quantityDifference = quantity - oldQuantity;
+            decimal totalAmountDifference = price * quantityDifference;
+            decimal newTotalAmount = basket.TotalAmount + totalAmountDifference;
             
+            basketItem.SetQuantity(quantity);
+            basket = UpdateTotals(basket, quantityDifference, totalAmountDifference, "Add");
             basket.RemoveEmptyItems();
             _context.Baskets.Update(basket);
-            _context.BasketItems.Update(basketItem);
             await _context.SaveChangesAsync();
             return basket;
 
@@ -307,11 +291,11 @@ namespace BirileriWebSitesi.Services
                 foreach (var item in result)
                 {
 
-                    var _productService = _serviceProvider.GetRequiredService<IProductService>();
                     unitPrice = await _productService.GetPriceAsync(item.Key);
                     string productName = await _productService.GetProductNameAsync(productCode);
                     string imagePath = await _productService.GetImagePathAsync(productCode);
                     basket.AddItem(item.Key, unitPrice, quantity, userID, productName, imagePath);
+                    basket = UpdateTotals(basket, item.Value, unitPrice * item.Value, "Add");
                     foreach (var basketItem in basket.Items)
                     {
                         if (basketItem.ProductCode == item.Key)
@@ -331,6 +315,20 @@ namespace BirileriWebSitesi.Services
             {
                 _logger.LogError(ex, ex.Message.ToString());
             }
+        }
+        private Basket UpdateTotals(Basket basket, int totalQuantity, decimal totalAmount, string action)
+        {
+            if (action == "Add")
+            {
+                basket.TotalItems += totalQuantity;
+                basket.TotalAmount += totalAmount;
+            }
+            else if (action == "Remove")
+            {
+                basket.TotalItems -= totalQuantity;
+                basket.TotalAmount -= totalAmount;
+            }
+            return basket;
         }
     }
 }

@@ -19,10 +19,11 @@ namespace BirileriWebSitesi.Controllers
         private readonly IOrderService _orderService;
         private readonly IEmailService _emailService;
         private readonly IIyzipayPaymentService _iyzipayService;
-        private readonly UserAuditService _userAuditService;
+        private readonly IUserAuditService _userAuditService;
         public PaymentController(ILogger<CartController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager,
                                 IProductService productService, IBasketService basketService,
-                                IOrderService orderService, IEmailService emailService, IIyzipayPaymentService iyizpayService, UserAuditService userAuditService)
+                                IOrderService orderService, IEmailService emailService, IIyzipayPaymentService iyizpayService
+                                , IUserAuditService userAuditService)
         {
             _logger = logger;
             _context = context;
@@ -45,7 +46,7 @@ namespace BirileriWebSitesi.Controllers
 
                 var paymentModel = JsonConvert.DeserializeObject<PaymentViewModel>(paymentJson);
                 HttpContext.Session.Remove("PaymentViewModel");
-                return View("Payment", paymentModel);
+                return View(paymentModel);
             }
             catch (Exception ex)
             {
