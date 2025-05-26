@@ -281,6 +281,8 @@
 </div>
 <input type="hidden" id="order-id" value="@Model.OrderId" />
 <input type="hidden" id="total-amount" value="@Model.TotalAmount" />
+<input type="hidden" id="shipping-email-address" value="@Model.ShipToAddress.EmailAddress" />
+<input type="hidden" id="billing-email-address" value="@Model.BillingAddress.EmailAddress" />
 @section AdditionalScripts {
     <script>
 	    $(document).ready(function () {
@@ -456,6 +458,9 @@
                     else {
                         paymentType = 2;
                     }
+		   
+		    let emailAddress = $("#billing-email-address").val() || $("#shipping-email-address").val() || "";
+
                     // Check forms are checked
                     $(".dropdown-checkbox").each(function () {
                         if (!$(this).is(":checked")) {
@@ -494,6 +499,7 @@
                         City: "",
                         Country: "",
                         Force3Ds:force3Ds,
+			EmailAddress = emailAddress,
                     };
 
                     // Send AJAX request
@@ -517,7 +523,6 @@
                                         win.document.close();
 
                                 } else {
-
                                     showAlert(button, "Ödeme başarıyla gerçekleşti!", "success");
                                     window.location.href = "/Home"; // Redirect to confirmation page
                                 }
