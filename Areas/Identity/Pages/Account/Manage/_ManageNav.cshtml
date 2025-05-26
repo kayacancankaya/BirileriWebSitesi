@@ -23,6 +23,7 @@
                     @if(hasOrders)
                     {
                         <li class="nav-item"><a class="nav-link @ManageNavPages.OrdersNavClass(ViewContext)" id="orders" asp-page="./Orders">Sipariş Bilgileri</a></li>
+                        <li class="nav-item"><a class="nav-link @ManageNavPages.TranferFormClass(ViewContext)" id="tranfers" asp-page="./TransferNoticeForm">Banka Havale Bildirimi</a></li> 
                     }
                     <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email Güncelle</a></li>
                     <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Şifre İşlemleri</a></li>
