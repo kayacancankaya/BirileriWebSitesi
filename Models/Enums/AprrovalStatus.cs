@@ -7,6 +7,8 @@
             Pending = 0,
             Approved = 1,
             Failed = 2,
+            Shipped = 3,
+            Recieved = 4
         }
     }
 }
