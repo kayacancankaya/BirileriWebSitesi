@@ -53,8 +53,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
                 OrderSelectList = new SelectList(OrderInfos, "Key", "Value");
                 return Page();
             }
-    
-            var result = await _emailService.SendBankTransferNoticeEmailAsync(User.Identity.Name, SelectedOrderId.Value, Note);
+            var Order = await _orderService.GetOrderAsync(SelectedOrderId.Value)
+            var result = await _emailService.SendBankTransferNoticeEmailAsync(Order, Note);
     
             if (result)
             {
