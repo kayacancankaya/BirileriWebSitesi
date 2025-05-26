@@ -1,0 +1,53 @@
+﻿@page
+@model BirileriWebSitesi.Areas.Identity.Pages.Account.Manage.TransferNoticeFormModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml"; 
+}
+@section Title {
+    <meta name="title" content="Banka Transferi Bildirim Formu">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                    toptan spor malzemesi">
+}
+@Html.Partial("_ManageNav")
+
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-12 col-md-12 col-sm-12">
+                <h2>Banka Havale Bildirim Formu</h2>
+
+                <form method="post">
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="SelectedOrderId">Sipariş Seçiniz</label>
+                            @if (Model.Orders != null && Model.Orders.Any())
+                            {
+                                <select asp-for="SelectedOrderId" class="form-control" asp-items="Model.OrderSelectList">
+                                    <option value="">-- Sipariş Seçiniz --</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <p>Henüz bankaya havale ile verilmiş bir siparişiniz bulunmamaktadır.</p>
+                            }
+                            <span asp-validation-for="SelectedOrderId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group col-lg-6">
+                            <label for="Note">İlave Notlar</label>
+                            <textarea asp-for="Note" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Note" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Bildirimi Gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
