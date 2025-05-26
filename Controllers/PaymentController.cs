@@ -73,8 +73,7 @@ namespace BirileriWebSitesi.Controllers
                 }
 
                 string? buyerID = _userManager.GetUserId(User);
-
-
+                
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
 
                 if (userAudit == null)
@@ -122,6 +121,11 @@ namespace BirileriWebSitesi.Controllers
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
+                            await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
+                
+                            if(!String.IsNullOrEmpty(model.EmailAddress))
+                                await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"CreditCard");
+                            
                             return Ok(new { success = true, is3Ds = true, message = "Siparişiniz İşleme Alındı." });
                         }
                         else
@@ -133,12 +137,17 @@ namespace BirileriWebSitesi.Controllers
                 }
                 else
                 {
-                    return Ok(new { success = true, is3Ds = false, message = "Banka Transferi" });
+                    await _basketService.DeleteBasketAsync(buyerID);
+                    await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
+                    if(!String.IsNullOrEmpty(model.EmailAddress))
+                        await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"BankAccount");
+                    return Ok(new { success = true, is3Ds = false, message = "Banka Ödemesi ile Ödeme Tanımlanmıştır." });
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
+                
                 return Ok(new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
             }
         }
