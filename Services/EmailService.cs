@@ -174,12 +174,36 @@ namespace BirileriWebSitesi.Services
                     }
             
                     sb.AppendLine("</ul>");
-                    sb.AppendLine($"<p><strong>Not:</strong> {note}</p>");
+                    // Billing Address
+                    sb.AppendLine("<h3>Fatura Adresi</h3>");
+                    sb.AppendLine("<p>");
+                    sb.AppendLine($"{order.BillingAddress?.FullName}<br>");
+                    sb.AppendLine($"{order.BillingAddress?.Street}<br>");
+                    sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.PostalCode}<br>");
+                    sb.AppendLine($"{order.BillingAddress?.Country}<br>");
+                    sb.AppendLine("</p>");
+            
+                    // Shipping Address
+                    sb.AppendLine("<h3>Teslimat Adresi</h3>");
+                    sb.AppendLine("<p>");
+                    sb.AppendLine($"{order.ShipToAddress?.FullName}<br>");
+                    sb.AppendLine($"{order.ShipToAddress?.Street}<br>");
+                    sb.AppendLine($"{order.ShipToAddress?.City}, {order.ShipToAddress?.State} {order.ShipToAddress?.PostalCode}<br>");
+                    sb.AppendLine($"{order.ShipToAddress?.Country}<br>");
+                    sb.AppendLine("</p>");
+            
+                    // Note
+                    if (!string.IsNullOrWhiteSpace(note))
+                    {
+                        sb.AppendLine("<h3>Ek Not</h3>");
+                        sb.AppendLine($"<p>{note}</p>");
+                    }
             
                     mimeMessage.Body = new TextPart("html")
                     {
                         Text = sb.ToString()
                     };
+                     sb.AppendLine("</ul>");
 
                 using var smtp = new SmtpClient
                 {
