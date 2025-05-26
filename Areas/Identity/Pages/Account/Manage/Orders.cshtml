@@ -44,7 +44,12 @@
                                     <td>@order.Id</td>
                                     <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
                                     <td>@order.TotalAmount.ToString("C") ₺</td>
-                                    <td>@order.Status</td>
+                                    <td>@(order.Status == 0 ? "Beklemede" :
+                                          order.Status == 1 ? "Hazırlanıyor" :
+                                          order.Status == 2 ? "Başarısız" :
+                                          order.Status == 3 ? "Kargolandı" :
+                                          order.Status == 4 ? "Teslim Edildi" : "Beklemede")
+                                    </td>
                                     <td><a asp-page="./OrderDetails" asp-route-id="@order.Id">Sipariş Detayı</a> </td>
                                 </tr>
                             }
