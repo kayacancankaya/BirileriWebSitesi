@@ -9,11 +9,14 @@ public class TransferNoticeFormModel : PageModel
 {
     private readonly IOrderService _orderService;
     private readonly IEmailService _emailService;
-
-    public TransferNoticeFormModel(IOrderService orderService, IEmailService emailService)
+     private readonly UserManager<IdentityUser> _userManager;
+       
+    public TransferNoticeFormModel(IOrderService orderService, IEmailService emailService,
+                                    UserManager<IdentityUser> userManager)
     {
         _orderService = orderService;
         _emailService = emailService;
+        _userManager = userManager;
     }
 
     [BindProperty]
@@ -23,25 +26,20 @@ public class TransferNoticeFormModel : PageModel
     [MaxLength(500)]
     public string Note { get; set; }
 
-    public List<Order> Orders { get; set; }
-
-    public IEnumerable<SelectListItem> OrderSelectList =>
-        Orders?.Select(o => new SelectListItem
-        {
-            Value = o.Id.ToString(),
-            Text = $"#{o.Id} - {o.OrderDate:dd.MM.yyyy}"
-        }) ?? Enumerable.Empty<SelectListItem>();
+    public Dictonary<int,string> OrderInfos { get; set; }
 
     public async Task OnGetAsync()
     {
-        Orders = await _orderService.GetBankTransferOrdersForUserAsync(User);
+        string userID = _userManager.GetUserId(User);
+        OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid || SelectedOrderId == null)
         {
-            Orders = await _orderService.GetBankTransferOrdersForUserAsync(User);
+            string userID = _userManager.GetUserId(User);
+            OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
             return Page();
         }
 
