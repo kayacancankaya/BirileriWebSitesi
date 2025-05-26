@@ -14,5 +14,6 @@ namespace BirileriWebSitesi.Interfaces
         Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price);
         Task<bool> RecordPayment(PaymentLog payment);
         Task<bool> UpdateOrderStatus(int orderID,string status);
+        
     }
 }
