@@ -16,5 +16,6 @@
         public string? City { get; set; } 
         public string? Country { get; set; } 
         public bool Force3Ds { get; set; } = false;
+        public string EmailAddress { get; set; } = String.Empty;
     }
 }
