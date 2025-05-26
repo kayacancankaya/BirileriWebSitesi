@@ -25,7 +25,7 @@
                     <div class="row">
                         <div class="form-group col-lg-6">
                             <label for="SelectedOrderId">Sipariş Seçiniz</label>
-                            @if (Model.Orders != null && Model.Orders.Any())
+                            @if (Model.OrderInfos != null && Model.OrderInfos.Any())
                             {
                                 <select asp-for="SelectedOrderId" class="form-control" asp-items="Model.OrderSelectList">
                                     <option value="">-- Sipariş Seçiniz --</option>
