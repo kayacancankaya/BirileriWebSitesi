@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 public class TransferNoticeFormModel : PageModel
 {
     private readonly IOrderService _orderService;
@@ -26,12 +27,16 @@ public class TransferNoticeFormModel : PageModel
     [MaxLength(500)]
     public string Note { get; set; }
 
+    [BindProperty]
     public Dictonary<int,string> OrderInfos { get; set; }
-
+    [BindProperty]
+    SelectList OrderSelectList { get; set; }
     public async Task OnGetAsync()
     {
         string userID = _userManager.GetUserId(User);
         OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
+        OrderSelectList = new SelectList(OrderInfos, "Key", "Value");
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -40,6 +45,7 @@ public class TransferNoticeFormModel : PageModel
         {
             string userID = _userManager.GetUserId(User);
             OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
+            OrderSelectList = new SelectList(OrderInfos, "Key", "Value");
             return Page();
         }
 
