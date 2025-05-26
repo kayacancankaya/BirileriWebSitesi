@@ -135,7 +135,7 @@ namespace BirileriWebSitesi.Services
                         Timeout = 10000 // Timeout in milliseconds (10 seconds)
                 };
 
-                await smtp.ConnectAsync(_configuration["SMTP:Host"], Convert.ToInt32(_configuration["SMTP:Port"]), SecureSocketOptions.None);
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect), SecureSocketOptions.None);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
@@ -150,6 +150,56 @@ namespace BirileriWebSitesi.Services
                 
             }
             
+        }
+        public async Task<string> SendBankTransferNoticeEmailAsync(Order order, string note)
+        {
+            try
+            {
+
+                var mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
+                mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
+
+                 mimeMessage.Subject = $"{order.Id} Siparişi Havale Formu";
+
+                    // Build HTML content
+                    var sb = new StringBuilder();
+                    sb.AppendLine("<h3>Sipariş Bilgileri:</h3><ul>");
+            
+                    foreach (var item in order.Items)
+                    {
+                        sb.AppendLine($"<li>{item.ProductName} - {item.Quantity} x {item.Price:C}</li>");
+                    }
+            
+                    sb.AppendLine("</ul>");
+                    sb.AppendLine($"<p><strong>Not:</strong> {note}</p>");
+            
+                    mimeMessage.Body = new TextPart("html")
+                    {
+                        Text = sb.ToString()
+                    };
+
+                using var smtp = new SmtpClient
+                {
+                        Timeout = 10000 // Timeout in milliseconds (10 seconds)
+                };
+
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect), SecureSocketOptions.None);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.SendAsync(mimeMessage);
+                await smtp.DisconnectAsync(true);
+
+                return "Mail Gönderildi";
+
+                
+            }
+            catch (Exception ex)
+            {
+                return ex.Message.ToString();
+                
+            }
         }
     }
 }
