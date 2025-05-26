@@ -159,8 +159,7 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 ThreedsPayment payment = await _iyzipayService.Payment3dsCallBack(Request.Form["conversationId"], Request.Form["paymentId"]);
-
-
+                
                 PaymentLog paymentLog = new();
                 paymentLog.ConversationId = payment.ConversationId;
                 paymentLog.OrderId = Convert.ToInt32(payment.BasketId);
@@ -176,8 +175,6 @@ namespace BirileriWebSitesi.Controllers
                 paymentLog.LastFourDigits = payment.LastFourDigits;
                 paymentLog.Status = payment.Status;
                 paymentLog.PaidAt = DateTime.UtcNow;
-
-
 
                 if (payment.Status == "success")
                 {
@@ -196,7 +193,6 @@ namespace BirileriWebSitesi.Controllers
                     await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
                     await _orderService.RecordPayment(paymentLog);
                     return RedirectToAction("Index");
-
                 }
             }
             catch (Exception ex)
