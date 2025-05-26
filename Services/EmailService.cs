@@ -54,23 +54,37 @@ namespace BirileriWebSitesi.Services
                 string htmlMessage = string.Empty;
                 if(paymentType="CreditCard")
                 {
-                    string subject = String.Format("{0} - Ödeme Alındı",orderID)
+                    string subject = $"{orderID} - Ödeme Alındı";
                     email.Subject = subject;
-                    htmlMessage = String.Format("{0} Sipariş Numarasına ait ödemeniz başarıyla alınmıştır. 
-                                                    Siparişiniz en geç 2 iş günü içerisinde hazırlanarak
-                                                    kargo firmasına (Aras Kargo) teslim edilecektir. Siparişinizin durumunu
-                                                    <a href="https://birilerigt.com/Identity/Account/Manage"> buradan </a>
-                                                    takip edebilirsiniz.",orderID)
+                     htmlMessage = $@"
+                    <table style='max-width:600px;margin:auto;font-family:Arial,sans-serif;border:1px solid #ddd;border-radius:8px;padding:20px;'>
+                        <tr>
+                            <td style='text-align:center;'>
+                                <h2 style='color:#007bff;'>Ödemeniz Alındı</h2>
+                                <p style='font-size:16px;'>Sipariş Numaranız: <strong>{orderID}</strong></p>
+                                <p style='font-size:16px;'>Ödemeniz başarıyla alınmıştır. Siparişiniz en geç 2 iş günü içinde hazırlanarak Aras Kargo’ya teslim edilecektir.</p>
+                                <p style='font-size:16px;'>Sipariş durumunuzu <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> takip edebilirsiniz.</p>
+                            </td>
+                        </tr>
+                    </table>";
                 }
+                
                 else
                 {
-                    string subject = String.Format("{0} - Hesaba Havale",orderID)
-                    email.Subject = subject;   
-                    htmlMessage = String.Format("{0} Siparişiniz alınmıştır. 
-                                                    Banka havale formunu
-                                                    <a href="https://birilerigt.com/Identity/Account/Manage"> buradan </a>
-                                                    gönderdiğinizde siparişiniz işleme alınacak, en geç 2 iş günü içerisinde
-                                                    kargo firmasına (Aras Kargo) teslim edilecektir.",orderID)
+                   string subject = $"{orderID} - Hesaba Havale";
+                    email.Subject = subject;
+                    htmlMessage = $@"
+                    <table style='max-width:600px;margin:auto;font-family:Arial,sans-serif;border:1px solid #ddd;border-radius:8px;padding:20px;'>
+                        <tr>
+                            <td style='text-align:center;'>
+                                <h2 style='color:#ff9800;'>Havale Bekleniyor</h2>
+                                <p style='font-size:16px;'>Sipariş Numaranız: <strong>{orderID}</strong></p>
+                                <p style='font-size:16px;'>Siparişiniz alınmıştır. Lütfen banka havale formunu 
+                                <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> gönderiniz.</p>
+                                <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde Aras Kargo’ya teslim edilecektir.</p>
+                            </td>
+                        </tr>
+                    </table>";
                 }
 
                 var builder = new BodyBuilder { HtmlBody = htmlMessage };
