@@ -1,3 +1,9 @@
+using BirileriWebSitesi.Data;
+using BirileriWebSitesi.Models.OrderAggregate;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 public class TransferNoticeFormModel : PageModel
 {
     private readonly IOrderService _orderService;
