@@ -5,5 +5,6 @@
         Task<bool> SendEmailAsync(string email, string subject, string htmlMessage);
         Task<string> SendContactUsEmailAsync(string username, string email, string? phone, string message, string? subject);
         Task SendPaymentEmailAsync(string to,int orderId,string transferType);
+        Task SendBankTransferNoticeEmailAsync(Order order, string note);
     }
 }
