@@ -32,7 +32,14 @@
                             <h4>Sipariş No: @Model.Order.Id</h4>
                             <p><strong>Tarih:</strong> @Model.Order.OrderDate.ToString("dd/MM/yyyy")</p>
                             <p><strong>Toplam Tutar:</strong> @Model.Order.TotalAmount.ToString("C") ₺</p>
-                            <p><strong>Durum:</strong> @Model.Order.Status</p>
+                            <p><strong>Durum:</strong> 
+                            
+                                @(Model.Order.Status == 0 ? "Beklemede" :
+                                    Model.Order.Status == 1 ? "Hazırlanıyor" :
+                                    Model.Order.Status == 2 ? "Başarısız" :
+                                    Model.Order.Status == 3 ? "Kargolandı" :
+                                    Model.Order.Status == 4 ? "Teslim Edildi" : "Beklemede")
+                            </p>
                         </div>
                     </div>
 

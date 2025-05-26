@@ -242,7 +242,7 @@ namespace BirileriWebSitesi.Services
 
             return installmentDetails;
         }
-        private async Task<Order> GetOrderAsync(int orderId)
+        public async Task<Order> GetOrderAsync(int orderId)
         {
             try
             {
@@ -415,7 +415,11 @@ namespace BirileriWebSitesi.Services
             try
             {
                 var orderInfos = await _context.Orders
-                    .Where(b => b.BuyerId == userID)
+                    .Where(b => b.BuyerId == userID &&
+                            b.PaymentType == 1 &&
+                            b.Status > 0 &&
+                            b.Status != 2
+                            )
                     .ToDictionaryAsync(
                         b => b.Id,
                         b => $"Sipariş {b.Id} - {b.OrderDate:dd.MM.yyyy}"

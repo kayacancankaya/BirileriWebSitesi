@@ -29,7 +29,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             }
 
             Orders = await _context.Orders
-                .Where(o => o.BuyerId == user.Id)
+                .Where(o => o.BuyerId == user.Id &&
+                            o.Status > 0 )
                 .OrderByDescending(o => o.OrderDate)
                 .Include(o=>o.OrderItems)
                 .ToListAsync();

@@ -29,9 +29,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             }
 
             Order = await _context.Orders
+                .Where(o => o.Id == id && o.BuyerId == user.Id
+                        && o.Status>0)
                 .Include(o => o.OrderItems) 
                 .ThenInclude(p => p.ProductVariant) 
-                .FirstOrDefaultAsync(o => o.Id == id && o.BuyerId == user.Id);
+                .FirstOrDefaultAsync();
 
             if (Order == null)
             {

@@ -1,11 +1,13 @@
 ﻿using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models;
+using BirileriWebSitesi.Models.OrderAggregate;
 using BirileriWebSitesi.Services;
 using Iyzipay.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace BirileriWebSitesi.Controllers
@@ -179,11 +181,36 @@ namespace BirileriWebSitesi.Controllers
                 if (payment.Status == "success")
                 {
                     TempData["SuccessMessage"] = "Siparişiniz Başarıyla İşleme Alındı.";
-
-                    await _basketService.DeleteBasketAsync(Convert.ToInt32(payment.BasketId));
+                    string? userId = await _context.Orders.Where(i => i.Id == Convert.ToInt32(payment.BasketId))
+                                                          .Select(b=>b.BuyerId)
+                                                          .FirstOrDefaultAsync();
+                    if(!string.IsNullOrEmpty(userId))
+                        await _basketService.DeleteBasketAsync(userId);
                     await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved");
                     await _orderService.RecordPayment(paymentLog);
-                    // await _emailService.SendOrderConfirmationEmailAsync(_userManager.GetUserId(User));
+
+                    string? mailAddress = await _context.Orders
+                        .Where(i => i.Id == Convert.ToInt32(payment.BasketId))
+                        .Include(b => b.BillingAddress)
+                        .Select(b => b.BillingAddress.EmailAddress)
+                        .FirstOrDefaultAsync();
+
+                    if(string.IsNullOrEmpty(mailAddress))
+                        mailAddress = await _context.Orders
+                             .Include(b => b.ShipToAddress)
+                            .Select(b => b.ShipToAddress.EmailAddress)
+                            .FirstOrDefaultAsync();
+
+                    if(!string.IsNullOrEmpty(mailAddress))
+                        await _emailService.SendPaymentEmailAsync(mailAddress, Convert.ToInt32(payment.BasketId), "CreditCard");
+                    else
+                        _logger.LogWarning("Email address not found for order ID: " + payment.BasketId);
+
+                    if(string.IsNullOrEmpty(mailAddress))
+                       mailAddress= "Mail Bulunamadı";
+                    Order order = await _orderService.GetOrderAsync(Convert.ToInt32(payment.BasketId));
+                    await _emailService.SendCustomerOrderMailAsync(order);
+
                     return RedirectToAction("Index");
                 }
                 else
@@ -192,7 +219,7 @@ namespace BirileriWebSitesi.Controllers
                     TempData["DangerMessage"] = payment.Status.ToString();
                     await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
                     await _orderService.RecordPayment(paymentLog);
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Index","Home");
                 }
             }
             catch (Exception ex)

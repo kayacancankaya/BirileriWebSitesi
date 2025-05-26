@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Collections;
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
 {
   
@@ -24,24 +25,23 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             _emailService = emailService;
             _userManager = userManager;
         }
-    
         [BindProperty]
         public int? SelectedOrderId { get; set; }
-    
-        [BindProperty]
+
         [MaxLength(500)]
-        public string Note { get; set; }
+        [BindProperty]
+        public string? Note { get; set; }
     
-        [BindProperty]
-        public Dictonary<int,string> OrderInfos { get; set; }
-        [BindProperty]
+        public Dictionary<int,string> OrderInfos { get; set; }
+
         public SelectList OrderSelectList { get; set; }
+     
         public async Task OnGetAsync()
         {
             string userID = _userManager.GetUserId(User);
             OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
             OrderSelectList = new SelectList(OrderInfos, "Key", "Value");
-            return Page();
+
         }
     
         public async Task<IActionResult> OnPostAsync()
@@ -50,12 +50,13 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             {
                 string userID = _userManager.GetUserId(User);
                 OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
+                OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
                 OrderSelectList = new SelectList(OrderInfos, "Key", "Value");
                 return Page();
             }
-            var Order = await _orderService.GetOrderAsync(SelectedOrderId.Value)
+            var Order = await _orderService.GetOrderAsync(SelectedOrderId.Value);
             var result = await _emailService.SendBankTransferNoticeEmailAsync(Order, Note);
-    
+
             if (result)
             {
                 TempData["Success"] = "Bildirim başarıyla gönderildi.";
@@ -64,8 +65,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             {
                 TempData["Error"] = "Bildirim gönderilirken bir hata oluştu.";
             }
-    
-            return RedirectToPage(); // redirect to itself
-        }
+
+            return RedirectToAction("Index","Home");         }
     }
 }

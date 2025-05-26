@@ -14,20 +14,32 @@
                                     toptan spor malzemesi">
 }
 @Html.Partial("_ManageNav")
-
 <section class="manage-section">
     <div class="auto-container">
         <div class="row clearfix">
             <div class="column col-lg-12 col-md-12 col-sm-12">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success" role="alert">
+                        @TempData["Success"]
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @TempData["Error"]
+                    </div>
+                }
                 <h2>Banka Havale Bildirim Formu</h2>
 
-                <form method="post">
+                <form method="post" >
                     <div class="row">
                         <div class="form-group col-lg-6">
                             <label for="SelectedOrderId">Sipariş Seçiniz</label>
                             @if (Model.OrderInfos != null && Model.OrderInfos.Any())
                             {
-                                <select asp-for="SelectedOrderId" class="form-control" asp-items="Model.OrderSelectList">
+                               <select asp-for="SelectedOrderId" class="form-control" asp-items="Model.OrderSelectList">
                                     <option value="">-- Sipariş Seçiniz --</option>
                                 </select>
                             }
@@ -45,9 +57,10 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Bildirimi Gönder</button>
+                    <button type="submit" class="btn btn-primary" id="send-notice">Bildirimi Gönder</button>
                 </form>
             </div>
         </div>
     </div>
+    
 </section>

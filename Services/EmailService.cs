@@ -4,6 +4,8 @@ using MimeKit;
 using BirileriWebSitesi.Interfaces;
 using Azure.Core;
 using Humanizer;
+using BirileriWebSitesi.Models.OrderAggregate;
+using System.Text;
 
 namespace BirileriWebSitesi.Services
 {
@@ -52,11 +54,11 @@ namespace BirileriWebSitesi.Services
                 email.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
                 email.To.Add(MailboxAddress.Parse(to));
                 string htmlMessage = string.Empty;
-                if(paymentType="CreditCard")
+                if(paymentType=="CreditCard")
                 {
                     string subject = $"{orderID} - Ödeme Alındı";
                     email.Subject = subject;
-                     htmlMessage = $@"
+                    htmlMessage = $@"
                     <table style='max-width:600px;margin:auto;font-family:Arial,sans-serif;border:1px solid #ddd;border-radius:8px;padding:20px;'>
                         <tr>
                             <td style='text-align:center;'>
@@ -66,7 +68,7 @@ namespace BirileriWebSitesi.Services
                                 <p style='font-size:16px;'>Sipariş durumunuzu <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> takip edebilirsiniz.</p>
                             </td>
                         </tr>
-                    </table>"
+                    </table>";
                 }
                 
                 else
@@ -84,7 +86,7 @@ namespace BirileriWebSitesi.Services
                                 <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde Aras Kargo’ya teslim edilecektir.</p>
                             </td>
                         </tr>
-                    </table>"
+                    </table>";
                 }
 
                 var builder = new BodyBuilder { HtmlBody = htmlMessage };
@@ -134,7 +136,7 @@ namespace BirileriWebSitesi.Services
                         Timeout = 10000 // Timeout in milliseconds (10 seconds)
                 };
 
-                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect), SecureSocketOptions.None);
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
@@ -150,7 +152,7 @@ namespace BirileriWebSitesi.Services
             }
             
         }
-        public async Task<string> SendBankTransferNoticeEmailAsync(Order order, string note)
+        public async Task<bool> SendBankTransferNoticeEmailAsync(Order order, string note)
         {
             try
             {
@@ -161,34 +163,34 @@ namespace BirileriWebSitesi.Services
                 mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
                 mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
 
-                 mimeMessage.Subject = $"{order.Id} Siparişi Havale Formu";
+                 mimeMessage.Subject = $"{order.Id} Sipariş Havale Formu";
 
                     // Build HTML content
                     var sb = new StringBuilder();
                     sb.AppendLine("<h3>Sipariş Bilgileri:</h3><ul>");
             
-                    foreach (var item in order.Items)
+                    foreach (var item in order.OrderItems)
                     {
-                        sb.AppendLine($"<li>{item.ProductName} - {item.Quantity} x {item.Price:C}</li>");
+                        sb.AppendLine($"<li>{item.ProductName} - {item.Units} x {item.UnitPrice:C}</li>");
                     }
             
                     sb.AppendLine("</ul>");
                     // Billing Address
                     sb.AppendLine("<h3>Fatura Adresi</h3>");
                     sb.AppendLine("<p>");
-                    sb.AppendLine($"{order.BillingAddress?.FullName}<br>");
+                    sb.AppendLine($"{order.BillingAddress?.CorporateName}<br>");
                     sb.AppendLine($"{order.BillingAddress?.Street}<br>");
-                    sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.PostalCode}<br>");
-                    sb.AppendLine($"{order.BillingAddress?.Country}<br>");
+                    sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.ZipCode}<br>");
+                    sb.AppendLine($"{order.BillingAddress?.AddressDetailed}<br>");
                     sb.AppendLine("</p>");
             
                     // Shipping Address
                     sb.AppendLine("<h3>Teslimat Adresi</h3>");
                     sb.AppendLine("<p>");
-                    sb.AppendLine($"{order.ShipToAddress?.FullName}<br>");
+                    sb.AppendLine($"{order.ShipToAddress?.FirstName} {order.ShipToAddress?.LastName}<br>");
                     sb.AppendLine($"{order.ShipToAddress?.Street}<br>");
-                    sb.AppendLine($"{order.ShipToAddress?.City}, {order.ShipToAddress?.State} {order.ShipToAddress?.PostalCode}<br>");
-                    sb.AppendLine($"{order.ShipToAddress?.Country}<br>");
+                    sb.AppendLine($"{order.ShipToAddress?.City}, {order.ShipToAddress?.State} {order.ShipToAddress?.ZipCode}<br>");
+                    sb.AppendLine($"{order.ShipToAddress?.AddressDetailed}<br>");
                     sb.AppendLine("</p>");
             
                     // Note
@@ -209,19 +211,93 @@ namespace BirileriWebSitesi.Services
                         Timeout = 10000 // Timeout in milliseconds (10 seconds)
                 };
 
-                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect), SecureSocketOptions.None);
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(mimeMessage);
                 await smtp.DisconnectAsync(true);
 
-                return "Mail Gönderildi";
+                return true;
 
                 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return ex.Message.ToString();
+                return false;
                 
+            }
+        }
+        public async Task<bool> SendCustomerOrderMailAsync(Order order)
+        {
+            try
+            {
+
+                var mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
+                mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
+
+                mimeMessage.Subject = $"{order.Id} Sipariş Geldi";
+
+                // Build HTML content
+                var sb = new StringBuilder();
+                sb.AppendLine("<h3>Sipariş Bilgileri:</h3><ul>");
+
+                foreach (var item in order.OrderItems)
+                {
+                    sb.AppendLine($"<li>{item.ProductName} - {item.Units} x {item.UnitPrice:C}</li>");
+                }
+
+                sb.AppendLine("</ul>");
+                // Billing Address
+                sb.AppendLine("<h3>Fatura Adresi</h3>");
+                sb.AppendLine("<p>");
+                sb.AppendLine($"{order.BillingAddress?.CorporateName}<br>");
+                sb.AppendLine($"{order.BillingAddress?.Street}<br>");
+                sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.ZipCode}<br>");
+                sb.AppendLine($"{order.BillingAddress?.AddressDetailed}<br>");
+                sb.AppendLine("</p>");
+
+                // Shipping Address
+                sb.AppendLine("<h3>Teslimat Adresi</h3>");
+                sb.AppendLine("<p>");
+                sb.AppendLine($"{order.ShipToAddress?.FirstName} {order.ShipToAddress?.LastName}<br>");
+                sb.AppendLine($"{order.ShipToAddress?.Street}<br>");
+                sb.AppendLine($"{order.ShipToAddress?.City}, {order.ShipToAddress?.State} {order.ShipToAddress?.ZipCode}<br>");
+                sb.AppendLine($"{order.ShipToAddress?.AddressDetailed}<br>");
+                sb.AppendLine("</p>");
+
+                // Note
+                if (!string.IsNullOrWhiteSpace(order.AdditionalNotes))
+                {
+                    sb.AppendLine("<h3>Ek Not</h3>");
+                    sb.AppendLine($"<p>{order.AdditionalNotes}</p>");
+                }
+
+                mimeMessage.Body = new TextPart("html")
+                {
+                    Text = sb.ToString()
+                };
+                sb.AppendLine("</ul>");
+
+                using var smtp = new SmtpClient
+                {
+                    Timeout = 10000 // Timeout in milliseconds (10 seconds)
+                };
+
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.SendAsync(mimeMessage);
+                await smtp.DisconnectAsync(true);
+
+                return true;
+
+
+            }
+            catch (Exception)
+            {
+                return false;
+
             }
         }
     }

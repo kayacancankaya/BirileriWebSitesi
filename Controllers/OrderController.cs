@@ -145,7 +145,6 @@ namespace BirileriWebSitesi.Controllers
                 return PartialView(emptyAddress);
             }
         }
-        
         [ValidateAntiForgeryToken]
         [Authorize]
         [HttpPost]
@@ -251,8 +250,6 @@ namespace BirileriWebSitesi.Controllers
                 return Ok(new { success = false, message = "Kargo ve Fatura Bilgileri Kaydedilirken Hata ile Karşılaşıldı. " });
             }
         }
-     
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Subscribe(string emailAddress)
