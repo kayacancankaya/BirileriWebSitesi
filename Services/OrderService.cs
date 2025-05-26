@@ -410,6 +410,25 @@ namespace BirileriWebSitesi.Services
                 return false;
             }
         }
+        public async Task<Dictionary<int, string>> GetBankTransferOrdersForUserAsync(string userID)
+        {
+            try
+            {
+                var orderInfos = await _context.Orders
+                    .Where(b => b.BuyerId == userID)
+                    .ToDictionaryAsync(
+                        b => b.Id,
+                        b => $"Sipariş {b.Id} - {b.OrderDate:dd.MM.yyyy}"
+                    );
+        
+                return orderInfos ?? new Dictionary<int, string>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return new Dictionary<int, string>();
+            }
+        }
 
     }
 }
