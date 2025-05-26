@@ -66,7 +66,7 @@ namespace BirileriWebSitesi.Services
                                 <p style='font-size:16px;'>Sipariş durumunuzu <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> takip edebilirsiniz.</p>
                             </td>
                         </tr>
-                    </table>";
+                    </table>"
                 }
                 
                 else
@@ -84,7 +84,7 @@ namespace BirileriWebSitesi.Services
                                 <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde Aras Kargo’ya teslim edilecektir.</p>
                             </td>
                         </tr>
-                    </table>";
+                    </table>"
                 }
 
                 var builder = new BodyBuilder { HtmlBody = htmlMessage };
@@ -103,7 +103,6 @@ namespace BirileriWebSitesi.Services
                 _logger.LogError(ex, ex.Message.ToString());
                 return false;   
             }
-            
         }
         public async Task<string> SendContactUsEmailAsync(string username, string email,string? phone, string message, string? subject)
         {
