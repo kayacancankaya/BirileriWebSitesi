@@ -45,7 +45,8 @@ namespace BirileriWebSitesi.Controllers
                 string? lastName = string.Empty;
                 string? fullName = string.Empty;
                 string? phone = string.Empty;
-
+              _logger.LogWarning("Checkout init");
+       
                 IdentityUser? user = new();
 
                 if (User.Identity.IsAuthenticated)
@@ -86,6 +87,7 @@ namespace BirileriWebSitesi.Controllers
                     orderItems.Add(orderItem);
                 }
 
+              _logger.LogWarning("Order item added");
                 Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
                                                                                                    i.IsBilling == false &&
                                                                                                    i.SetAsDefault == true)
@@ -119,6 +121,7 @@ namespace BirileriWebSitesi.Controllers
 
                 }
 
+              _logger.LogWarning("ship bill addr added");
                 Order order = new(userID, shipToAddress, billingAddress, orderItems, isInBuyRegion, true, 1);
                 if (order.TotalAmount > 100000)
                 {
@@ -126,6 +129,7 @@ namespace BirileriWebSitesi.Controllers
                     return RedirectToAction("Cart");
                 }
 
+              _logger.LogWarning("Checkout fin");
                 return View(order);
 
             }
