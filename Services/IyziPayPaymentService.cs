@@ -21,7 +21,7 @@ namespace BirileriWebSitesi.Services
             _configuration = configuration;
             _logger = logger;
             _iyzipayOptions = iyzipayOptions;
-            _logger.LogWarning("iyzipay service created");
+            
         }
         public async Task<string> IyziPayCreate3dsReqAsync(Order order, PaymentRequestModel model)
         {
