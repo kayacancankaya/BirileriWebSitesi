@@ -80,12 +80,15 @@ namespace BirileriWebSitesi.Controllers
 
                 if (userAudit == null)
                     return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
-                //if (string.IsNullOrEmpty(userAudit.Ip))
-                //    return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
-                //if (string.IsNullOrEmpty(userAudit.City))
-                //    return Ok(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
-                //if (string.IsNullOrEmpty(userAudit.Country))
-                //    return Ok(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
+                if(!Environment.IsDevelopement())
+                {
+                    if (string.IsNullOrEmpty(userAudit.Ip))
+                        return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
+                    if (string.IsNullOrEmpty(userAudit.City))
+                        return Ok(new { success = false, message = "Şehir Bilgileri Bulunamadı." });
+                    if (string.IsNullOrEmpty(userAudit.Country))
+                        return Ok(new { success = false, message = "Ülke Bilgileri Bulunamadı." });
+                }
                 if (userAudit.RegistrationDate == null)
                     return Ok(new { success = false, message = "Kayıt Tarihi Bilgileri Bulunamadı." });
                 if (userAudit.LastLoginDate == null)
@@ -99,9 +102,18 @@ namespace BirileriWebSitesi.Controllers
 
                 model.RegistrationDate = lastLoginDate;
                 model.LastLoginDate = registrationDate;
-                model.Ip = "127.0.0.1";
-                model.City = "İzmir";
-                model.Country = "Türkiye";
+                if(Environment.IsDevelopement())
+                {
+                    model.Ip = "127.0.0.1";
+                    model.City = "İzmir";
+                    model.Country = "Türkiye";
+                }
+                else
+                {
+                    model.Ip = userAudit.Ip;
+                    model.City = userAudit.City;
+                    model.Country = userAudit.Country;
+                }
                 string resultString = string.Empty;
                 if (model.PaymentType == 1)
                 {
