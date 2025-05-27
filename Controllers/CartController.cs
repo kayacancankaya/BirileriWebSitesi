@@ -37,6 +37,16 @@ namespace BirileriWebSitesi.Controllers
                 {
                     userID = _userManager.GetUserId(User);
                 }
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                if (ip == "::1")
+                {
+                    _logger.LogWarning($"Uygulama localhost'tan çalıştırılıyor. Gerçek IP yerine varsayılan atanıyor.{ip}");
+                    ip = "212.252.136.146";
+                }
+                else
+                {
+                    _logger.LogWarning($"Giriş yapan ip:{ip}");
+                }
                 if (string.IsNullOrEmpty(userID))
                 {
                     string? cart = Request.Cookies["MyCart"];
