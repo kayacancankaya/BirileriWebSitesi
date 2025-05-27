@@ -14,15 +14,18 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IUserStore<IdentityUser> _userStore;
+        private readonly IUserAuditService _userAudit;
 
         public ExternalLoginsModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IUserStore<IdentityUser> userStore)
+            IUserStore<IdentityUser> userStore,
+            IUserAuditService userAudit)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userStore = userStore;
+            _userAudit = userAudit;
         }
 
         /// <summary>
@@ -125,7 +128,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
                 StatusMessage = "Dış kaynaklı oturum eklenemedi. Dış kaynaklı oturum sadece bir hesap ile eşleşebilir.";
                 return RedirectToPage();
             }
-
+            await _userAudit.CreateUserAudit(user.Id,DateTime.Now);
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
