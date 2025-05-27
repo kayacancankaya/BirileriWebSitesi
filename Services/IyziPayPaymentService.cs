@@ -44,12 +44,6 @@ namespace BirileriWebSitesi.Services
                 paymentCard.CardHolderName = model.CardHolderName;
                 paymentCard.CardNumber = model.CreditCardNumber;
                 //Card number: 5890040000000016
-
-                //Expire Month: 12
-
-                //Expire Year: 2030
-
-                //CVC: 123
                 paymentCard.ExpireMonth = model.ExpMonth;
                 paymentCard.ExpireYear = model.ExpYear;
                 paymentCard.Cvc = model.CVV;
