@@ -288,16 +288,16 @@ namespace BirileriWebSitesi.Controllers
                     {
                         decimal price = await _productService.GetPriceAsync(product.Key);
                         await _basketService.AddItemToAnonymousBasketAsync(cookieBasket, product.Key, price, product.Value);
-                    }
-                    
-                    foreach (var item in cookieBasket.Items)
-                    {
-                        if (item.ProductCode == product.Key)
+                        foreach (var item in cookieBasket.Items)
                         {
-                           item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == product.Key).FirstOrDefaultAsync();
-                            break;
+                            if (item.ProductCode == product.Key)
+                            {
+                                item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == product.Key).FirstOrDefaultAsync();
+                                break;
+                            }
                         }
                     }
+                    
                     return PartialView("_PartialCart", cookieBasket);
 
                 }

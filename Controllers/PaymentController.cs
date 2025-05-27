@@ -80,7 +80,10 @@ namespace BirileriWebSitesi.Controllers
 
                 if (userAudit == null)
                     return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
-                if(!Environment.IsDevelopement())
+
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                bool isProduction = environment == "Production";
+                if (!isProduction)
                 {
                     if (string.IsNullOrEmpty(userAudit.Ip))
                         return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
@@ -102,7 +105,7 @@ namespace BirileriWebSitesi.Controllers
 
                 model.RegistrationDate = lastLoginDate;
                 model.LastLoginDate = registrationDate;
-                if(Environment.IsDevelopement())
+                if(!isProduction)
                 {
                     model.Ip = "127.0.0.1";
                     model.City = "İzmir";

@@ -146,8 +146,10 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         // Explicitly re-sign in with custom expiration settings
                         await _signInManager.SignInAsync(user, authProperties);
                         // Update the last login date in the database
-                        if(Environment.IsDevelopement())
-                            await _userAuditService.CreateUserAudit(user.Id,DateTime.UtcNow;      
+                        string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                        bool isProduction = environment == "Production";
+                        if (isProduction)
+                            await _userAuditService.CreateUserAudit(user.Id,DateTime.UtcNow);      
                     }
                     _antiforgery.GetAndStoreTokens(HttpContext);
                     _logger.LogInformation("Kullanıcı Kayıt Oldu.");

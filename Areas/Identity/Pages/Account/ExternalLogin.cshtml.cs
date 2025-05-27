@@ -131,8 +131,10 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 _logger.LogInformation("{LoginProvider} ile {Name} kayıt başarılı.", info.Principal.Identity.Name, info.LoginProvider);
                 //update last login date
                 string userID = _userManager.GetUserId(User);
-                if(!Environment.IsDevelopement())
-                    await _userAudit.UpdateLoginInfo(string userId, DateTime.UtcNow)
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                bool isProduction = environment == "Production";
+                if (isProduction)
+                    await _userAudit.UpdateLoginInfo(userID, DateTime.UtcNow);
                
                 //update user basket
                 string cart = Request.Cookies["MyCart"];
@@ -210,8 +212,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
 
-                        if(!Environment.IsDevelopement())
-                            await UserAudit.CreateUserAudit(user.Id,DateTime.UtcNow)
+                        string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                        bool isProduction = environment == "Production";
+
+                        if (isProduction)
+                            await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow);
                             
                         return LocalRedirect(returnUrl);
                     }

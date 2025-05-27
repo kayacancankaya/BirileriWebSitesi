@@ -271,7 +271,7 @@ namespace BirileriWebSitesi.Services
                 return "ERROR";
             }
         }
-        private async Task<Iyzipay.Options> GetIyzipayOptionsAsync()
+        public async Task<Iyzipay.Options> GetIyzipayOptionsAsync()
         {
             try
             {

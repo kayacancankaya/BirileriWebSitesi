@@ -134,9 +134,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    
-                    if(Environment.IsDevelopement())
-                        await _userAudit.CreateUser(user.Id,DateTime.UtcNow)
+
+                    string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                    bool isProduction = environment == "Production";
+                    if (isProduction)
+                        await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow);
                     
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",

@@ -59,13 +59,14 @@ namespace BirileriWebSitesi.Controllers
                 }
                 else
                     return View("NotFound");
-
-                
-               if (!Environment.IsDevelopment())
+                bool isInBuyRegion = false;
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                bool isProduction = environment == "Production";
+                if (isProduction)
                 {
                     string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                 
-                    bool isInBuyRegion = await _userAuditService.IsInBuyRegion(userID, ip);
+                    isInBuyRegion = await _userAuditService.IsInBuyRegion(userID, ip);
                     
                     if (!isInBuyRegion)
                     {
@@ -73,7 +74,9 @@ namespace BirileriWebSitesi.Controllers
                         return RedirectToAction("Index", "Home");
                     }
                 }
-                
+                else 
+                    isInBuyRegion = true;
+                    
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
