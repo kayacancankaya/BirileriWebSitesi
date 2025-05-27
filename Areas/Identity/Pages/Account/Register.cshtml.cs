@@ -28,7 +28,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
         private readonly IBasketService _basketService;
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IUserAuditService _userAudit;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -37,7 +37,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailService emailService,
             IBasketService basketService,
-            ApplicationDbContext dbContext)
+            IUserAuditService userAudit)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -46,7 +46,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _logger = logger;
             _emailService = emailService;
             _basketService = basketService;
-            _dbContext = dbContext;
+            _userAudit = userAudit;
         }
 
         /// <summary>
@@ -134,15 +134,10 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    // Add the user login registration info to the database
-                    _dbContext.UserAudits.Add(new UserAudit
-                    {
-                        UserId = user.Id,
-                        RegistrationDate = DateTime.UtcNow,
-                        LastLoginDate = DateTime.UtcNow
-                    });
-                    await _dbContext.SaveChangesAsync();
-
+                    
+                    if(Environment.IsDevelopement())
+                        await _userAudit.CreateUser(user.Id,DateTime.UtcNow)
+                    
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
