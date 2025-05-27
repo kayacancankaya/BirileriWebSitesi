@@ -86,7 +86,7 @@ namespace BirileriWebSitesi.Services
                         break;
                     }
                 }
-
+                basket = UpdateTotals(basket, quantity, quantity * price, "Add");
                 return basket;
             }
             catch (Exception ex)
