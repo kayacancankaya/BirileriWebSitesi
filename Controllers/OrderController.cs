@@ -166,7 +166,7 @@ namespace BirileriWebSitesi.Controllers
                         .Where(x => x.Value.Errors.Count > 0)
                         .Select(x => new { x.Key, x.Value.Errors })
                         .ToList();
-
+                    _logger.LogWarning("Ödemeye ilerle");
                     return BadRequest(new { success = false, message = "Sipariş Oluşturulurken Hata İle Karşılaşıldı.", errors });
                 }
 
