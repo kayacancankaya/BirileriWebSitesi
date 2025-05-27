@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Release
-      run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishReadyToRun=true -o ./publish
+      run: dotnet publish -c Release -r linux-x64 --self-contained false -p:PublishReadyToRun=true -o ./publish
       
     - name: Stop app on server
       uses: appleboy/ssh-action@v1
@@ -37,16 +37,30 @@ jobs:
           cd /home/birileri/apps/birileriwebsitesi
           sudo systemctl stop birileri.service
       
-    - name: Rsync publish folder to server (only changed files)
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USER }}
-        password: ${{ secrets.VM_PASSWORD }}
-        port: ${{ secrets.VM_PORT }}
-        script: |
-          rsync -az --delete --progress -e "ssh -p ${{ secrets.VM_PORT }}" ./publish/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/birileri/apps/birileriwebsitesi
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VM_PASSWORD }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
+    - name: Get Changed Files
+      id: changes
+      run: |
+        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+        echo "$CHANGED_FILES"
+        echo "$CHANGED_FILES" > changed_files.txt
+
+    - name: Rsync Changed Files
+      run: |
+        while read file; do
+          if [ -f "$file" ]; then
+            echo "Uploading $file"
+            rsync -avz --relative "$file" ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/${{ secrets.VM_USER }}/apps/birileriwebsitesi/publish/
+          fi
+        done < changed_files.txt
+
+    
     - name: Run app on server
       uses: appleboy/ssh-action@v1
       with:
