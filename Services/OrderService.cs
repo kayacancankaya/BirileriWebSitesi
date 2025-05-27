@@ -222,11 +222,8 @@ namespace BirileriWebSitesi.Services
         }
         public async Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price)
         {
-            Iyzipay.Options options = new Iyzipay.Options();
-            options.ApiKey = "sandbox-bIx3IhgRc3bjqFAisIx1x56q6M9cf3X8";
-            options.SecretKey = "sandbox-TrRZHZlnbS3Z8Mc8Q28K6ito1Cdk1vLP";
-            options.BaseUrl = "https://sandbox-api.iyzipay.com";
-
+            Iyzipay.Options options = await _iyziPay.GetIyzipayOptionsAsync();
+            
             var request = new RetrieveInstallmentInfoRequest
             {
                 Locale = Locale.TR.ToString(),
@@ -238,7 +235,6 @@ namespace BirileriWebSitesi.Services
             var result = await InstallmentInfo.Retrieve(request, options);
 
             var installmentDetails = result.InstallmentDetails.FirstOrDefault();
-
 
             return installmentDetails;
         }
