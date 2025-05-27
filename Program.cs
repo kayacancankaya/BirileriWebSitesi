@@ -90,7 +90,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login"); // Allow anonymous login
 });
 
-Console.WriteLine($"[Startup] Razor: {counter.ElapsedMilliseconds} ms");
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20);
