@@ -24,8 +24,10 @@ namespace BirileriWebSitesi.Controllers
         private readonly IOrderService _orderService;
         private readonly IEmailService _emailService;
         private readonly IIyzipayPaymentService _iyizpayService;
+        private readonly IUserAuditService _userAuditService;
         public OrderController(ILogger<CartController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager,
-                                IProductService productService, IBasketService basketService, IOrderService orderService)
+                                IProductService productService, IBasketService basketService, IOrderService orderService,
+                                IUserAuditService userAuditService)
         {
             _logger = logger;
             _context = context;
@@ -33,6 +35,7 @@ namespace BirileriWebSitesi.Controllers
             _productService = productService;
             _basketService = basketService;
             _orderService = orderService;
+            _userAuditService = userAuditService;
         }
         [Authorize]
         public async Task<IActionResult> CheckOut()
@@ -58,12 +61,18 @@ namespace BirileriWebSitesi.Controllers
                     return View("NotFound");
 
                 bool isInBuyRegion = false;
-
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                 if (ip == "::1")
+                {
+                    _logger.LogWarning($"Uygulama localhost'tan çalıştırılıyor. Gerçek IP yerine varsayılan atanıyor.{ip}");
                     ip = "212.252.136.146";
-                
-                //isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
+                }
+                else
+                {
+                    _logger.LogWarning($"Giriş yapan ip:{ip}");
+                }
+                isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
 
                 //if(!isInBuyRegion)
                 //{
