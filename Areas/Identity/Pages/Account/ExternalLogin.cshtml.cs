@@ -36,6 +36,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly ILogger<ExternalLoginModel> _logger;
         private readonly IBasketService _basketService;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IUserAuditService _userAudit;
         public ExternalLoginModel(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
@@ -43,7 +44,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             ILogger<ExternalLoginModel> logger,
             IEmailService emailService,
             IBasketService basketService,
-            ApplicationDbContext dbContext)
+            ApplicationDbContext dbContext,
+            IUserAuditService userAudit )
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -53,6 +55,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _emailService = emailService;
             _basketService = basketService;
             _dbContext = dbContext;
+            _userAudit = userAudit;
         }
 
         /// <summary>
@@ -128,12 +131,9 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 _logger.LogInformation("{LoginProvider} ile {Name} kayıt başarılı.", info.Principal.Identity.Name, info.LoginProvider);
                 //update last login date
                 string userID = _userManager.GetUserId(User);
-                var audit = await _dbContext.UserAudits.FirstOrDefaultAsync(a => a.UserId == userID);
-                if (audit != null)
-                {
-                    audit.LastLoginDate = DateTime.UtcNow;
-                    await _dbContext.SaveChangesAsync();
-                }
+                if(!Environment.IsDevelopement())
+                    await _userAudit.UpdateLoginInfo(string userId, DateTime.UtcNow)
+               
                 //update user basket
                 string cart = Request.Cookies["MyCart"];
                 
@@ -210,14 +210,9 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
 
-                        _dbContext.UserAudits.Add(new UserAudit
-                        {
-                            UserId = user.Id,
-                            RegistrationDate = DateTime.UtcNow,
-                            LastLoginDate = DateTime.UtcNow
-                        });
-                        await _dbContext.SaveChangesAsync();
-
+                        if(!Environment.IsDevelopement())
+                            await UserAudit.CreateUserAudit(user.Id,DateTime.UtcNow)
+                            
                         return LocalRedirect(returnUrl);
                     }
                 }
