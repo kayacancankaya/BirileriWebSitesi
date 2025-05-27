@@ -150,6 +150,7 @@ namespace BirileriWebSitesi.Services
                 existingUserAudit.Ip = ip;
                 existingUserAudit.City = ipInfo?.City == null ? string.Empty : ipInfo.City;
                 existingUserAudit.Country = ipInfo?.Country == null ? string.Empty : ipInfo.Country;
+                 _logger.LogWarning("IP Ülke {ipInfo.Country}, IP şehir {ipInfo.City");
                 _context.UserAudits.Update(existingUserAudit);
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)
