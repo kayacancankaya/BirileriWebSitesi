@@ -60,26 +60,20 @@ namespace BirileriWebSitesi.Controllers
                 else
                     return View("NotFound");
 
-                bool isInBuyRegion = false;
-                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                if (ip == "::1")
+                
+               if (!Environment.IsDevelopment())
                 {
-                    _logger.LogWarning($"Uygulama localhost'tan çalıştırılıyor. Gerçek IP yerine varsayılan atanıyor.{ip}");
-                    ip = "212.252.136.146";
+                    string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                
+                    bool isInBuyRegion = await _userAuditService.IsInBuyRegion(userID, ip);
+                    
+                    if (!isInBuyRegion)
+                    {
+                        TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
+                        return RedirectToAction("Index", "Home");
+                    }
                 }
-                else
-                {
-                    _logger.LogWarning($"Giriş yapan ip:{ip}");
-                }
-                isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
-
-                //if(!isInBuyRegion)
-                //{
-                //    TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
-                //    return RedirectToAction("Index", "Home");
-                //}
-
+                
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
