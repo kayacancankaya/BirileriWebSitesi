@@ -61,14 +61,7 @@ namespace BirileriWebSitesi.Controllers
 
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                 if (ip == "::1")
-                {
-                    _logger.LogWarning("Uygulama localhost'tan çalıştırılıyor. Gerçek IP yerine varsayılan atanıyor.");
                     ip = "212.252.136.146";
-                }
-                else
-                {
-                    _logger.LogWarning($"Giriş yapan ip:{ip}");
-                }
                 
                 //isInBuyRegion = await _userAuditService.IsInBuyRegion(userID,ip);
 
