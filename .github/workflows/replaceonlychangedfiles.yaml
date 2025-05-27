@@ -37,30 +37,17 @@ jobs:
           cd /home/birileri/apps/birileriwebsitesi
           sudo systemctl stop birileri.service
       
-    - name: Set up SSH
+    - name: Set up SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.VM_PASSWORD }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Get Changed Files
-      id: changes
-      run: |
-        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-        echo "$CHANGED_FILES"
-        echo "$CHANGED_FILES" > changed_files.txt
+        - name: Rsync publish folder to server
+          run: |
+        rsync -avz --delete ./publish/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/birileri/apps/birileriwebsitesi/publish/
 
-    - name: Rsync Changed Files
-      run: |
-        while read file; do
-          if [ -f "$file" ]; then
-            echo "Uploading $file"
-            rsync -avz --relative "$file" ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:/home/${{ secrets.VM_USER }}/apps/birileriwebsitesi/publish/
-          fi
-        done < changed_files.txt
-
-    
     - name: Run app on server
       uses: appleboy/ssh-action@v1
       with:
