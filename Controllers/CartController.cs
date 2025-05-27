@@ -222,9 +222,7 @@ namespace BirileriWebSitesi.Controllers
                     foreach (var product in products)
                     {
                         decimal price = await _productService.GetPriceAsync(product.Key);
-                        string productName = await _productService.GetProductNameAsync(product.Key);
-                        string imagePath = await _productService.GetImagePathAsync(product.Key);
-                        cookieBasket.AddItem(product.Key, price, product.Value, "0", productName, imagePath);
+                        await _basketService.AddItemToAnonymousBasketAsync(cookieBasket, product.Key, price, product.Value);
                     }
                     return PartialView("_PartialCart", cookieBasket);
 
@@ -289,16 +287,15 @@ namespace BirileriWebSitesi.Controllers
                     foreach (var product in products)
                     {
                         decimal price = await _productService.GetPriceAsync(product.Key);
-                        string productName = await _productService.GetProductNameAsync(product.Key);
-                        string imagePath = await _productService.GetImagePathAsync(product.Key);
-                        cookieBasket.AddItem(product.Key, price, product.Value, "0", productName, imagePath);
-                        foreach (var item in cookieBasket.Items)
+                        await _basketService.AddItemToAnonymousBasketAsync(cookieBasket, product.Key, price, product.Value);
+                    }
+                    
+                    foreach (var item in cookieBasket.Items)
+                    {
+                        if (item.ProductCode == product.Key)
                         {
-                            if (item.ProductCode == product.Key)
-                            {
-                                item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == product.Key).FirstOrDefaultAsync();
-                                break;
-                            }
+                           item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == product.Key).FirstOrDefaultAsync();
+                            break;
                         }
                     }
                     return PartialView("_PartialCart", cookieBasket);
