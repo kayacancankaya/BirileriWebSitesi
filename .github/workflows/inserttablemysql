@@ -1,0 +1,29 @@
+# .github/workflows/mysql-ssh.yml
+name: SSH and MySQL Table Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-mysql:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Connect to VM and execute MySQL command
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+        mysql -u ${{ secrets.MYSQL_USER }} -p${{ secrets.MYSQL_PASSWORD }} ${{ secrets.MYSQL_DATABASE }} <<SQL
+        CREATE TABLE IF NOT EXISTS UserAudits (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(100),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+SQL
+        EOF
