@@ -21,12 +21,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
 
         public ConfirmEmailModel(UserManager<IdentityUser> userManager,
-                                 ILogger<ConfirmEmailModel> _logger,
+                                 ILogger<ConfirmEmailModel> logger,
                                  SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
             _logger = logger;
-            __signInManager = signInManager;
+            _signInManager = signInManager;
         }
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
