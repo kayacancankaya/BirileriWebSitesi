@@ -74,12 +74,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",
                     pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = ./Identity/Account/RegisterConfirmation.cshtml },
+                    values: new { area = "Identity", userId = userId, code = code },
                     protocol: Request.Scheme);
             }
             // Email content
             var subject = "Hesabınızı Onaylayın";
-            var htmlMessage = $"Lütfen hesabınızı onaylamak için  <a href='{HtmlEncoder.Default.Encode(code)}'>Buraya Tıklayınız...</a>.";
+            var htmlMessage = $"Lütfen hesabınızı onaylamak için  <a href='{HtmlEncoder.Default.Encode(EmailConfirmationUrl)}'>Buraya Tıklayınız...</a>.";
 
             // Send the email
             bool result = await _emailService.SendEmailAsync(email, subject, htmlMessage);
