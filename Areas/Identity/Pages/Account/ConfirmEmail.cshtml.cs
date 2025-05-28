@@ -19,7 +19,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<ConfirmEmailModel> _logger;
         private readonly ILogger<ConfirmEmailModel> _logger;
-        private readonly SignInManager<IdentityUser> _signInManager
+        private readonly SignInManager<IdentityUser> _signInManager;
 
         public ConfirmEmailModel(UserManager<IdentityUser> userManager,
                                  ILogger<ConfirmEmailModel> _logger,
