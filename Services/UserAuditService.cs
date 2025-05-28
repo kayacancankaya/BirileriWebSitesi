@@ -13,15 +13,14 @@ namespace BirileriWebSitesi.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> _logger;
-        private readonly IpInfoSettings _ipInfoSettings;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IOptions<IpInfoSettings> _ipInfoSettings;
         public UserAuditService(ApplicationDbContext context, 
                                 ILogger<OrderService> logger,
-                                IServiceProvider serviceProvider)
+                                IOptions<IpInfoSettings> ipInfoSettings)
         {
             _context = context;
             _logger = logger;
-            _serviceProvider = serviceProvider;
+            _ipInfoSettings = ipInfoSettings;
         }
         public async Task<bool> CreateUserAudit(string userId, DateTime registrationDate)
         {
@@ -103,12 +102,12 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
-                var ipInfoSettings = _serviceProvider.GetRequiredService<IOptions<IpInfoSettings>>().Value;
+                var ipInfoSettings = _ipInfoSettings.Value;
                 var existingUserAudit = await _context.UserAudits.FirstOrDefaultAsync(x => x.UserId == userId);
                 if (existingUserAudit == null)
                     return false;
                HttpClient client = new HttpClient();
-                var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={_ipInfoSettings.Token}");
+                var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={_ipInfoSettings.Value}");
                 _logger.LogWarning("IP Bilgisi talep edildi");
                 var ipInfo = JsonConvert.DeserializeObject<IpInfoResponse>(response);
 
@@ -138,12 +137,14 @@ namespace BirileriWebSitesi.Services
             try
             {
 
-                var ipInfoSettings = _serviceProvider.GetRequiredService<IOptions<IpInfoSettings>>().Value;
+                var ipInfoSettings = _ipInfoSettings.Value;
                 var existingUserAudit = await _context.UserAudits.FirstOrDefaultAsync(x => x.UserId == userId);
+               
+                
                 if (existingUserAudit == null)
                     return false;
                 HttpClient client = new HttpClient();
-                var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={_ipInfoSettings.Token}");
+                var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={ipInfoSettings.Token}");
                 _logger.LogWarning("IP Bilgisi talep edildi");
                 var ipInfo = JsonConvert.DeserializeObject<IpInfoResponse>(response);
 

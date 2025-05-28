@@ -62,10 +62,10 @@ namespace BirileriWebSitesi.Controllers
                 bool isInBuyRegion = false;
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 bool isProduction = environment == "Production";
-                if (isProduction)
+                if (!isProduction)
                 {
                     string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                
+                    _logger.LogWarning($"ip:{ip},user:{user}");
                     isInBuyRegion = await _userAuditService.IsInBuyRegion(userID, ip);
                     
                     if (!isInBuyRegion)
