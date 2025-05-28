@@ -17,10 +17,17 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<ConfirmEmailModel> _logger;
+        private readonly ILogger<ConfirmEmailModel> _logger;
+        private readonly SignInManager<IdentityUser> _signInManager
 
-        public ConfirmEmailModel(UserManager<IdentityUser> userManager)
+        public ConfirmEmailModel(UserManager<IdentityUser> userManager,
+                                 ILogger<ConfirmEmailModel> _logger,
+                                 SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
+            _logger = logger;
+            __signInManager = signInManager;
         }
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
