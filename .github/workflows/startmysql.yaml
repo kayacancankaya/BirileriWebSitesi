@@ -1,0 +1,22 @@
+name: start mysql
+
+on:
+    
+  workflow_dispatch:
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+     - name: Start Mysql
+       uses: appleboy/ssh-action@v1
+       with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PASSWORD }}
+        port: ${{ secrets.VM_PORT }}
+        script: |
+         systemctl start mysql
+   
+       
