@@ -46,6 +46,9 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "Mailinizi doğruladığınız için teşekkür ederiz." : "Mail doğrulanırken hata ile karşılaşıldı.";
+            if(result.Succeeded)
+               await _signInManager.SignInAsync(user, isPersistent: false);
+              
             return Page();
         }
     }
