@@ -104,6 +104,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
+            _logger.LogWarning("External post action started.");
             var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
@@ -111,6 +112,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
+        
+            _logger.LogWarning("External call back action started.");
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
             {
@@ -123,12 +126,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 ErrorMessage = "Dış Kaynaktan Oturum Açma Hatası Alındı.";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
-
+            
             // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                _logger.LogInformation("{LoginProvider} ile {Name} kayıt başarılı.", info.Principal.Identity.Name, info.LoginProvider);
+                _logger.LogWarning("{LoginProvider} ile {Name} kayıt başarılı.", info.Principal.Identity.Name, info.LoginProvider);
                 //update last login date
                 string userID = _userManager.GetUserId(User);
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -144,7 +147,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     await _basketService.TransferBasketAsync(cart, userID);
                     HttpContext.Response.Cookies.Delete("MyCart");
                 }
-                return LocalRedirect(returnUrl);
+                return RedirectToAction("Index","Home");
             }
             if (result.IsLockedOut)
             {
