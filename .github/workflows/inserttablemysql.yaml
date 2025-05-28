@@ -17,7 +17,7 @@ jobs:
         password: ${{ secrets.VM_PASSWORD }}
         port: ${{ secrets.VM_PORT }}
         script: |
-         mysql -u root -pMy,22074722 -e "
+         mysql -u unknown -pnopass -e "
          USE birileri;
          CREATE TABLE UserAudit (
             UserId VARCHAR(450) NOT NULL PRIMARY KEY,
