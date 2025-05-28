@@ -48,6 +48,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
        
         public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
         {
+            _logger.LogWarning("Register confirmation on get started.");
             if (email == null)
             {
                 return RedirectToPage("/Index");
@@ -57,48 +58,36 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return NotFound($"Unable to load user with email '{email}'.");
+                return NotFound($"Email bulunamadı '{email}'.");
             }
 
             Email = email;
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            //DisplayConfirmAccountLink = true;
-            //if (DisplayConfirmAccountLink)
-            //{
-            //    var userId = await _userManager.GetUserIdAsync(user);
-            //    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            //    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            //    EmailConfirmationUrl = Url.Page(
-            //        "/Account/ConfirmEmail",
-            //        pageHandler: null,
-            //        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-            //        protocol: Request.Scheme);
-            //}
-            var userId = await _userManager.GetUserIdAsync(user);
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-
-            // Build the confirmation URL
-            var callbackUrl = Url.Page(
-                "/Account/ConfirmEmail",
-                pageHandler: null,
-                values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                protocol: Request.Scheme);
-
+            DisplayConfirmAccountLink = true;
+            if (DisplayConfirmAccountLink)
+            {
+                var userId = await _userManager.GetUserIdAsync(user);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                EmailConfirmationUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                    protocol: Request.Scheme);
+            }
             // Email content
             var subject = "Hesabınızı Onaylayın";
             var htmlMessage = $"Lütfen hesabınızı onaylamak için  <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Buraya Tıklayınız...</a>.";
 
             // Send the email
             bool result = await _emailService.SendEmailAsync(email, subject, htmlMessage);
-
+            
             if(result == false)
             {
                 TempData["ErrorMessage"] = "Doğrulama maili gönderilemedi. Lütfen daha sonra tekrar deneyiniz.";
                 return RedirectToPage("/Account/Register");
             }
 
-
+            _logger.LogWarning("Register confirmation on get returns page.");
             return Page();
         }
     }
