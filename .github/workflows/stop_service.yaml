@@ -21,5 +21,5 @@ jobs:
         port: ${{ secrets.VM_PORT }}
         script: |
           cd /home/birileri/apps/birileriwebsitesi
-          sudo systemctl restart birileri.service
+          sudo systemctl stop birileri.service
          
