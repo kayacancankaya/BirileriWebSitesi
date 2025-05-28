@@ -16,13 +16,16 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-
+        private readonly ILogger<IndexModel> _logger;
+        
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            ILogger<IndexModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -81,8 +84,9 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Kullanıcı Bulunamadı '{_userManager.GetUserId(User)}'.");
             }
-
+            _logger.LogWarning("loading user started, manage index");
             await LoadAsync(user);
+                        _logger.LogWarning("loading user end, manage index");
             return Page();
         }
 
