@@ -104,7 +104,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            _logger.LogWarning("External post action started.");
+
             var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
@@ -113,7 +113,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
         
-            _logger.LogWarning("External call back action started.");
+            
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
             {
@@ -137,7 +137,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 bool isProduction = environment == "Production";
                 if (isProduction)
-                    await _userAudit.UpdateLoginInfo(userID, DateTime.UtcNow);
+                {
+                    string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                    await _userAudit.UpdateLoginInfo(userID, DateTime.UtcNow, ip);
+                }
+                   
                
                 //update user basket
                 string cart = Request.Cookies["MyCart"];
@@ -147,8 +151,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     await _basketService.TransferBasketAsync(cart, userID);
                     HttpContext.Response.Cookies.Delete("MyCart");
                 }
-                _logger.LogWarning($"{returnUrl} adresine gidilecekti, on get call back.");
-                return RedirectToAction("Index" , "Home");
+               
+                return RedirectToPage(returnUrl);
             }
             if (result.IsLockedOut)
             {
@@ -175,7 +179,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
             _logger.LogWarning("On Post Confirmation started.");
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl = returnUrl ?? Url.Content("~/Identity/Account/Manage");
             // Get the information about the user from the external login provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
@@ -219,10 +223,13 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
                         string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                         bool isProduction = environment == "Production";
-
+                        
                         if (isProduction)
-                            await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow);
-                            _logger.LogWarning($"{returnUrl} adresine yönlendiriliyor, on post confirmation.");
+                        {
+                            string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                            await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
+                        }
+                
                         return LocalRedirect(returnUrl);
                     }
                 }

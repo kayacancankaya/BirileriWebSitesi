@@ -138,7 +138,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                     bool isProduction = environment == "Production";
                     if (isProduction)
-                        await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow);
+                    {
+                        string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                        await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
+                    }
+                        
                     
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",

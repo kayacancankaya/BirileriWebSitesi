@@ -50,10 +50,13 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
+                _logger.LogWarning("Ödeme e-postası gönderiliyor: {OrderID}, {PaymentType}, {To}", orderID, paymentType, to);
                 var email = new MimeMessage();
+                _logger.LogWarning("user:  {To}", orderID, paymentType, to);
                 email.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
                 email.To.Add(MailboxAddress.Parse(to));
                 string htmlMessage = string.Empty;
+
                 if(paymentType=="CreditCard")
                 {
                     string subject = $"{orderID} - Ödeme Alındı";
@@ -69,6 +72,9 @@ namespace BirileriWebSitesi.Services
                             </td>
                         </tr>
                     </table>";
+
+                    _logger.LogWarning("subject:{0}", subject);
+                    _logger.LogWarning("html:{0}", htmlMessage);
                 }
                 
                 else
@@ -87,13 +93,15 @@ namespace BirileriWebSitesi.Services
                             </td>
                         </tr>
                     </table>";
+                    _logger.LogWarning("subject:{0}", subject);
+                    _logger.LogWarning("html:{0}", htmlMessage);
                 }
 
                 var builder = new BodyBuilder { HtmlBody = htmlMessage };
                 email.Body = builder.ToMessageBody();
 
                 using var smtp = new SmtpClient();
-                smtp.Timeout = 10000; // Timeout in milliseconds (10 seconds)
+                smtp.Timeout = 30000; // Timeout in milliseconds (10 seconds)
                 await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
                 await smtp.SendAsync(email);

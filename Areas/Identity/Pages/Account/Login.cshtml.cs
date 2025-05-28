@@ -149,7 +149,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                         bool isProduction = environment == "Production";
                         if (isProduction)
-                            await _userAuditService.CreateUserAudit(user.Id,DateTime.UtcNow);      
+                        {
+                            string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                            await _userAuditService.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
+                        }
+                               
                     }
                     _antiforgery.GetAndStoreTokens(HttpContext);
                     _logger.LogInformation("Kullanıcı Kayıt Oldu.");

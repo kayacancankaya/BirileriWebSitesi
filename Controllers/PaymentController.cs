@@ -215,23 +215,26 @@ namespace BirileriWebSitesi.Controllers
                              .Include(b => b.ShipToAddress)
                             .Select(b => b.ShipToAddress.EmailAddress)
                             .FirstOrDefaultAsync();
-
+                    bool? customerMailSent = false;
                     if(!string.IsNullOrEmpty(mailAddress))
-                        await _emailService.SendPaymentEmailAsync(mailAddress, Convert.ToInt32(payment.BasketId), "CreditCard");
+                        customerMailSent = await _emailService.SendPaymentEmailAsync(mailAddress, Convert.ToInt32(payment.BasketId), "CreditCard");
                     else
+                    {
+                        TempData["SuccessMessage"] = "Siparişiniz başarıyla alındı ancak e-posta adresi bulunamadığından mail gönderilemedi. " +
+                                                    "Lütfen bizimle iletişim formundan iletişime geçiniz.";
                         _logger.LogWarning("Email address not found for order ID: " + payment.BasketId);
+                        return LocalRedirect("/Identity/Account/Manage");
+                    }
 
-                    if(string.IsNullOrEmpty(mailAddress))
-                       mailAddress= "Mail Bulunamadı";
                     Order order = await _orderService.GetOrderAsync(Convert.ToInt32(payment.BasketId));
                     await _emailService.SendCustomerOrderMailAsync(order);
 
-                    return RedirectToAction("Index");
+                    return LocalRedirect("/Identity/Account/Manage");
                 }
                 else
                 {
                     _logger.LogError("Payment failed: " + payment.Status + DateTime.Now.ToString());
-                    TempData["DangerMessage"] = payment.Status.ToString();
+                    TempData["DangerMessage"] = "Siparişiniz oluşturulamadı. Lütfen daha sonra tekrar deneyiniz.";
                     await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
                     await _orderService.RecordPayment(paymentLog);
                     return RedirectToAction("Index","Home");
@@ -240,6 +243,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
+
                 return RedirectToAction("Index");
             }
         }

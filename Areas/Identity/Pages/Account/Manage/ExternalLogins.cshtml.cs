@@ -129,7 +129,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
                 StatusMessage = "Dış kaynaklı oturum eklenemedi. Dış kaynaklı oturum sadece bir hesap ile eşleşebilir.";
                 return RedirectToPage();
             }
-            await _userAudit.CreateUserAudit(user.Id,DateTime.Now);
+            string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _userAudit.CreateUserAudit(user.Id,DateTime.Now, ip);
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 

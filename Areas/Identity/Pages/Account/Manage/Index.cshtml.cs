@@ -84,9 +84,9 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Kullanıcı Bulunamadı '{_userManager.GetUserId(User)}'.");
             }
-            _logger.LogWarning("loading user started, manage index");
+
             await LoadAsync(user);
-                        _logger.LogWarning("loading user end, manage index");
+
             return Page();
         }
 
@@ -95,7 +95,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Kullanıcı Bulunamadı '{_userManager.GetUserId(User)}'.");
+                return LocalRedirect("/Identity/Account/Login");
             }
 
             if (!ModelState.IsValid)

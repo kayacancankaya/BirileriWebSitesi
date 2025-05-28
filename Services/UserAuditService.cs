@@ -22,7 +22,7 @@ namespace BirileriWebSitesi.Services
             _logger = logger;
             _ipInfoSettings = ipInfoSettings;
         }
-        public async Task<bool> CreateUserAudit(string userId, DateTime registrationDate)
+        public async Task<bool> CreateUserAudit(string userId, DateTime registrationDate, string ip)
         {
             try
             {
@@ -41,7 +41,19 @@ namespace BirileriWebSitesi.Services
                 {
                     existingUserAudit.RegistrationDate = registrationDate;
                     existingUserAudit.LastLoginDate = registrationDate;
+                
                     _context.UserAudits.Update(existingUserAudit);
+                }
+                if (!string.IsNullOrEmpty(ip) &&
+                    ip != "::1")
+                {
+                    HttpClient client = new HttpClient();
+                    var ipInfoSettings = _ipInfoSettings.Value;
+                    var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={ipInfoSettings.Token}");
+                    var ipInfo = JsonConvert.DeserializeObject<IpInfoResponse>(response);
+                    userAudit.Ip = ip;
+                    userAudit.City = ipInfo?.City;
+                    userAudit.Country = ipInfo?.Country;
                 }
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)
@@ -60,7 +72,7 @@ namespace BirileriWebSitesi.Services
                 return false;
             }
         }
-        public async Task<bool> UpdateLoginInfo(string userId, DateTime lastLoginDate)
+        public async Task<bool> UpdateLoginInfo(string userId, DateTime lastLoginDate, string ip)
         {
             try
             {
@@ -81,6 +93,19 @@ namespace BirileriWebSitesi.Services
                     existingUserAudit.LastLoginDate = lastLoginDate;
                     _context.UserAudits.Update(existingUserAudit);
                 }
+
+                if (!string.IsNullOrEmpty(ip) &&
+                    ip != "::1")
+                {
+                    HttpClient client = new HttpClient();
+                    var ipInfoSettings = _ipInfoSettings.Value;
+                    var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={ipInfoSettings.Token}");
+                    var ipInfo = JsonConvert.DeserializeObject<IpInfoResponse>(response);
+                    existingUserAudit.Ip = ip;
+                    existingUserAudit.City = ipInfo?.City;
+                    existingUserAudit.Country = ipInfo?.Country;
+                }
+
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)
                 {
@@ -107,8 +132,8 @@ namespace BirileriWebSitesi.Services
                 if (existingUserAudit == null)
                     return false;
                HttpClient client = new HttpClient();
-                var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={_ipInfoSettings.Value}");
-                _logger.LogWarning("IP Bilgisi talep edildi");
+                var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={ipInfoSettings.Token}");
+               
                 var ipInfo = JsonConvert.DeserializeObject<IpInfoResponse>(response);
 
                 existingUserAudit.Ip = ip;
@@ -151,7 +176,7 @@ namespace BirileriWebSitesi.Services
                 existingUserAudit.Ip = ip;
                 existingUserAudit.City = ipInfo?.City == null ? string.Empty : ipInfo.City;
                 existingUserAudit.Country = ipInfo?.Country == null ? string.Empty : ipInfo.Country;
-                 _logger.LogWarning("IP Ülke {ipInfo.Country}, IP şehir {ipInfo.City");
+        
                 _context.UserAudits.Update(existingUserAudit);
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)

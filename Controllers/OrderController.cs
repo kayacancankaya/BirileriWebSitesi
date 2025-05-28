@@ -48,7 +48,7 @@ namespace BirileriWebSitesi.Controllers
                 string? lastName = string.Empty;
                 string? fullName = string.Empty;
                 string? phone = string.Empty;
-              _logger.LogWarning("Checkout init");
+
        
                 IdentityUser? user = new();
 
@@ -86,7 +86,7 @@ namespace BirileriWebSitesi.Controllers
                     orderItems.Add(orderItem);
                 }
 
-              _logger.LogWarning("Order item added");
+
                 Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
                                                                                                    i.IsBilling == false &&
                                                                                                    i.SetAsDefault == true)
@@ -120,7 +120,7 @@ namespace BirileriWebSitesi.Controllers
 
                 }
 
-              _logger.LogWarning("ship bill addr added");
+              
                 Order order = new(userID, shipToAddress, billingAddress, orderItems, isInBuyRegion, true, 1);
                 if (order.TotalAmount > 100000)
                 {
@@ -128,7 +128,7 @@ namespace BirileriWebSitesi.Controllers
                     return RedirectToAction("Cart");
                 }
 
-              _logger.LogWarning("Checkout fin");
+              
                 return View(order);
 
             }
@@ -175,14 +175,8 @@ namespace BirileriWebSitesi.Controllers
                 string? buyerID = _userManager.GetUserId(User);
                   string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                                 if (ip == "::1")
-                                {
-                                    _logger.LogWarning("Uygulama localhost'tan çalıştırılıyor. Gerçek IP yerine varsayılan atanıyor.");
-                                    ip = "212.252.136.146";
-                                }
-                                else
-                                {
-                                    _logger.LogWarning($"Giriş yapan ip:{ip}");
-                                }
+                                   ip = "212.252.136.146";
+                               
                                 
                 if (string.IsNullOrEmpty(buyerID))
                     return BadRequest(new { success = false, message = "Kullanıcı Bulunamadı." });
