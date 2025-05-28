@@ -147,7 +147,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     await _basketService.TransferBasketAsync(cart, userID);
                     HttpContext.Response.Cookies.Delete("MyCart");
                 }
-                return RedirectToAction("Index","Home");
+                _logger.LogWarning($"{returnUrl} adresine gidilecekti, on get call back.");
+                return RedirectToAction("Index" , "Home");
             }
             if (result.IsLockedOut)
             {
@@ -207,12 +208,10 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailService.SendEmailAsync(Input.Email, "Mailinizi Onaylayın",
-                            $"Lütfen <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>buraya tıklayarak </a>mailinizi onaylayın.");
-
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)
                         {
+                            _logger.LogWarning($"require confirmation, on post confirmation.");
                             return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
                         }
 
@@ -223,7 +222,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
                         if (isProduction)
                             await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow);
-                            
+                            _logger.LogWarning($"{returnUrl} adresine yönlendiriliyor, on post confirmation.");
                         return LocalRedirect(returnUrl);
                     }
                 }
@@ -235,6 +234,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
             ProviderDisplayName = info.ProviderDisplayName;
             ReturnUrl = returnUrl;
+            _logger.LogWarning($"return url: {ReturnUrl}, external logine yönlendiriliyor, on post confirmation.");
             return Page();
         }
 
