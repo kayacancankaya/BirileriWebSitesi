@@ -19,12 +19,23 @@
     <div class="auto-container">
         <div class="row clearfix">
             <div class="column col-lg-6 col-md-12 col-sm-12">
-
-                <h1>Kayıt Onayla</h1>
+                @if(TempData[SuccessMessage] == "Doğrulama Maili Gönderildi")
+                {
+                    <h1>Kayıt Onayla</h1>
                
-                <p>
-                        Lütfen onay için e-postanızı kontrol ediniz.
-                </p>
+                    <p>
+                            Lütfen onay için e-postanızı kontrol ediniz.
+                    </p>
+
+                }
+                else
+                {
+                    <p>
+                            Doğrulama Maili Oluşturulurken hata ile karşılaşıldı. <br>
+                            Lütfen daha sonra tekrar deneyiniz.
+                    </p>
+                }
+                
                 
             </div>
         </div>
