@@ -19,7 +19,7 @@
     <div class="auto-container">
         <div class="row clearfix">
             <div class="column col-lg-6 col-md-12 col-sm-12">
-                @if(TempData[SuccessMessage] == "Doğrulama Maili Gönderildi.")
+                @if(TempData["SuccessMessage"].ToString() == "Doğrulama Maili Gönderildi.")
                 {
                     <h1>Kayıt Onayla</h1>
                
@@ -28,11 +28,16 @@
                     </p>
 
                 }
+                else if (TempData["ErrorMessage"] != null)
+                {
+                    <p>
+                        @TempData["ErrorMessage"]
+                    </p>
+                }
                 else
                 {
                     <p>
-                            Doğrulama Maili Oluşturulurken hata ile karşılaşıldı. <br>
-                            Lütfen daha sonra tekrar deneyiniz.
+                        Bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.
                     </p>
                 }
                 
