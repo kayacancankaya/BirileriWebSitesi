@@ -89,6 +89,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 TempData["ErrorMessage"] = "Doğrulama maili gönderilemedi. Lütfen daha sonra tekrar deneyiniz.";
                 return RedirectToPage("/Account/Register");
             }
+            else
+                TempData["SuccessMessage"] = "Doğrulama Maili Gönderildi.";
 
             _logger.LogWarning("Register confirmation on get returns page.");
             return Page();
