@@ -17,9 +17,13 @@ jobs:
         password: ${{ secrets.VM_PASSWORD }}
         port: ${{ secrets.VM_PORT }}
         script: |
-         mysql -u root -p My,22074722 <<SQL
-        CREATE TABLE IF NOT EXISTS UserAudits (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          name VARCHAR(100),
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+         mysql -u root -pMy,22074722 -e "
+        USE birileri;
+        CREATE TABLE UserAudit (
+            UserId VARCHAR(450) NOT NULL PRIMARY KEY,
+            RegistrationDate DATETIME NOT NULL,
+            LastLoginDate DATETIME NULL,
+            Ip VARCHAR(50),
+            City VARCHAR(100),
+            Country VARCHAR(100)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
