@@ -21,11 +21,14 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly ILogger<RegisterConfirmationModel> _logger;
 
-        public RegisterConfirmationModel(UserManager<IdentityUser> userManager, IEmailService service)
+        public RegisterConfirmationModel(UserManager<IdentityUser> userManager, IEmailService service,
+                                        ILogger<RegisterConfirmationModel> logger)
         {
             _userManager = userManager;
             _emailService = service;
+            _logger = logger;
         }
 
         /// <summary>
@@ -71,12 +74,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",
                     pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                    values: new { area = "Identity", userId = userId, code = code, returnUrl = ./Identity/Account/RegisterConfirmation.cshtml },
                     protocol: Request.Scheme);
             }
             // Email content
             var subject = "Hesabınızı Onaylayın";
-            var htmlMessage = $"Lütfen hesabınızı onaylamak için  <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Buraya Tıklayınız...</a>.";
+            var htmlMessage = $"Lütfen hesabınızı onaylamak için  <a href='{HtmlEncoder.Default.Encode(code)}'>Buraya Tıklayınız...</a>.";
 
             // Send the email
             bool result = await _emailService.SendEmailAsync(email, subject, htmlMessage);
