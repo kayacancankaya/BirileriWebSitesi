@@ -19,14 +19,17 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<ConfirmEmailModel> _logger;
         private readonly SignInManager<IdentityUser> _signInManager;
-
+        private readonly IUserAuditService _userAudit;
+        
         public ConfirmEmailModel(UserManager<IdentityUser> userManager,
                                  ILogger<ConfirmEmailModel> logger,
-                                 SignInManager<IdentityUser> signInManager)
+                                 SignInManager<IdentityUser> signInManager,
+                                 IUserAuditService userAudit)
         {
             _userManager = userManager;
             _logger = logger;
             _signInManager = signInManager;
+            _userAudit = userAudit;
         }
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
