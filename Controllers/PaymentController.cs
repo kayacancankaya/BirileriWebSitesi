@@ -78,6 +78,8 @@ namespace BirileriWebSitesi.Controllers
                 
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
 
+                
+
                 if (userAudit == null)
                     return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
 
