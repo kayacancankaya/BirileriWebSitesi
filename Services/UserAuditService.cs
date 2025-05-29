@@ -79,7 +79,7 @@ namespace BirileriWebSitesi.Services
                 var existingUserAudit = await _context.UserAudits.FirstOrDefaultAsync(x => x.UserId == userId);
                 if (existingUserAudit == null)
                 {
-
+                    _logger.LogWarning("Kullanıcı kaydı bulunamadı, yeni kayıt oluşturulacak.");
                     UserAudit userAudit = new UserAudit
                     {
                         UserId = userId,
@@ -87,16 +87,20 @@ namespace BirileriWebSitesi.Services
                         LastLoginDate = lastLoginDate
                     };
                     await _context.UserAudits.AddAsync(userAudit);
+                    _logger.LogWarning("Yeni kullanıcı kaydı oluşturuldu: {UserId}", userId);
                 }
                 else
                 {
+                    _logger.LogWarning("Kullanıcı kaydı bulundu, güncelleniyor: {UserId}", userId);
                     existingUserAudit.LastLoginDate = lastLoginDate;
                     _context.UserAudits.Update(existingUserAudit);
+                    _logger.LogWarning("Kullanıcı kaydı güncellendi: {UserId}", userId);
                 }
 
                 if (!string.IsNullOrEmpty(ip) &&
                     ip != "::1")
                 {
+                    _logger.LogWarning("IP Bilgisi güncelleniyor: {Ip}", ip);
                     HttpClient client = new HttpClient();
                     var ipInfoSettings = _ipInfoSettings.Value;
                     var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={ipInfoSettings.Token}");
@@ -104,9 +108,11 @@ namespace BirileriWebSitesi.Services
                     existingUserAudit.Ip = ip;
                     existingUserAudit.City = ipInfo?.City;
                     existingUserAudit.Country = ipInfo?.Country;
+                    _logger.LogWarning("IP Bilgisi güncellendi: {Ip},{City}, {Country}", ip, ipInfo.City, ipInfo.Country);
                 }
 
                 var result = await _context.SaveChangesAsync();
+                _logger.LogWarning("Kullanıcı kaydı güncelleme işlemi tamamlandı: {UserId}", userId);
                 if (result > 0)
                 {
                     return true;
