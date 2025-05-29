@@ -27,35 +27,37 @@
                 }
                 else
                 {
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Sipariş No</th>
-                                <th>Tarih</th>
-                                <th>Toplam Tutar</th>
-                                <th>Durum</th>
-                                <th>Detay</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var order in Model.Orders)
-                            {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
                                 <tr>
-                                    <td>@order.Id</td>
-                                    <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
-                                    <td>@order.TotalAmount.ToString("C") ₺</td>
-                                    <td>@(order.Status == 0 ? "Beklemede" :
-                                          order.Status == 1 ? "Hazırlanıyor" :
-                                          order.Status == 2 ? "Başarısız" :
-                                          order.Status == 3 ? "Kargolandı" :
-                                          order.Status == 4 ? "Teslim Edildi" : "Beklemede")
-                                    </td>
-                                    <td><a asp-page="./OrderDetails" asp-route-id="@order.Id">Sipariş Detayı</a> </td>
+                                    <th>Sipariş No</th>
+                                    <th>Tarih</th>
+                                    <th>Toplam Tutar</th>
+                                    <th>Durum</th>
+                                    <th>Detay</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.Orders)
+                                {
+                                    <tr>
+                                        <td>@order.Id</td>
+                                        <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                                        <td>@order.TotalAmount.ToString("C") ₺</td>
+                                        <td>@(order.Status == 0 ? "Beklemede" :
+                                              order.Status == 1 ? "Hazırlanıyor" :
+                                              order.Status == 2 ? "Başarısız" :
+                                              order.Status == 3 ? "Kargolandı" :
+                                              order.Status == 4 ? "Teslim Edildi" : "Beklemede")
+                                        </td>
+                                        <td><a asp-page="./OrderDetails" asp-route-id="@order.Id">Sipariş Detayı</a> </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    }
             </div>
         </div>
     </div>
