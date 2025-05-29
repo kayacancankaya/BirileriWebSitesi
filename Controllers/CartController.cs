@@ -81,10 +81,8 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 if (price * quantity > 100000)
-                {
-                    TempData["DangerMessage"] = "Sepet Miktarı 100.000₺'den Büyük Olamaz.";
                     return Ok(new { success = false, message = "Sepet Miktarı 100.000₺'den Büyük Olamaz." });
-                }
+                
 
                 string totalProduct = string.Empty;
                 Dictionary<int, string> result = new();
