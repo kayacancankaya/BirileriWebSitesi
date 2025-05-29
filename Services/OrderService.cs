@@ -412,7 +412,7 @@ namespace BirileriWebSitesi.Services
             {
                 var orderInfos = await _context.Orders
                     .Where(b => b.BuyerId == userID &&
-                            b.PaymentType == 2 &&
+                            b.PaymentType == 1 &&
                             b.Status > 0 &&
                             b.Status != 2
                             )
