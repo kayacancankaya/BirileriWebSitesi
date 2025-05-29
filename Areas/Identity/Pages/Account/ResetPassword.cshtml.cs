@@ -77,6 +77,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         {
             try
             {
+                _logger.LogWarning("code: {code}");
                 if (code == null)
                 {
                     return BadRequest("A code must be supplied for password reset.");
