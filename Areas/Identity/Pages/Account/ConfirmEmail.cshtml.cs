@@ -53,8 +53,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             var result = await _userManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "Mailinizi doğruladığınız için teşekkür ederiz." : "Mail doğrulanırken hata ile karşılaşıldı.";
             if(result.Succeeded)
-               await _signInManager.SignInAsync(user, isPersistent: false);
-              
+            {
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
+            }
+               
             return Page();
         }
     }
