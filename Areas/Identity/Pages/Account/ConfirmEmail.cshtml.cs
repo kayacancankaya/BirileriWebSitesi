@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using BirileriWebSitesi.Interfaces;
 
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 {
