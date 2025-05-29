@@ -35,20 +35,25 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         {
             if (userId == null || email == null || code == null)
             {
-                return RedirectToPage("/Index");
+                TempData["DangerMessage"] = "Kullanıcı bilgileri bulunamadı."
+               return RedirectToPage("/Account/Manage/Index", new { area = "Identity" });
+
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"Kullanıcı bulunamadı.");
+                TempData["DangerMessage"] = "Kullanıcı bilgileri bulunamadı."
+                return RedirectToPage("/Account/Manage/Index", new { area = "Identity" });
             }
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ChangeEmailAsync(user, email, code);
             if (!result.Succeeded)
             {
-                StatusMessage = "Mail Değiştirilemedi.";
+                 var errors = string.Join(" | ", result.Errors.Select(e => e.Description));
+                StatusMessage = $"Mail Değiştirilemedi: {errors}";
+                
                 return Page();
             }
 
@@ -57,7 +62,9 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
             if (!setUserNameResult.Succeeded)
             {
-                StatusMessage = "Kullanıcı adı değiştirilemedi.";
+                 var errors = string.Join(" | ", result.Errors.Select(e => e.Description));
+                StatusMessage = $"Kullanıcı adı değiştirilemedi.: {errors}";
+                
                 return Page();
             }
 
