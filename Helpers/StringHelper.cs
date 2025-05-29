@@ -38,7 +38,7 @@ namespace BirileriWebSitesi.Helpers
             var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 1 ? parts[^1] : string.Empty;
         }
-        public bool IsValidCardNumber(string number)
+        public static bool IsValidCardNumber(string number)
         {
             int sum = 0;
             bool shouldDouble = false;
@@ -58,7 +58,7 @@ namespace BirileriWebSitesi.Helpers
             return sum % 10 == 0;
         }
 
-        public bool IsValidExpiry(string month, string year)
+        public static bool IsValidExpiry(string month, string year)
         {
             if (!int.TryParse(month, out int m) || !int.TryParse(year, out int y)) return false;
             if (m < 1 || m > 12) return false;
@@ -70,7 +70,7 @@ namespace BirileriWebSitesi.Helpers
             return expiry >= now;
         }
 
-        public bool IsValidCVV(string cvv)
+        public static bool IsValidCVV(string cvv)
         {
             return Regex.IsMatch(cvv, @"^\d{3,4}$");
         }

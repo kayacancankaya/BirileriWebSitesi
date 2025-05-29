@@ -64,7 +64,7 @@
                                 <p>
                                     @foreach (var provider in Model.OtherLogins)
                                     {
-                                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızı kullanarak oturum açın.">@provider.DisplayName</button>
+                                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary mb-3" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızı kullanarak oturum açın.">@provider.DisplayName</button>
                                     }
                                 </p>
                             </div>

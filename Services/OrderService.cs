@@ -391,6 +391,9 @@ namespace BirileriWebSitesi.Services
                         case "Failed":
                             order.Status = (int)ApprovalStatus.Failed;
                             break;
+                        case "Bank Transfer":
+                            order.Status = (int)ApprovalStatus.BankTransfer;
+                            break;
                         default:
                             return false;
                     }
@@ -413,8 +416,7 @@ namespace BirileriWebSitesi.Services
                 var orderInfos = await _context.Orders
                     .Where(b => b.BuyerId == userID &&
                             b.PaymentType == 2 &&
-                            b.Status >= 0 &&
-                            b.Status != 2
+                            b.Status == 5 
                             )
                     .ToDictionaryAsync(
                         b => b.Id,

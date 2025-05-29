@@ -1,4 +1,5 @@
 ﻿using BirileriWebSitesi.Data;
+using BirileriWebSitesi.Helpers;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.OrderAggregate;
@@ -71,14 +72,21 @@ namespace BirileriWebSitesi.Controllers
                         .Select(x => new { x.Key, x.Value.Errors })
                         .ToList();
                     _logger.LogError("ModelState is not valid, PlaceOrder controller");
-                    return BadRequest(new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı.", errors });
+                    return Ok (new { success = false, message = "Sipariş Kaydedilirken Hata ile Karşılaşıldı." });
+                    
                 }
+
+                if (!StringHelper.IsValidCVV(model.CVV))
+                    return Ok(new { success = false, message = "Uygun Olmayan CVV Formatı." });
+                if (!StringHelper.IsValidExpiry(model.ExpMonth,model.ExpYear))
+                    return Ok(new { success = false, message = "Uygun Olmayan Son Kullanma Tarihi Formatı." });
+                if (!StringHelper.IsValidCardNumber(model.CreditCardNumber))
+                    return Ok(new { success = false, message = "Uygun Olmayan Kredi Kartı Formatı." });
+
 
                 string? buyerID = _userManager.GetUserId(User);
                 
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
-
-                
 
                 if (userAudit == null)
                     return Ok(new { success = false, message = "Kullanıcı Bilgileri Bulunamadı." });
@@ -140,7 +148,7 @@ namespace BirileriWebSitesi.Controllers
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
-                            await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
+                            await _orderService.UpdateOrderStatus(model.OrderId, "Waiting For Bank Transfer");
                 
                             if(!String.IsNullOrEmpty(model.EmailAddress))
                                 await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"CreditCard");
