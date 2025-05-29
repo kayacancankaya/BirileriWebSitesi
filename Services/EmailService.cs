@@ -99,8 +99,6 @@ namespace BirileriWebSitesi.Services
                             </td>
                         </tr>
                     </table>";
-                    _logger.LogWarning("subject:{0}", subject);
-                    _logger.LogWarning("html:{0}", htmlMessage);
                 }
 
                 var builder = new BodyBuilder { HtmlBody = htmlMessage };
@@ -156,13 +154,11 @@ namespace BirileriWebSitesi.Services
                 await smtp.DisconnectAsync(true);
 
                 return "Mail Gönderildi";
-
                 
             }
             catch (Exception ex)
             {
                 return ex.Message.ToString();
-                
             }
             
         }
