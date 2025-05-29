@@ -29,13 +29,13 @@
                @if(Model.StatusMessage == "Mailinizi doğruladığınız için teşekkür ederiz.")
                 {
                      <p class="mt-3">
-                        <a asp-area="Identity" asp-page="/Account/Manage/Index">Buraya tıklayarak</a> hesabınıza ulaşabilirsiniz...
+                        <a <a href="/Identity/Account/Manage">Buraya tıklayarak</a> hesabınıza ulaşabilirsiniz...
                     </p>
                 }
                else
                 {
                     <p class="mt-3">
-                        <a asp-area="Identity" asp-page="/Account/Login">Buraya tıklayarak</a> giriş yapabilirsiniz...
+                        <a href="/Identity/Account/Login">Buraya tıklayarak</a> giriş yapabilirsiniz...
                     </p>
                 }
 
