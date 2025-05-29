@@ -35,7 +35,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         {
             if (userId == null || email == null || code == null)
             {
-                TempData["DangerMessage"] = "Kullanıcı bilgileri bulunamadı."
+                TempData["DangerMessage"] = "Kullanıcı bilgileri bulunamadı.";
                return RedirectToPage("/Account/Manage/Index", new { area = "Identity" });
 
             }
@@ -43,7 +43,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                TempData["DangerMessage"] = "Kullanıcı bilgileri bulunamadı."
+                TempData["DangerMessage"] = "Kullanıcı bilgileri bulunamadı.";
                 return RedirectToPage("/Account/Manage/Index", new { area = "Identity" });
             }
 
