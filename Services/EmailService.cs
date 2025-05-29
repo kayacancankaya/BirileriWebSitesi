@@ -89,7 +89,13 @@ namespace BirileriWebSitesi.Services
                                 <p style='font-size:16px;'>Sipariş Numaranız: <strong>{orderID}</strong></p>
                                 <p style='font-size:16px;'>Siparişiniz alınmıştır. Lütfen banka havale formunu 
                                 <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> gönderiniz.</p>
-                                <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde Aras Kargo’ya teslim edilecektir.</p>
+                                <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde Aras Kargo’ya teslim edilecektir.</p><br />
+                                 <span><strong>Banka Adı:</strong> T. Garanti Bankası A.Ş.</span><br />
+                                <span><strong>Şube:</strong> KARŞIYAKA ÇARŞI </span><br />
+                                <span><strong>Hesap No:</strong> 1596-6298952</span><br />
+                                <span><strong>Alıcı:</strong> BİRİLERİ DIŞ TİCARET DANIŞMANLIK SANAYİ VE TİCARET LİMİTED Ş.</span><br />
+                                <span><strong>IBAN:</strong> TR89 0006 2001 5960 0006 2989 52</span><br />
+
                             </td>
                         </tr>
                     </table>";
