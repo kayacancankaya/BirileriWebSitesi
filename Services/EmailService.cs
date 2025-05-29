@@ -200,7 +200,7 @@ namespace BirileriWebSitesi.Services
                     sb.AppendLine("<h3>Fatura Adresi</h3>");
                     sb.AppendLine("<p>");
                     sb.AppendLine($"{billingName}<br>");
-                    sb.AppendLine($"Vergi No: {order.BillingAddress?.VATNumber}<br>");
+                    sb.AppendLine($"Vergi No: {order.BillingAddress?.VATnumber}<br>");
                     sb.AppendLine($"{order.BillingAddress?.Street}<br>");
                     sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.ZipCode}<br>");
                     sb.AppendLine($"{order.BillingAddress?.AddressDetailed}<br>");
@@ -281,7 +281,7 @@ namespace BirileriWebSitesi.Services
                 sb.AppendLine("<h3>Fatura Adresi</h3>");
                 sb.AppendLine("<p>");
                 sb.AppendLine($"{billingName}<br>");
-                sb.AppendLine($"Vergi No: {order.BillingAddress?.VATNumber}<br>");
+                sb.AppendLine($"Vergi No: {order.BillingAddress?.VATnumber}<br>");
                 sb.AppendLine($"{order.BillingAddress?.Street}<br>");
                 sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.ZipCode}<br>");
                 sb.AppendLine($"{order.BillingAddress?.AddressDetailed}<br>");
