@@ -22,6 +22,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
+            ViewData["ActivePage"] = ManageNavPages.Orders;
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
