@@ -15,15 +15,31 @@
 }
 @section CSS{
     <style>
+        .theme-btn, .order-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff; /* Blue background */
+            color: #fff; /* White text */
+            text-decoration: none; /* Remove underline */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: sans-serif;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .theme-btn:hover, .order-btn:hover {
+            background-color: #0056b3; /* Darker on hover */
+        }
+
         @@media (min-width: 992px) { 
             #is-corporate-main-div {
                 margin-top: 50px;
                 margin-left: 20px;
             }
         }
-
-        
-
     </style>
 }
 
