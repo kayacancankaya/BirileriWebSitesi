@@ -24,7 +24,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGet()
         {
-            ViewData["ActivePage"] = ManageNavPages.PersonelData
+            ViewData["ActivePage"] = ManageNavPages.PersonelData;
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
