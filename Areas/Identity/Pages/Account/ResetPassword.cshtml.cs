@@ -11,16 +11,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-
+using BirileriWebSitesi.Interfaces;
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 {
     public class ResetPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-
-        public ResetPasswordModel(UserManager<IdentityUser> userManager)
+        private readonly ILogger<ResetPasswordModel> _logger;
+        public ResetPasswordModel(UserManager<IdentityUser> userManager,
+                                    ILogger<ResetPasswordModel> _logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -73,18 +75,27 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
         public IActionResult OnGet(string code = null)
         {
-            if (code == null)
+            try
             {
-                return BadRequest("A code must be supplied for password reset.");
-            }
-            else
-            {
-                Input = new InputModel
+                if (code == null)
                 {
-                    Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
-                };
-                return Page();
+                    return BadRequest("A code must be supplied for password reset.");
+                }
+                else
+                {
+                    Input = new InputModel
+                    {
+                        Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
+                    };
+                    return Page();
+                }
             }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex,ex.Message.ToString());
+                return RedirectToAction("NotFound");
+            }
+            
         }
 
         public async Task<IActionResult> OnPostAsync()
