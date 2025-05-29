@@ -139,7 +139,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 if (isProduction)
                 {
                     string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                    _logger.LogWarning("User {UserId} logged in from IP: {Ip}", user.Id, ip);
                     await _userAudit.UpdateLoginInfo(user.Id, DateTime.UtcNow, ip);
                 }
                
