@@ -19,7 +19,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<ResetPasswordModel> _logger;
         public ResetPasswordModel(UserManager<IdentityUser> userManager,
-                                    ILogger<ResetPasswordModel> _logger)
+                                    ILogger<ResetPasswordModel> logger)
         {
             _userManager = userManager;
             _logger = logger;
