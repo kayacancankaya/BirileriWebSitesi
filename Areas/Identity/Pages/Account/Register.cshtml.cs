@@ -129,8 +129,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("Kullanıcı Kaydı Yapıldı.");
-
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -143,7 +141,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
                     }
                         
-                    
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
