@@ -170,7 +170,14 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
+                
+                string billingName = string.Empty;
 
+                if (string.IsNullOrEmpty(order.BillingAddress.CorporateName))
+                    billingName = string.Format("{0} {1}",order.BillingAddress.FirstName,order.BillingAddress.LastName);
+                else
+                    billingName = order.BillingAddress.CorporateName;
+                
                 var mimeMessage = new MimeMessage();
                 mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
                 mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
@@ -192,7 +199,8 @@ namespace BirileriWebSitesi.Services
                     // Billing Address
                     sb.AppendLine("<h3>Fatura Adresi</h3>");
                     sb.AppendLine("<p>");
-                    sb.AppendLine($"{order.BillingAddress?.CorporateName}<br>");
+                    sb.AppendLine($"{billingName}<br>");
+                    sb.AppendLine($"Vergi No: {order.BillingAddress?.VATNumber}<br>");
                     sb.AppendLine($"{order.BillingAddress?.Street}<br>");
                     sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.ZipCode}<br>");
                     sb.AppendLine($"{order.BillingAddress?.AddressDetailed}<br>");
@@ -244,7 +252,13 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
+                string billingName = string.Empty;
 
+                if (string.IsNullOrEmpty(order.BillingAddress.CorporateName))
+                    billingName = string.Format("{0} {1}",order.BillingAddress.FirstName,order.BillingAddress.LastName);
+                else
+                    billingName = order.BillingAddress.CorporateName;
+                    
                 var mimeMessage = new MimeMessage();
                 mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
                 mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
@@ -266,7 +280,8 @@ namespace BirileriWebSitesi.Services
                 // Billing Address
                 sb.AppendLine("<h3>Fatura Adresi</h3>");
                 sb.AppendLine("<p>");
-                sb.AppendLine($"{order.BillingAddress?.CorporateName}<br>");
+                sb.AppendLine($"{billingName}<br>");
+                sb.AppendLine($"Vergi No: {order.BillingAddress?.VATNumber}<br>");
                 sb.AppendLine($"{order.BillingAddress?.Street}<br>");
                 sb.AppendLine($"{order.BillingAddress?.City}, {order.BillingAddress?.State} {order.BillingAddress?.ZipCode}<br>");
                 sb.AppendLine($"{order.BillingAddress?.AddressDetailed}<br>");
