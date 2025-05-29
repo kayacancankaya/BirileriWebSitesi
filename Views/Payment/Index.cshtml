@@ -302,15 +302,7 @@
                     content.style.display = content.style.display === 'block' ? 'none' : 'block';
                 });
             });
-            document.querySelectorAll('.dropdown-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
-                    if (checkbox.checked) {
-                        console.log(`Checkbox for ${checkbox.parentElement.textContent.trim()} is checked.`);
-                    } else {
-                        console.log(`Checkbox for ${checkbox.parentElement.textContent.trim()} is unchecked.`);
-                    }
-                });
-            });
+
             $(document).on("change", "#payment-1", function () {
                     if (this.checked) {
                         $("#credit-card-info").css("display","block");
