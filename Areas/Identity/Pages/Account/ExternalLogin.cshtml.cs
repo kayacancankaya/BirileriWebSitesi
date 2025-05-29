@@ -131,24 +131,24 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                _logger.LogWarning("{LoginProvider} ile {Name} kayıt başarılı.", info.Principal.Identity.Name, info.LoginProvider);
                 //update last login date
-                string userID = _userManager.GetUserId(User);
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 bool isProduction = environment == "Production";
                 if (isProduction)
                 {
                     string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                    await _userAudit.UpdateLoginInfo(userID, DateTime.UtcNow, ip);
+                    _logger.LogWarning("User {UserId} logged in from IP: {Ip}", user.Id, ip);
+                    await _userAudit.UpdateLoginInfo(user.Id, DateTime.UtcNow, ip);
                 }
-                   
                
                 //update user basket
                 string cart = Request.Cookies["MyCart"];
                 
                 if (!string.IsNullOrEmpty(cart))
                 {
-                    await _basketService.TransferBasketAsync(cart, userID);
+                    await _basketService.TransferBasketAsync(cart, user.Id);
                     HttpContext.Response.Cookies.Delete("MyCart");
                 }
                

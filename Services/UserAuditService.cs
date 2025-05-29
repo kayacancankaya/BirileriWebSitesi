@@ -130,7 +130,7 @@ namespace BirileriWebSitesi.Services
                 var ipInfoSettings = _ipInfoSettings.Value;
                 var existingUserAudit = await _context.UserAudits.FirstOrDefaultAsync(x => x.UserId == userId);
                 if (existingUserAudit == null)
-                    return false;
+                    return false;   
                HttpClient client = new HttpClient();
                 var response = await client.GetStringAsync($"https://ipinfo.io/{ip}?token={ipInfoSettings.Token}");
                
