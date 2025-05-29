@@ -56,8 +56,10 @@
                             <span asp-validation-for="Note" class="text-danger"></span>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary" id="send-notice">Bildirimi Gönder</button>
+                    @if (Model.OrderInfos != null && Model.OrderInfos.Any())
+                    {
+                        <button type="submit" class="btn btn-primary" id="send-notice">Bildirimi Gönder</button>
+                    }
                 </form>
             </div>
         </div>
