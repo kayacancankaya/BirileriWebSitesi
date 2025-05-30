@@ -65,7 +65,6 @@ namespace BirileriWebSitesi.Controllers
                 if (isProduction)
                 {
                     string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                    _logger.LogWarning($"ip:{ip},user:{user}");
                     isInBuyRegion = await _userAuditService.IsInBuyRegion(userID, ip);
                     
                     if (!isInBuyRegion)
