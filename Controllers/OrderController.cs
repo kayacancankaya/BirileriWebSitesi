@@ -49,8 +49,6 @@ namespace BirileriWebSitesi.Controllers
                 string? fullName = string.Empty;
                 string? phone = string.Empty;
 
-                 _logger.LogWarning("Checkout init");
-       
                 IdentityUser? user = new();
 
                 if (User.Identity.IsAuthenticated)
@@ -76,9 +74,7 @@ namespace BirileriWebSitesi.Controllers
                 }
                 else 
                     isInBuyRegion = true;
-                    
-                 _logger.LogWarning("basket transfer init");
-                    
+                
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
@@ -88,7 +84,6 @@ namespace BirileriWebSitesi.Controllers
                     orderItems.Add(orderItem);
                 }
 
-                   _logger.LogWarning("order address init");
                 Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
                                                                                                    i.IsBilling == false &&
                                                                                                    i.SetAsDefault == true)
