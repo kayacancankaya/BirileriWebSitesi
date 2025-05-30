@@ -194,7 +194,5 @@ namespace BirileriWebSitesi.Controllers
             return View();
         }
 
-
-
     }
 }

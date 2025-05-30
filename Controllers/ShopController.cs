@@ -23,7 +23,6 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
-
                 //get all categories
                 IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
                 //initiate view model
@@ -191,7 +190,7 @@ namespace BirileriWebSitesi.Controllers
                 string imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
                                                             .Select(i => i.ImagePath)
                                                             .FirstOrDefaultAsync();
-                initialVariantImage.FilePath = string.Format("~/images/resource/products/{0}/1.jpg", imagePath);
+                initialVariantImage.FilePath = string.Format("/images/resource/products/{0}/1.jpg", imagePath);
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
                 //get related products
