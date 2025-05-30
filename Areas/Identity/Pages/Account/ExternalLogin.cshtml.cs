@@ -229,7 +229,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
                         }
             
-                        return LocalRedirect("./Manage/Index);
+                        return LocalRedirect("./Manage/Index");
                     }
                 }
                 foreach (var error in result.Errors)
