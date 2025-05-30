@@ -283,7 +283,7 @@ namespace BirileriWebSitesi.Controllers
         public IActionResult RedirectWithSuccess()
         {
             TempData["SuccessMessage"] = "Ödemeniz başarıyla alındı.";
-            return LocalRedirect("/Manage/Index");
+            return Redirect("/Identity/Account/Manage");
         }
     }
 }
