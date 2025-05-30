@@ -16,12 +16,10 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<ChangePasswordModel> _logger;
 
         public ChangePasswordModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            ILogger<ChangePasswordModel> logger)
+            SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -118,7 +116,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            _logger.LogInformation("Şifre Başarıyla Değiştirildi.");
             StatusMessage = "Şifre Başarıyla Değiştirildi.";
 
             return RedirectToPage();
