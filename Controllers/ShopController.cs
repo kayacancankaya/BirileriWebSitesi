@@ -23,6 +23,7 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+
                 //get all categories
                 IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
                 //initiate view model
@@ -187,10 +188,35 @@ namespace BirileriWebSitesi.Controllers
                 initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
-                string imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
-                                                            .Select(i => i.ImagePath)
-                                                            .FirstOrDefaultAsync();
-                initialVariantImage.FilePath = string.Format("/images/resource/products/{0}/1.jpg", imagePath);
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
+                string basePath;
+                
+                if (environment == "Production")
+                    basePath = "https://birilerigt.com/wwwroot"; 
+                else
+                    basePath = "https://localhost:4427/wwwroot"; 
+               
+                string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
+                                                                    .Select(i => i.ImagePath)
+                                                                    .FirstOrDefaultAsync();
+                                                                    
+                string folderPath = Path.Combine(basePath, "images", "resource", "products", imagePath);
+                string folderUrlPath = $"/images/resource/products/{imagePath}/";
+                List<string> imagePaths = new List<string>();
+            
+                    if (Directory.Exists(folderPath))
+                    {
+                        var files = Directory.GetFiles(folderPath)
+                            .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
+                                        f.EndsWith(".png") || f.EndsWith(".avif"))
+                            .OrderBy(f => f) // optional: sort by name
+                            .ToList();
+            
+                        imagePaths = files.Select(f =>
+                            folderUrlPath + Path.GetFileName(f)).ToList();
+                    }
+                
+                initialVariantImage.FilePaths = imagePaths;
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
                 //get related products
@@ -235,7 +261,7 @@ namespace BirileriWebSitesi.Controllers
                 if (!products.Any())
                     return Ok(new { success = false, message = "Ürün Bulunamadı." });
 
-
+                
                 return PartialView("_PartialProductCard", products);
 
             }
@@ -261,14 +287,36 @@ namespace BirileriWebSitesi.Controllers
                     variantCode = variantCode + item.Key;
                     variantName = variantName + " " + item.Value;
                 }
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
+                string basePath;
+                
+                if (environment == "Production")
+                    basePath = "https://birilerigt.com/wwwroot"; 
+                else
+                    basePath = "https://localhost:4427/wwwroot"; 
+               
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
                                                                     .Select(i => i.ImagePath)
                                                                     .FirstOrDefaultAsync();
-                string filePath = string.Format("~/images/resource/products/{0}/1.jpg",
-                                                 imagePath);
-
+                                                                    
+                string folderPath = Path.Combine(basePath, "images", "resource", "products", imagePath);
+                string folderUrlPath = $"/images/resource/products/{imagePath}/";
+                List<string> imagePaths = new List<string>();
+            
+                    if (Directory.Exists(folderPath))
+                    {
+                        var files = Directory.GetFiles(folderPath)
+                            .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
+                                        f.EndsWith(".png") || f.EndsWith(".avif"))
+                            .OrderBy(f => f) // optional: sort by name
+                            .ToList();
+            
+                        imagePaths = files.Select(f =>
+                            folderUrlPath + Path.GetFileName(f)).ToList();
+                    }
+                
                 ProductDetailedVariantImageViewModel imageModel = new();
-                imageModel.FilePath = filePath;
+                imageModel.FilePaths = imagePaths;
                 imageModel.ProductVariantName = variantName;
                 decimal variantPrice = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
                                                                      .Select(p => p.Price)
