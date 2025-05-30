@@ -23,7 +23,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _logger = logger;
         }
 
         /// <summary>
