@@ -1,5 +1,5 @@
 ﻿@model BirileriWebSitesi.Models.ViewModels.ProductDetailedVariantImageViewModel
-@foreach (var imagePath in Model.ImagePaths)
+@foreach (var imagePath in Model.FilePaths)
 {
     <figure class="image-box">
         <a href="@imagePath" class="lightbox-image" title="@Model.ProductVariantName">
