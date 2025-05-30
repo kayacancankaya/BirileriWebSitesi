@@ -54,7 +54,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
+                return RedirectToAction("NotFound","Home");
             }
 
         }

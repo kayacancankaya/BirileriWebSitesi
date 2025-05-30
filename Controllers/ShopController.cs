@@ -38,7 +38,7 @@ namespace BirileriWebSitesi.Controllers
                 //get total products
                 pagination.TotalCount = await _context.Products.Where(a => a.IsActive == true).CountAsync();
                 if (products == null)
-                    return View("NotFound");
+                    return RedirectToAction("NotFound","Home");
 
                 //get popular products
                 IEnumerable<Product> popularProducts = await _context.Products
@@ -65,7 +65,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
+                return RedirectToAction("NotFound","Home");
             }
         }
         public async Task<IActionResult> ShopFiltered(int catalogID, string searchFilter, int pageNumber, decimal minPrice, decimal maxPrice)
@@ -133,23 +133,66 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
-                //get product
-                Product? product = await _context.Products.Where(c => c.ProductCode == productCode)
-                                                    .Include(v => v.ProductVariants)
-                                                    .FirstOrDefaultAsync();
+                if (string.IsNullOrEmpty(productCode))
+                    return RedirectToAction("NotFound", "Home");
+                Product? product;
+                bool isBaseProduct = false;
+                int counter = 0;
+                string? initialVariantName = string.Empty;
+                decimal variantPrice = decimal.Zero;
+                string? selectedVariantAttribute = string.Empty;
+                //if it is not base / bundle base product get its base product and its name 
+                if (productCode.Length>12)
+                {
+                    string? baseProduct = await _context.ProductVariants.Where(c => c.ProductCode == productCode)
+                                                        .Select(b=>b.BaseProduct)
+                                                        .FirstOrDefaultAsync();
+
+                    product = await _context.Products.Where(c => c.ProductCode == baseProduct)
+                                                       .Include(v => v.ProductVariants)
+                                                       .FirstOrDefaultAsync();
+
+                    initialVariantName = await _context.ProductVariants.Where(c => c.ProductCode == productCode)
+                                                        .Select(n => n.ProductName)
+                                                        .FirstOrDefaultAsync();
+                    variantPrice = await _context.ProductVariants.Where(c => c.ProductCode == productCode)
+                                                                    .Select(p => p.Price)
+                                                                    .FirstOrDefaultAsync();
+                    if (productCode.EndsWith("B"))
+                        selectedVariantAttribute = productCode.Substring(11, productCode.Length - 12);
+                    else
+                        selectedVariantAttribute = productCode.Substring(11, productCode.Length - 11);
+                }
+                // if it is base product
+                else
+                {
+                    product = await _context.Products.Where(c => c.ProductCode == productCode)
+                                                        .Include(v => v.ProductVariants)
+                                                        .FirstOrDefaultAsync();
+                    isBaseProduct = true;
+                    variantPrice = product.ProductVariants.FirstOrDefault().Price;
+                }
 
                 if (product == null)
-                    return View("NotFound");
+                    return RedirectToAction("NotFound","Home");
 
-                string productVariant = product.ProductVariants.OrderBy(c => c.ProductCode).FirstOrDefault().ProductCode;
+                //if the product is a base, we need to get the variant code
+                string productVariant = productCode;
+                if(isBaseProduct)
+                {
+                    productVariant = product.ProductVariants.OrderBy(c => c.ProductCode).FirstOrDefault().ProductCode;
+                    if (productVariant.EndsWith("B"))
+                        selectedVariantAttribute = productVariant.Substring(11, productVariant.Length - 12);
+                    else
+                        selectedVariantAttribute = productVariant.Substring(11, productVariant.Length - 11);
+                }
+
                 Dictionary<string, string> globalVariants = new Dictionary<string, string>();
                 string? variantKey = string.Empty;
                 string? variantValue = string.Empty;
                 Dictionary<string, string> variantAttributes = new Dictionary<string, string>();
                 string? variantAttribute = string.Empty;
                 string? variantAttributeValue = string.Empty;
-                int counter = 0;
-                string initialVariantName = string.Empty;
                 for (int i = 11; i < productVariant.Length; i += 6)
                 {
                     if (productVariant.Substring(productVariant.Length - 1, 1) == "B" &&
@@ -170,32 +213,38 @@ namespace BirileriWebSitesi.Controllers
                         variantAttributeValue = await _context.VariantAttributes.Where(v => v.VariantCode == variantKey &&
                                                                                     v.VariantAttributeCode == variantAttribute)
                                                                             .Select(n => n.VariantAttributeName).FirstOrDefaultAsync();
-                        //get first names of first variants to display initializing page
-                        if (counter == 0)
-                        {
-                            initialVariantName = string.Format("{0} {1}", initialVariantName, variantAttributeValue);
-                            counter++;
-                        }
+
+
+                        //if base product calling the page get first names of first variants to display initializing page
+                        //else use already defined
+                        if(counter == 0 && isBaseProduct)
+                            initialVariantName = string.Format("{0} {1} {2}", product.ProductName , initialVariantName, variantAttributeValue);
+                        counter++;
+                        
                         if (!string.IsNullOrEmpty(variantAttributeValue) &&
                             !variantAttributes.ContainsKey(variantKey + variantAttribute))
                             variantAttributes.Add(variantKey + variantAttribute, variantAttributeValue);
+                        
                     }
                 }
                 //get variant info to display initializing page
                 ProductDetailedVariantInfoViewModel initialVariantInfo = new();
                 initialVariantInfo.VariantCode = productVariant;
-                initialVariantInfo.VariantName = product.ProductName + " " + initialVariantName;
-                initialVariantInfo.VariantPrice = product.ProductVariants.FirstOrDefault().Price;
+                initialVariantInfo.VariantName =  initialVariantName;
+                initialVariantInfo.VariantPrice = variantPrice;
+                initialVariantInfo.SelectedVariantAttribute = selectedVariantAttribute;
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
                 string basePath;
-                
+
                 if (environment == "Production")
-                    basePath = "https://birilerigt.com/wwwroot"; 
+                    basePath = "https://birilerigt.com/wwwroot";
                 else
-                    basePath = "https://localhost:4427/wwwroot"; 
-               
+                    basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";
+
+                
+
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
                                                                     .Select(i => i.ImagePath)
                                                                     .FirstOrDefaultAsync();
@@ -248,7 +297,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 string err = ex.Message.ToString();
-                return View("NotFound");
+                return RedirectToAction("NotFound","Home");
             }
         }
         public IActionResult _PartialProductCard(IEnumerable<Product> products)
@@ -293,8 +342,8 @@ namespace BirileriWebSitesi.Controllers
                 if (environment == "Production")
                     basePath = "https://birilerigt.com/wwwroot"; 
                 else
-                    basePath = "https://localhost:4427/wwwroot"; 
-               
+                    basePath = basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";  
+              
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
                                                                     .Select(i => i.ImagePath)
                                                                     .FirstOrDefaultAsync();
@@ -374,7 +423,7 @@ namespace BirileriWebSitesi.Controllers
             {
                 if(string.IsNullOrEmpty(catalogName))
                 {
-                    return View("NotFound");
+                    return RedirectToAction("NotFound","Home");
                 }
                 IEnumerable<Product> products = new List<Product>();
                 int totalCount = 0;
@@ -424,7 +473,7 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Catalog> catalogs = await _context.Catalogs.ToListAsync();
 
                 if (products == null)
-                    return View("NotFound");
+                    return RedirectToAction("NotFound","Home");
 
                 //get popular products
                 IEnumerable<Product> popularProducts = await _context.Products.Where(a => a.IsActive == true)
@@ -447,7 +496,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
+                return RedirectToAction("NotFound","Home");
             }
         }
     }

@@ -1,18 +1,5 @@
-﻿using BirileriWebSitesi.Data;
-using BirileriWebSitesi.Interfaces;
-using BirileriWebSitesi.Models;
-using BirileriWebSitesi.Models.BasketAggregate;
-using BirileriWebSitesi.Models.OrderAggregate;
-using BirileriWebSitesi.Models.ViewModels;
-using Iyzipay.Model;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using BirileriWebSitesi.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using System.Diagnostics;
 namespace BirileriWebSitesi.Controllers
 {

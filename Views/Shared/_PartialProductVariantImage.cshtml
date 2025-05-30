@@ -1,10 +1,21 @@
 ﻿@model BirileriWebSitesi.Models.ViewModels.ProductDetailedVariantImageViewModel
-@foreach (var imagePath in Model.FilePaths)
-{
-    <figure class="image-box">
-        <a href="@imagePath" class="lightbox-image" title="@Model.ProductVariantName">
-            <img src="@Url.Content(imagePath)" loading="lazy" alt="@Model.ProductVariantName">
-        </a>
-    <input type="hidden" id="variant-name" value="@Model.ProductVariantName" />
-    </figure>
-}
+<div class="swiper">
+    <div class="swiper-wrapper">
+        @foreach (var imagePath in Model.FilePaths)
+        {
+            <div class="swiper-slide">
+                <a href="@imagePath" class="lightbox-image" title="@Model.ProductVariantName">
+                    <img src="@Url.Content(imagePath)" loading="lazy" alt="@Model.ProductVariantName" />
+                </a>
+                <input type="hidden" id="variant-name" value="@Model.ProductVariantName" />
+            </div>
+        }
+    </div>
+
+    <!-- Optional navigation -->
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+
+    <!-- Optional pagination -->
+    <div class="swiper-pagination"></div>
+</div>
