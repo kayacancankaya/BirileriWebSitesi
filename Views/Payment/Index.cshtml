@@ -522,9 +522,12 @@
                                         win.document.close();
 
                                 } else {
-                                   	window.location.href = "/Identity/Account/Manage"; 
-					window.location.href = "/Payment/RedirectWithSuccess";
-				  
+                                    if (paymentType === 1) {
+					 window.location.href = "/Payment/RedirectWithSuccess?paymentType=1";
+				    }
+				    else{
+					window.location.href = "/Payment/RedirectWithSuccess?paymentType=2";
+				   }
                                 }
                             } else {
 
