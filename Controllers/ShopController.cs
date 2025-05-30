@@ -196,7 +196,7 @@ namespace BirileriWebSitesi.Controllers
                 else
                     basePath = "https://localhost:4427/wwwroot"; 
                
-                string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
+                string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
                                                                     .Select(i => i.ImagePath)
                                                                     .FirstOrDefaultAsync();
                                                                     
