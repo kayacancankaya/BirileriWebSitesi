@@ -278,5 +278,12 @@ namespace BirileriWebSitesi.Controllers
                 return StatusCode(500, new { success = false, message = "Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
             }
         }
+
+        [HttpGet]
+        public IActionResult RedirectWithSuccess()
+        {
+            TempData["SuccessMessage"] = "Ödemeniz başarıyla alındı.";
+            return LocalRedirect("/Manage/Index");
+        }
     }
 }
