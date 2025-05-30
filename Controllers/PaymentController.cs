@@ -237,7 +237,7 @@ namespace BirileriWebSitesi.Controllers
 
                     Order order = await _orderService.GetOrderAsync(Convert.ToInt32(payment.BasketId));
                     await _emailService.SendCustomerOrderMailAsync(order);
-
+                    TempData["SuccessMessage"] = "Ödemeniz alındı. Siparişiniz en geç 2 gün içerisinde hazırlanarak kargoya teslim edilecektir. ";
                     return LocalRedirect("/Identity/Account/Manage");
                 }
                 else
@@ -283,7 +283,7 @@ namespace BirileriWebSitesi.Controllers
         public IActionResult RedirectWithSuccess()
         {
             TempData["SuccessMessage"] = "Ödemeniz başarıyla alındı.";
-            return Redirect("/Identity/Account/Manage");
+            return LocalRedirect("/Identity/Account/Manage");
         }
     }
 }
