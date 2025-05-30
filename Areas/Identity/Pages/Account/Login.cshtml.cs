@@ -166,14 +166,14 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         await _basketService.TransferBasketAsync(cart, user.Id);
                         HttpContext.Response.Cookies.Delete("MyCart");
                     }
-
+                    _logger.LogWarning("dönden url: {returnUrl}");
                     if (returnUrl.StartsWith("/Home/") ||
                         returnUrl.StartsWith("/Cart/") ||
                         returnUrl.StartsWith("/Order/") ||
                         returnUrl.StartsWith("/Payment/") ||
                         returnUrl.StartsWith("/Shop/"))
                             returnUrl = Url.Content($"~{returnUrl}");
-
+                    _logger.LogWarning(returnUrl);
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
