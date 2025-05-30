@@ -147,7 +147,7 @@ namespace BirileriWebSitesi.Controllers
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
-                            await _orderService.UpdateOrderStatus(model.OrderId, "Waiting For Bank Transfer");
+                            await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
                 
                             if(!String.IsNullOrEmpty(model.EmailAddress))
                                 await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"CreditCard");
@@ -280,9 +280,12 @@ namespace BirileriWebSitesi.Controllers
         }
 
         [HttpGet]
-        public IActionResult RedirectWithSuccess()
+        public IActionResult RedirectWithSuccess(int paymentType)
         {
-            TempData["SuccessMessage"] = "Ödemeniz başarıyla alındı.";
+            if (paymentType == 1)
+                TempData["SuccessMessage"] = "Ödemeniz başarıyla alındı.";
+            else
+                TempData["SuccessMessage"] = "Siparişinizin kaydedildi. Siparişiniz banka havalesi gerçekleştikten sonra işleme alınacaktır.";
             return LocalRedirect("/Identity/Account/Manage");
         }
     }
