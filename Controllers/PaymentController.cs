@@ -85,7 +85,7 @@ namespace BirileriWebSitesi.Controllers
 
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 bool isProduction = environment == "Production";
-                if (!isProduction)
+                if (isProduction)
                 {
                     if (string.IsNullOrEmpty(userAudit.Ip))
                         return Ok(new { success = false, message = "IP Bilgileri Bulunamadı." });
@@ -164,7 +164,8 @@ namespace BirileriWebSitesi.Controllers
                 else
                 {
                     await _basketService.DeleteBasketAsync(buyerID);
-                    await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
+                    await _orderService.UpdateOrderStatus(model.OrderId, "Bank Transfer");
+                    
                     if(!String.IsNullOrEmpty(model.EmailAddress))
                         await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"BankAccount");
                     return Ok(new { success = true, is3Ds = false, message = "Banka Ödemesi ile Ödeme Tanımlanmıştır." });

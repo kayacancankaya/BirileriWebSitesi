@@ -199,7 +199,10 @@ namespace BirileriWebSitesi.Services
                 _context.Orders.Update(order);
                 await _context.SaveChangesAsync();
 
-                return order.Status.ToString();
+                if(payment.Status == "success")
+                    return "success";
+                else
+                    return payment.ErrorMessage.ToString();
             }
             catch (Exception ex)
             {
@@ -397,6 +400,7 @@ namespace BirileriWebSitesi.Services
                         default:
                             return false;
                     }
+                    order.PaymentType = 2;
                     _context.Orders.Update(order);
                     await _context.SaveChangesAsync();
                     return true;
