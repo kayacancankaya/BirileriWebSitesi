@@ -76,14 +76,6 @@ namespace BirileriWebSitesi.Controllers
                     
                 }
 
-                if (!StringHelper.IsValidCVV(model.CVV))
-                    return Ok(new { success = false, message = "Uygun Olmayan CVV Formatı." });
-                if (!StringHelper.IsValidExpiry(model.ExpMonth,model.ExpYear))
-                    return Ok(new { success = false, message = "Uygun Olmayan Son Kullanma Tarihi Formatı." });
-                if (!StringHelper.IsValidCardNumber(model.CreditCardNumber))
-                    return Ok(new { success = false, message = "Uygun Olmayan Kredi Kartı Formatı." });
-
-
                 string? buyerID = _userManager.GetUserId(User);
                 
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
@@ -130,6 +122,13 @@ namespace BirileriWebSitesi.Controllers
                 string resultString = string.Empty;
                 if (model.PaymentType == 1)
                 {
+                    if (!StringHelper.IsValidCVV(model.CVV))
+                        return Ok(new { success = false, message = "Uygun Olmayan CVV Formatı." });
+                    if (!StringHelper.IsValidExpiry(model.ExpMonth,model.ExpYear))
+                        return Ok(new { success = false, message = "Uygun Olmayan Son Kullanma Tarihi Formatı." });
+                    if (!StringHelper.IsValidCardNumber(model.CreditCardNumber))
+                        return Ok(new { success = false, message = "Uygun Olmayan Kredi Kartı Formatı." });
+
                     if (model.Force3Ds)
                     {
 
