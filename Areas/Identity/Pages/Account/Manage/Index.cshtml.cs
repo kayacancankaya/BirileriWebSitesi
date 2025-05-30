@@ -16,16 +16,13 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<IndexModel> _logger;
         
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            ILogger<IndexModel> logger)
+            SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _logger = logger;
         }
 
         /// <summary>

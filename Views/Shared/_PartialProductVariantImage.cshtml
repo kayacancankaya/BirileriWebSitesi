@@ -1,7 +1,10 @@
 ﻿@model BirileriWebSitesi.Models.ViewModels.ProductDetailedVariantImageViewModel
-<figure class="image-box">
-    <a href="@Model.FilePath" class="lightbox-image" title="@Model.ProductVariantName">
-        <img src="@Url.Content(Model.FilePath)" loading="lazy" alt="@Model.ProductVariantName">
-    </a>
+@foreach (var imagePath in Model.FilePaths)
+{
+    <figure class="image-box">
+        <a href="@imagePath" class="lightbox-image" title="@Model.ProductVariantName">
+            <img src="@Url.Content(imagePath)" loading="lazy" alt="@Model.ProductVariantName">
+        </a>
     <input type="hidden" id="variant-name" value="@Model.ProductVariantName" />
-</figure>
+    </figure>
+}

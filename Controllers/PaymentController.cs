@@ -76,14 +76,6 @@ namespace BirileriWebSitesi.Controllers
                     
                 }
 
-                if (!StringHelper.IsValidCVV(model.CVV))
-                    return Ok(new { success = false, message = "Uygun Olmayan CVV Formatı." });
-                if (!StringHelper.IsValidExpiry(model.ExpMonth,model.ExpYear))
-                    return Ok(new { success = false, message = "Uygun Olmayan Son Kullanma Tarihi Formatı." });
-                if (!StringHelper.IsValidCardNumber(model.CreditCardNumber))
-                    return Ok(new { success = false, message = "Uygun Olmayan Kredi Kartı Formatı." });
-
-
                 string? buyerID = _userManager.GetUserId(User);
                 
                 UserAudit userAudit = await _userAuditService.GetUsurAuditAsync(buyerID);
@@ -130,6 +122,13 @@ namespace BirileriWebSitesi.Controllers
                 string resultString = string.Empty;
                 if (model.PaymentType == 1)
                 {
+                    if (!StringHelper.IsValidCVV(model.CVV))
+                        return Ok(new { success = false, message = "Uygun Olmayan CVV Formatı." });
+                    if (!StringHelper.IsValidExpiry(model.ExpMonth,model.ExpYear))
+                        return Ok(new { success = false, message = "Uygun Olmayan Son Kullanma Tarihi Formatı." });
+                    if (!StringHelper.IsValidCardNumber(model.CreditCardNumber))
+                        return Ok(new { success = false, message = "Uygun Olmayan Kredi Kartı Formatı." });
+
                     if (model.Force3Ds)
                     {
 
@@ -148,7 +147,7 @@ namespace BirileriWebSitesi.Controllers
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
-                            await _orderService.UpdateOrderStatus(model.OrderId, "Waiting For Bank Transfer");
+                            await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
                 
                             if(!String.IsNullOrEmpty(model.EmailAddress))
                                 await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"CreditCard");
@@ -238,7 +237,7 @@ namespace BirileriWebSitesi.Controllers
 
                     Order order = await _orderService.GetOrderAsync(Convert.ToInt32(payment.BasketId));
                     await _emailService.SendCustomerOrderMailAsync(order);
-
+                    TempData["SuccessMessage"] = "Ödemeniz alındı. Siparişiniz en geç 2 gün içerisinde hazırlanarak kargoya teslim edilecektir. ";
                     return LocalRedirect("/Identity/Account/Manage");
                 }
                 else
@@ -278,6 +277,16 @@ namespace BirileriWebSitesi.Controllers
                 _logger.LogError(ex, ex.Message.ToString());
                 return StatusCode(500, new { success = false, message = "Hata ile Karşılaşıldı. Lütfen Tekrar Deneyiniz." });
             }
+        }
+
+        [HttpGet]
+        public IActionResult RedirectWithSuccess(int paymentType)
+        {
+            if (paymentType == 1)
+                TempData["SuccessMessage"] = "Ödemeniz başarıyla alındı.";
+            else
+                TempData["SuccessMessage"] = "Siparişinizin kaydedildi. Siparişiniz banka havalesi gerçekleştikten sonra işleme alınacaktır.";
+            return LocalRedirect("/Identity/Account/Manage");
         }
     }
 }

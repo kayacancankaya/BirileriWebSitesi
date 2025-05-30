@@ -522,8 +522,12 @@
                                         win.document.close();
 
                                 } else {
-                                    showAlert(button, "Ödeme başarıyla gerçekleşti!", "success");
-                                    window.location.href = "/Home"; // Redirect to confirmation page
+                                    if (paymentType === 1) {
+					 window.location.href = "/Payment/RedirectWithSuccess?paymentType=1";
+				    }
+				    else{
+					window.location.href = "/Payment/RedirectWithSuccess?paymentType=2";
+				   }
                                 }
                             } else {
 

@@ -38,6 +38,7 @@ namespace BirileriWebSitesi.Services
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
                 return true;
+                
             }
             catch (Exception ex)
             {
