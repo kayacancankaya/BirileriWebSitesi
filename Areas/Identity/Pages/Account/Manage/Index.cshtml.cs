@@ -19,7 +19,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
         
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
