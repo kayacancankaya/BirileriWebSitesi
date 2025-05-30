@@ -265,7 +265,7 @@ namespace BirileriWebSitesi.Controllers
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
                                                                     .Select(i => i.ImagePath)
                                                                     .FirstOrDefaultAsync();
-                string filePath = string.Format("~/images/resource/products/{0}/1.jpg",
+                string filePath = string.Format("/images/resource/products/{0}/1.jpg",
                                                  imagePath);
 
                 ProductDetailedVariantImageViewModel imageModel = new();
