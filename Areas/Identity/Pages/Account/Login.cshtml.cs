@@ -27,20 +27,18 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IAntiforgery _antiforgery;
         private readonly IBasketService _basketService;
         private readonly ApplicationDbContext _dbContext;
         private readonly IUserAuditService _userAuditService;
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, UserManager<IdentityUser> userManager,
+        public LoginModel(SignInManager<IdentityUser> signInManager,  UserManager<IdentityUser> userManager,
                              IAntiforgery antiforgery,
                              IBasketService basketService,
                              ApplicationDbContext dbContext, 
                              IUserAuditService userAuditService)
         {
             _signInManager = signInManager;
-            _logger = logger;
             _userManager = userManager;
             _antiforgery = antiforgery;
             _basketService = basketService;
@@ -159,22 +157,15 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                                
                     }
                     _antiforgery.GetAndStoreTokens(HttpContext);
-                    _logger.LogInformation("Kullanıcı Kayıt Oldu.");
                     string cart = Request.Cookies["MyCart"];
                     if (!string.IsNullOrEmpty(cart))
                     {
-                        await _basketService.TransferBasketAsync(cart, user.Id);
+                        // await _basketService.TransferBasketAsync(cart, user.Id);
                         HttpContext.Response.Cookies.Delete("MyCart");
                     }
-                   _logger.LogWarning("Dönen URL: {ReturnUrl}", returnUrl);
-                    if (returnUrl.StartsWith("/Home/") ||
-                        returnUrl.StartsWith("/Cart/") ||
-                        returnUrl.StartsWith("/Order/") ||
-                        returnUrl.StartsWith("/Payment/") ||
-                        returnUrl.StartsWith("/Shop/"))
-                            returnUrl = Url.Content($"~{returnUrl}");
-                   _logger.LogWarning("Yönlendirilen URL: {ReturnUrl}", returnUrl);
-                    return LocalRedirect(returnUrl);
+                   
+                    return RedirectToPage("/Manage/Index");
+
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -182,7 +173,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("Kullanıcı Hesabı Kilitli.");
                     return RedirectToPage("./Lockout");
                 }
                 else
