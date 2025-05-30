@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 
 namespace BirileriWebSitesi.Helpers
@@ -74,6 +75,7 @@ namespace BirileriWebSitesi.Helpers
         {
             return Regex.IsMatch(cvv, @"^\d{3,4}$");
         }
+
 
     }
 }

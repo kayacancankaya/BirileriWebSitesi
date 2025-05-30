@@ -160,6 +160,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             await _basketService.TransferBasketAsync(cart, user.Id);
                             HttpContext.Response.Cookies.Delete("MyCart");
                         }
+                        if (returnUrl.StartsWith("/Home/") ||
+                            returnUrl.StartsWith("/Cart/") ||
+                            returnUrl.StartsWith("/Order/") ||
+                            returnUrl.StartsWith("/Payment/") ||
+                            returnUrl.StartsWith("/Shop/"))
+                                    returnUrl = Url.Content($"~{returnUrl}");
                         return LocalRedirect(returnUrl);
                     }
                 }

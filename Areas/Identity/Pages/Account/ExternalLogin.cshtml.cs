@@ -150,7 +150,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     await _basketService.TransferBasketAsync(cart, user.Id);
                     HttpContext.Response.Cookies.Delete("MyCart");
                 }
-               
+                if (returnUrl.StartsWith("/Home/") ||
+                     returnUrl.StartsWith("/Cart/") ||
+                     returnUrl.StartsWith("/Order/") ||
+                     returnUrl.StartsWith("/Payment/") ||
+                     returnUrl.StartsWith("/Shop/"))
+                        returnUrl = Url.Content($"~{returnUrl}");
                 return RedirectToPage(returnUrl);
             }
             if (result.IsLockedOut)
@@ -228,7 +233,12 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                             await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
                         }
-                
+                        if (returnUrl.StartsWith("/Home/") ||
+                             returnUrl.StartsWith("/Cart/") ||
+                             returnUrl.StartsWith("/Order/") ||
+                             returnUrl.StartsWith("/Payment/") ||
+                             returnUrl.StartsWith("/Shop/"))
+                                    returnUrl = Url.Content($"~{returnUrl}");
                         return LocalRedirect(returnUrl);
                     }
                 }

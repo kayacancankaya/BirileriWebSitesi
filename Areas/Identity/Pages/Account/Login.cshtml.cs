@@ -19,6 +19,8 @@ using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Data;
 using Microsoft.EntityFrameworkCore;
 using BirileriWebSitesi.Models;
+using BirileriWebSitesi.Controllers;
+using BirileriWebSitesi.Helpers;
 
 namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 {
@@ -121,6 +123,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+            
             returnUrl ??= Url.Content("~/");
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -163,6 +166,14 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         await _basketService.TransferBasketAsync(cart, user.Id);
                         HttpContext.Response.Cookies.Delete("MyCart");
                     }
+
+                    if (returnUrl.StartsWith("/Home/") ||
+                        returnUrl.StartsWith("/Cart/") ||
+                        returnUrl.StartsWith("/Order/") ||
+                        returnUrl.StartsWith("/Payment/") ||
+                        returnUrl.StartsWith("/Shop/"))
+                            returnUrl = Url.Content($"~{returnUrl}");
+
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

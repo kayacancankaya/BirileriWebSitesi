@@ -29,6 +29,14 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             _logger.LogInformation("User logged out.");
             if (returnUrl != null)
             {
+
+                if (returnUrl.StartsWith("/Home/") ||
+                    returnUrl.StartsWith("/Cart/") ||
+                    returnUrl.StartsWith("/Order/") ||
+                    returnUrl.StartsWith("/Payment/") ||
+                    returnUrl.StartsWith("/Shop/"))
+                        returnUrl = Url.Content($"~{returnUrl}");
+
                 return LocalRedirect(returnUrl);
             }
             else
