@@ -49,6 +49,7 @@ namespace BirileriWebSitesi.Controllers
                 string? fullName = string.Empty;
                 string? phone = string.Empty;
 
+                 _logger.LogWarning("Checkout init");
        
                 IdentityUser? user = new();
 
@@ -58,7 +59,7 @@ namespace BirileriWebSitesi.Controllers
                     user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
                 }
                 else
-                    return View("NotFound");
+                    return RedirectToAction("NotFound","Home");
                 bool isInBuyRegion = false;
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 bool isProduction = environment == "Production";
@@ -76,6 +77,8 @@ namespace BirileriWebSitesi.Controllers
                 else 
                     isInBuyRegion = true;
                     
+                 _logger.LogWarning("basket transfer init");
+                    
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
@@ -85,7 +88,7 @@ namespace BirileriWebSitesi.Controllers
                     orderItems.Add(orderItem);
                 }
 
-
+                   _logger.LogWarning("order address init");
                 Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
                                                                                                    i.IsBilling == false &&
                                                                                                    i.SetAsDefault == true)
@@ -119,12 +122,12 @@ namespace BirileriWebSitesi.Controllers
 
                 }
 
-              
+              _logger.LogWarning("order init");
                 Order order = new(userID, shipToAddress, billingAddress, orderItems, isInBuyRegion, true, 1);
                 if (order.TotalAmount > 100000)
                 {
                     TempData["DangerMessage"] = "Sepet Miktarı 100000₺'den Büyük Olamaz.";
-                    return RedirectToAction("Cart");
+                    return RedirectToAction("Index","Cart");
                 }
 
               
@@ -134,7 +137,7 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return View("NotFound");
+               return RedirectToAction("NotFound", "Home");
             }
         }
         public IActionResult _PartialIsCorporate(Models.OrderAggregate.Address address)
