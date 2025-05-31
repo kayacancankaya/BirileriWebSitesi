@@ -10,6 +10,55 @@
     <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
                                     toptan spor malzemesi">
 }
+@section CSS {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
+
+    <style>
+       
+        .mobile-filter-toggle {
+            position: fixed;
+            top: 91%;
+            right: 88%;
+            z-index: 10000;
+            background-color: #FFB200;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            margin-right: 5px;
+        }
+
+        .mobile-sidebar {
+            position: fixed;
+            top: 12%;
+            right: -100%;
+            width: 80%;
+            height: 88%;
+            background: #fff;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            transition: right 0.3s ease-in-out;
+            z-index: 1050;
+        }
+
+        .mobile-sidebar.active {
+            right: 0;
+        }
+
+        .mobile-sidebar .close-btn {
+            font-size: 30px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: right;
+        }
+    </style>
+}
+<button class="mobile-filter-toggle" id="mobileFilterButton" style="display:none;" onclick="toggleMobileFilter()">
+    <i class="fa fa-filter"></i> 
+</button>
 
 <!--Product Container-->
 <div class="sidebar-page-container">
@@ -24,45 +73,200 @@
                 </div>
             </div>
             <!--Sidebar Side-->
-            <div class="sidebar-side col-lg-3 col-md-4 col-sm-12">
-                <aside class="sidebar">
+            <!--Sidebar Desktop-->
+            <div class="col-lg-3 col-md-4 col-sm-12 d-none d-lg-block" id="pcFilterSidebar">
+                 <aside class="sidebar">
 
-                    <!-- Search -->
-                    <div class="sidebar-widget search-box">
-                           <div class="form-group">
-                                <span class="alert-text"></span>
-                                <input type="search" name="search-field" id="product-search" placeholder="Ara ..." required>
-                                <button type="submit" class="product-search-button"><span class="icon fa fa-search"></span></button>
-                            </div>
-                    </div>
+                     <!-- Search -->
+                     <div class="sidebar-widget search-box">
+                         <div class="form-group">
+                             <span class="alert-text"></span>
+                             <input type="search" name="search-field" class="product-search" placeholder="Ara ..." required>
+                             <button type="submit" class="product-search-button"><span class="icon fa fa-search"></span></button>
+                         </div>
+                     </div>
 
-                    <!--Category Widget-->
-                    @Html.Partial("_PartialCategoryWidget", Model.Catalogs)
+                     @Html.Partial("_PartialPriceFilterWidget")
+                     <!--Category Widget-->
+                     @Html.Partial("_PartialCategoryWidget", Model.Catalogs)
 
-                    @Html.Partial("_PartialPriceFilterWidget")
-                    
-                    @Html.Partial("_PartialPopularProductsWidget",Model.PopularProducts)
+                 </aside>
+             </div>
 
-                </aside>
+             <!--Sidebar Mobile-->
+            <div id="mobileFilterSidebar" class="mobile-sidebar d-lg-none">
+                 <aside class="sidebar">
+
+                 <!-- Search -->
+                 <div class="sidebar-widget search-box">
+                     <div class="form-group">
+                         <input type="search" name="search-field" class="product-search" placeholder="Ara ..." required>
+                         <button type="submit" class="product-search-button"><span class="icon fa fa-search"></span></button>
+                     </div>
+                 </div>
+
+
+                 @Html.Partial("_PartialPriceFilterWidget")
+                 <!--Category Widget-->
+                 @Html.Partial("_PartialCategoryWidget", Model.Catalogs)
+
+                 </aside>
             </div>
+        </div>
+
+        <!--Popular Product Div-->
+        <div class="row clearfix" id="popular-products-div">
+
         </div>
     </div>
 </div>
+<input type="hidden" id="currentState" value="0" />
 @section JqueryUi {
     <script src="~/js/jquery-ui.min.js" defer></script>
 }
 @section AdditionalScripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script>
         $(document).ready(function () {
+            if (window.innerWidth < 992) {
+                $("#pagination-list").css("display","none");
+            }
+            //initilaze carousel
+            $("#product-carousel").owlCarousel({
+            loop: true,
+            margin: 20,
+            nav: true,
+            dots: false,
+            autoplay: true,
+            autoplayTimeout: 4000,
+            autoplayHoverPause: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                576: {
+                    items: 2
+                },
+                768: {
+                    items: 3
+                },
+                992: {
+                    items: 4
+                }
+            },
+            navText: [
+                '<span class="fa fa-chevron-left"></span>',
+                '<span class="fa fa-chevron-right"></span>'
+            ]
+        });
+            //initialize nav active line
             $(".dropdown").removeClass("current");
             $(".shop").addClass("current");
+            //load extra content
+            function debounce(func, wait) {
+                let timeout;
+                return function () {
+                    const context = this, args = arguments;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), wait);
+                };
+            }
+            $(window).scroll(debounce(function () {
+                var currentHeight = $(window).scrollTop();
+                var currentState = parseInt($('#currentState').val());
+                if (currentHeight >= 100 && currentState === 0) {
+                    currentState = 1;
+                    $('#currentState').val(currentState);
+                    $.ajax({
+                        type: "GET",
+                        url: "/Shop/_PartialPopularProductsWidget",
+                        async: true,
+                        processData: true,
+                        cache: true,
+                        success: function (result) {
+                            $("#popular-products-div").append(result);
+                            $("#popular-product-carousel").owlCarousel({
+                                loop: true,
+                                margin: 20,
+                                nav: true,
+                                dots: false,
+                                autoplay: true,
+                                autoplayTimeout: 4000,
+                                autoplayHoverPause: true,
+                                responsive: {
+                                    0: {
+                                        items: 1
+                                    },
+                                    576: {
+                                        items: 2
+                                    },
+                                    768: {
+                                        items: 3
+                                    },
+                                    992: {
+                                        items: 4
+                                    }
+                                },
+                                navText: [
+                                    '<span class="fa fa-chevron-left"></span>',
+                                    '<span class="fa fa-chevron-right"></span>'
+                                ]
+                            });
+                        }
+                    });
+
+                }
+            }, 50));
+            //load extra product
+            let isLoading = false;
+            $(window).on("scroll", function () {
+                if (isLoading) return;
+                if (window.innerWidth >= 992) return;
+                const currentPage = parseInt($("#page-number").val());
+                const totalPage = parseInt($("#total-page").val());
+                if(currentPage >= totalPage) return;
+                // When user is near the bottom of the page
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 1000) {
+                    isLoading = true;
+                    const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                    let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
+                    let searchString = $(`${visibleSidebar} .product-search`).val();
+                    let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                    let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
+                    const nextPage = currentPage + 1;
+
+                    $.ajax({
+                        type: "GET",
+                        url: "/Shop/ShopFiltered",
+                        data: {
+                           catalogID: catalogID,
+                            searchFilter: searchString,
+                            pageNumber: nextPage,
+                            minPrice: minPrice,
+                            maxPrice: maxPrice,
+                        },
+                        success: function (response) {
+                            $("#product-content").append(response);
+                            isLoading = false;
+                            $("#page-number").val(nextPage)
+                        },
+                        error: function (xhr) {
+                            var response = JSON.parse(xhr.responseText);
+                            showAlert(null, response.message, "danger");
+                            isLoading = false;
+                        }
+                    });
+                }
+            });
+
             // next button clicked
             $(document).on("click", ".pagination-next", function () {
-                let catalogID = $("#catalog-id").val();
-                let searchString = $("#product-search").val();
-                let pageNumber = parseInt($("#page-number").val()) + 1;
-                let minPrice = $(".price-range-slider").slider("values", 0);
-                let maxPrice = $(".price-range-slider").slider("values", 1);
+                const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
+                let searchString = $(`${visibleSidebar} .product-search`).val();
+                let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
+
                 var button = $(this);
 
                 $.ajax({
@@ -88,11 +292,11 @@
             });
             //previous button clicked
             $(document).on("click", ".pagination-previous", function () {
-                let catalogID = $("#catalog-id").val();
-                let searchString = $("#product-search").val();
-                let pageNumber = parseInt($("#page-number").val()) - 1;
-                let minPrice = $(".price-range-slider").slider("values", 0);
-                let maxPrice = $(".price-range-slider").slider("values", 1);
+                const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
+                let searchString = $(`${visibleSidebar} .product-search`).val();
+                let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
                 var button = $(this);
 
                 $.ajax({
@@ -118,11 +322,11 @@
             });
             //page number button clicked
             $(document).on("click", ".pagination-number", function () {
-                let catalogID = $("#catalog-id").val();
-                let searchString = $("#product-search").val();
-                let pageNumber = parseInt($(this).text());
-                let minPrice = $(".price-range-slider").slider("values", 0);
-                let maxPrice = $(".price-range-slider").slider("values", 1);
+                const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
+                let searchString = $(`${visibleSidebar} .product-search`).val();
+                let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
                 var button = $(this);
 
                 $.ajax({
@@ -148,10 +352,12 @@
             });
             //filter by price clicked
             $(document).on("click", ".filter-by-price-button", function () {
-                let catalogID = $("#catalog-id").val();
-                let searchString = $("#product-search").val();
-                let minPrice = $(".price-range-slider").slider("values", 0);
-                let maxPrice = $(".price-range-slider").slider("values", 1);
+                const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
+                let searchString = $(`${visibleSidebar} .product-search`).val();
+                let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
+                
                 var button = $(this);
 
                 $.ajax({
@@ -177,10 +383,13 @@
             });
             //product search clicked
             $(document).on("click", ".product-search-button", function () {
-                 let catalogID = $("#catalog-id").val();
-                let searchString = $("#product-search").val();
-                let minPrice = $(".price-range-slider").slider("values", 0);
-                let maxPrice = $(".price-range-slider").slider("values", 1);
+                
+                const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
+                let searchString = $(`${visibleSidebar} .product-search`).val();
+                let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
+
                 var button = $(this);
 
 
@@ -208,10 +417,12 @@
             });
             //filter by catalog clicked
             $(document).on("click", ".filter-by-catalog", function () {
+
                 let catalogID = $(this).data("id");
-                let searchString = $("#product-search").val();
-                let minPrice = $(".price-range-slider").slider("values", 0);
-                let maxPrice = $(".price-range-slider").slider("values", 1);
+                const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
+                let searchString = $(`${visibleSidebar} .product-search`).val();
+                let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
+                let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
                 var button = $(this);
                 var clickedItem = $(this).parent();
 
@@ -279,6 +490,82 @@
                     }
                 });
             });
+        });
+
+        function toggleMobileFilter() {
+            const sidebar = document.getElementById("mobileFilterSidebar");
+            sidebar.classList.toggle("active");
+        }
+        window.addEventListener('resize', () => {
+            const sidebarMobile = document.getElementById("mobileFilterSidebar");
+            const sidebarPc = document.getElementById("pcFilterSidebar");
+            const filterButtonMobile = document.getElementById("mobileFilterButton");
+            const pagination = document.getElementById("pagination-list");
+            if (window.innerWidth >= 992) {
+                sidebarMobile.classList.remove("active");
+                sidebarPc.style.display = "block";
+                filterButtonMobile.style.display = "none";
+                pagination.style.display="block";
+                }
+            else {
+                sidebarPc.classList.add("active");
+                sidebarPc.style.display = "none";
+                filterButtonMobile.style.display = "block";
+                pagination.style.display="none";
+            }
+             $("#popular-product-carousel").owlCarousel({
+            loop: true,
+            margin: 20,
+            nav: true,
+            dots: false,
+            autoplay: true,
+            autoplayTimeout: 4000,
+            autoplayHoverPause: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                576: {
+                    items: 2
+                },
+                768: {
+                    items: 3
+                },
+                992: {
+                    items: 4
+                }
+            },
+            navText: [
+                '<span class="fa fa-chevron-left"></span>',
+                '<span class="fa fa-chevron-right"></span>'
+            ]
+        });$("#related-product-carousel").owlCarousel({
+            loop: true,
+            margin: 20,
+            nav: true,
+            dots: false,
+            autoplay: true,
+            autoplayTimeout: 4000,
+            autoplayHoverPause: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                576: {
+                    items: 2
+                },
+                768: {
+                    items: 3
+                },
+                992: {
+                    items: 4
+                }
+            },
+            navText: [
+                '<span class="fa fa-chevron-left"></span>',
+                '<span class="fa fa-chevron-right"></span>'
+            ]
+        });
         });
     </script>
 }

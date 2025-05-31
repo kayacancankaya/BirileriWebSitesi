@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using BirileriWebSitesi.Interfaces;
+using BirileriWebSitesi.Services;
 
 namespace BirileriWebSitesi.Controllers
 {
@@ -13,10 +15,14 @@ namespace BirileriWebSitesi.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
-        public ShopController(ILogger<HomeController> logger, ApplicationDbContext context)
+        private readonly IConfiguration _configuration;
+        public ShopController(ILogger<HomeController> logger, 
+                                        ApplicationDbContext context,
+                                        IConfiguration configuration)
         {
             _logger = logger;
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Index()
@@ -31,22 +37,16 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Product> products = new List<Product>();
                 // get products
                 products = await _context.Products.Where(a => a.IsActive == true)
-                                            .Take(PaginationViewModel.PageSize)
                                             .Include(d => d.Discounts)
                                              .OrderByDescending(p => p.Popularity)
+                                            .Take(PaginationViewModel.PageSize)
                                              .ToListAsync();
                 //get total products
                 pagination.TotalCount = await _context.Products.Where(a => a.IsActive == true).CountAsync();
                 if (products == null)
                     return RedirectToAction("NotFound","Home");
 
-                //get popular products
-                IEnumerable<Product> popularProducts = await _context.Products
-                                                      .Where(p => p.IsActive)
-                                                      .OrderByDescending(p => p.Popularity)
-                                                      .Take(3)
-                                                      .ToListAsync();
-
+                
                 //assign values to vievmodel
                 pagination.CurrentPage = 1;
                 pagination.TotalPage = (int)Math.Ceiling((double)pagination.TotalCount / PaginationViewModel.PageSize);
@@ -57,7 +57,6 @@ namespace BirileriWebSitesi.Controllers
                 productCard.pagination = pagination;
                 shop.productCard = productCard;
                 shop.Catalogs = catalogs;
-                shop.PopularProducts = popularProducts;
 
                 return View(shop);
 
@@ -238,14 +237,14 @@ namespace BirileriWebSitesi.Controllers
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
-                string basePath;
+               
+                string? basePath = Environment.GetEnvironmentVariable("BasePath");
 
-                if (environment == "Production")
-                    basePath = "/home/birileri/apps/birileriwebsitesi/publish/wwwroot";
-                else
-                    basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";
+                if (string.IsNullOrEmpty(basePath))
+                {
+                    basePath = _configuration["BasePath"];
+                }
 
-                
 
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
                                                                     .Select(i => i.ImagePath)
@@ -327,6 +326,53 @@ namespace BirileriWebSitesi.Controllers
                 return Ok();
             }
         }
+        public async Task<IActionResult> _PartialPopularProductsWidget()
+        {
+            try
+            {
+                //get popular products
+                IEnumerable<Product> popularProducts = await _context.Products
+                                                      .Where(p => p.IsActive)
+                                                      .OrderByDescending(p => p.Popularity)
+                                                      .Take(10)
+                                                      .ToListAsync();
+               
+
+                
+                return PartialView("_PartialPopularProductsWidget", popularProducts);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return Ok();
+            }
+        }
+        public async Task<IActionResult> _PartialRelatedProductsWidget(string productCode)
+        {
+            try
+            {
+                //get related products
+                List<string> relatedProductCodes = await _context.RelatedProducts.Where(c => c.ProductCode == productCode)
+                                                                                 .Select(r => r.RelatedProductCode)
+                                                                                 .ToListAsync();
+                List<Product> relatedProducts = new List<Product>();
+
+                relatedProducts = await _context.Products
+                                        .Where(p => relatedProductCodes.Contains(p.ProductCode))
+                                        .ToListAsync();
+
+
+
+                return PartialView("_PartialRelatedProductsWidget", relatedProducts);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return Ok();
+            }
+        }
         public IActionResult _PartialProductCard(IEnumerable<Product> products)
         {
             try
@@ -376,14 +422,16 @@ namespace BirileriWebSitesi.Controllers
                 if (!string.IsNullOrEmpty(bundleSuffix))
                     variantCode = variantCode + bundleSuffix;
 
-                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
-                string basePath;
+                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 
-                if (environment == "Production")
-                    basePath = "https://birilerigt.com/"; 
-                else
-                    basePath = basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";  
-              
+                string? basePath = Environment.GetEnvironmentVariable("BasePath");
+
+                if (string.IsNullOrEmpty(basePath))
+                {
+                    basePath = _configuration["BasePath"];
+                }
+
+
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == variantCode)
                                                                     .Select(i => i.ImagePath)
                                                                     .FirstOrDefaultAsync();

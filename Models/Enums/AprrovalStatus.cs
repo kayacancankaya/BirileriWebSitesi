@@ -10,6 +10,7 @@
             Shipped = 3,
             Recieved = 4,
             BankTransfer = 5,
+            Cancelled = 6,
         }
     }
 }

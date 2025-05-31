@@ -96,4 +96,7 @@ else
     <a asp-controller="Shop" asp-action="Index">Alışverişe Devam Edin</a>
 }
 
-@Html.Partial("_PartialPaginationWidget", Model.pagination)
+<input type="hidden" id="page-number" value="@Model.pagination.CurrentPage" />
+<input type="hidden" id="total-page" value="@Model.pagination.TotalPage" />
+
+@Html.Partial("_PartialPaginationWidget", Model.pagination) 

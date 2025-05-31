@@ -10,7 +10,9 @@
     bool hasOrders = false;
     if (!string.IsNullOrEmpty(userId))
     {
-        hasOrders = await Context.Orders.AnyAsync(o => o.BuyerId == userId);
+        hasOrders = await Context.Orders.Where(s=>s.Status != 0 &&
+                                                  s.Status != 2)
+                                        .AnyAsync(o => o.BuyerId == userId);
     }
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }

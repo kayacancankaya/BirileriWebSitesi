@@ -1,12 +1,11 @@
 ﻿@model BirileriWebSitesi.Models.ViewModels.PaginationViewModel 
 
-<input type="hidden" id="page-number" value="@Model.CurrentPage" />
-<input type="hidden" id="total-page" value="@Model.TotalPage" />
+
 <!--Styled Pagination-->
 @if(Model.TotalPage>1)
 {
  
-    <ul class="styled-pagination text-center">
+    <ul class="styled-pagination text-center" id="pagination-list">
 
         <span class="alert-text"></span>
         @if(Model.CurrentPage !=1)

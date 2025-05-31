@@ -25,13 +25,39 @@
     <meta name="keywords" content=@Model.Product.MetaKeywords>
 }
 @section CSS {
+    <!-- Owl Carousel CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
+
 <!-- Swiper CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
 
-<!-- Swiper JS -->
-<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
 <style>
+        #variant-image .swiper {
+            width: 100%;
+            max-width: 500px; 
+            height: auto;
+            position: relative;
+        }
+
+        /* Make each image same size */
+        #variant-image .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* or 'contain' if you want full image */
+            border-radius: 8px;
+        }
+
+
+            /* Adjust swiper navigation buttons inside the boundaries */
+            #variant-image .swiper-button-prev,
+            #variant-image .swiper-button-next {
+                color: #000;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
     .product-variants {
     margin-top: 20px;
     padding: 15px;
@@ -96,127 +122,118 @@
 <div class="sidebar-page-container">
     <div class="auto-container">
         <div class="row clearfix">
+            <div class="shop-single">
+                <div class="product-details">
 
-            <!--Content Side-->
-            <div class="content-side col-lg-9 col-md-8 col-sm-12">
-                <div class="shop-single">
-                    <div class="product-details">
+                    <!--Basic Details-->
+                    <div class="basic-details">
+                        <div class="row clearfix">
+                            <div class="image-column col-lg-6 col-md-12 col-sm-12" id="variant-image" >
+                                @Html.Partial("_PartialProductVariantImage", Model.ProductVariantImage)
+                            </div>
+                            <div class="info-column col-lg-6 col-md-12 col-sm-12" >
 
-                        <!--Basic Details-->
-                        <div class="basic-details">
-                            <div class="row clearfix">
-                                <div class="image-column col-lg-6 col-md-12 col-sm-12" id="variant-image">
-                                    @Html.Partial("_PartialProductVariantImage", Model.ProductVariantImage)
+                                <div class="details-header" id="variant-info">
+                                    @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
                                 </div>
-                                <div class="info-column col-lg-6 col-md-12 col-sm-12">
-
-                                    <div class="details-header" id="variant-info">
-                                        @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
-                                    </div>
-                                    <!--variant list-->
-                                    <div class="product-variants">
-                                        <h5>Varyasyonlar</h5>
-                                        <div class="variant-container">
-                                            @foreach (var globalVariant in Model.GlobalVariants)
-                                            {
-                                                bool isSelected = false;
-                                                string selectedVariantKey = Model.ProductVariantInfo.SelectedVariantAttribute.Substring(index, 6);
-                                                
-                                                <div class="variant-group" data-global-key="@globalVariant.Key">
-                                                    <input type="hidden" class="global-variant-key" value="@globalVariant.Key" />
-                                                    <span class="variant-title">@globalVariant.Value</span>
-                                                    <div class="variant-options">
-                                                        @{
-                                                            Dictionary<string,string> variantAttributes = Model.VariantAttributes
-                                                            .Where(k => k.Key.StartsWith(globalVariant.Key))
-                                                            .ToDictionary(d=>d.Key,d=>d.Value);
-                                                        }
-                                                        @foreach (var item in variantAttributes)
+                                <!--variant list-->
+                                <div class="product-variants">
+                                    <h5>Varyasyonlar</h5>
+                                    <div class="variant-container">
+                                        @foreach (var globalVariant in Model.GlobalVariants)
+                                        {
+                                            bool isSelected = false;
+                                            string selectedVariantKey = Model.ProductVariantInfo.SelectedVariantAttribute.Substring(index, 6);
+                                            
+                                            <div class="variant-group" data-global-key="@globalVariant.Key">
+                                                <input type="hidden" class="global-variant-key" value="@globalVariant.Key" />
+                                                <span class="variant-title">@globalVariant.Value</span>
+                                                <div class="variant-options">
+                                                    @{
+                                                        Dictionary<string,string> variantAttributes = Model.VariantAttributes
+                                                        .Where(k => k.Key.StartsWith(globalVariant.Key))
+                                                        .ToDictionary(d=>d.Key,d=>d.Value);
+                                                    }
+                                                    @foreach (var item in variantAttributes)
+                                                    {
+                                                        if (item.Key == selectedVariantKey)
+                                                            isSelected = true;
+                                                        
+                                                        @if(isSelected)
                                                         {
-                                                            if (item.Key == selectedVariantKey)
-                                                                isSelected = true;
-                                                            
-                                                            @if(isSelected)
-                                                            {
-                                                                <span class="alert-text"></span>
-                                                                <button class="variant-button active" data-key="@item.Key" data-value="@item.Value">@item.Value</button>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="alert-text"></span>
-                                                                <button class="variant-button" data-key="@item.Key" data-value="@item.Value">@item.Value</button>
-                                                            }
-                                                            isSelected = false;   
+                                                            <span class="alert-text"></span>
+                                                            <button class="variant-button active" data-key="@item.Key" data-value="@item.Value">@item.Value</button>
                                                         }
-                                                    </div>
+                                                        else
+                                                        {
+                                                            <span class="alert-text"></span>
+                                                            <button class="variant-button" data-key="@item.Key" data-value="@item.Value">@item.Value</button>
+                                                        }
+                                                        isSelected = false;   
+                                                    }
                                                 </div>
-                                                index += 6; // Increment to the next global variant key
-                                            }
-                                        </div>
+                                            </div>
+                                            index += 6; // Increment to the next global variant key
+                                        }
                                     </div>
+                                </div>
 
-                                    
-                                    <div class="other-options clearfix">
-                                        @* <div class="item-quantity"><input class="quantity-spinner" type="text" value="1" name="quantity"></div> *@
-                                        <input type="hidden" class="user-id" value="@userId" />
-                                        <span class="alert-text"></span>
-                                        <button type="button" class="theme-btn btn-style-one add-to-cart" style="margin-top:20px;">Sepete Ekle</button>
+                                
+                                <div class="other-options clearfix">
+                                    @* <div class="item-quantity"><input class="quantity-spinner" type="text" value="1" name="quantity"></div> *@
+                                    <input type="hidden" class="user-id" value="@userId" />
+                                    <span class="alert-text"></span>
+                                    <button type="button" class="theme-btn btn-style-one add-to-cart" style="margin-top:20px;">Sepete Ekle</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Basic Details ends-->
+                    <!--Product Info Tabs-->
+                    <div class="product-info-tabs">
+                        <!--Product Tabs-->
+                        <div class="prod-tabs tabs-box">
+
+                            <!--Tab Btns-->
+                            <ul class="tab-btns tab-buttons clearfix">
+                                <li data-tab="#prod-details" class="tab-btn">AÇIKLAMA</li>
+                            </ul>
+
+                            <!--Tabs Container-->
+                            <div class="tabs-content" id="prod-details-div">
+
+                                <!--Tab-->
+                                <div class="tab" id="prod-details">
+                                    <div class="content">
+                                        @Model.Product.ProductDescription
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!--Basic Details-->
-                        
-                            <!--Product Info Tabs-->
-                            <div class="product-info-tabs">
-                                <!--Product Tabs-->
-                                <div class="prod-tabs tabs-box">
-
-                                    <!--Tab Btns-->
-                                    <ul class="tab-btns tab-buttons clearfix">
-                                        <li data-tab="#prod-details" class="tab-btn">AÇIKLAMA</li>
-                                    </ul>
-
-                                    <!--Tabs Container-->
-                                    <div class="tabs-content" id="prod-details-div">
-
-                                        <!--Tab-->
-                                        <div class="tab" id="prod-details">
-                                            <div class="content">
-                                                @Model.Product.ProductDescription
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <!--End Product Info Tabs-->
-                           
-
                     </div>
+                    <!--End Product Info Tabs-->
                 </div>
             </div>
+        </div>
 
-            <!--Sidebar Side-->
-            <div class="sidebar-side col-lg-3 col-md-4 col-sm-12">
-                <aside class="sidebar">
-
-
-                    @Html.Partial("_PartialPopularProductsWidget", Model.PopularProducts)
-                    @Html.Partial("_PartialRelatedProductsWidget", Model.RelatedProducts)
-
-                </aside>
-            </div>
-
+        <!--Popular Product Div-->
+        <div class="row clearfix" id="popular-products-div" style="margin-top:30px;">
+        </div>
+        <!--Related Product Div-->
+        <div class="row clearfix" id="related-products-div">
         </div>
     </div>
 </div>
+<input type="hidden" name="cırrentState" value="0" />
 @section FancyBox {
     <script src="~/js/jquery.fancybox.min.js" defer></script>
 }
 <!--End Sidebar Page Container-->
 @section AdditionalScripts {
-
+    <!-- owl carousel JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script>
         $(document).ready(function () {
             $(".dropdown").removeClass("current");
@@ -231,7 +248,7 @@
                     buttonup_txt: '+'
                 });
             }
-
+            //description toggler
             $('.tab-btn').on('click', function () {
               var tabId = $(this).data('tab');
               var $tab = $(tabId);
@@ -260,8 +277,9 @@
                    clickable: true,
                },
             });
+            
             var baseProductCode = $("#product-code").val();
-
+            //increase popularity
             $.ajax({
                     type: "POST",
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
@@ -270,7 +288,108 @@
                     data: { baseProductCode: baseProductCode },
                     
                 });
+            //load more content
+            function debounce(func, wait) {
+                let timeout;
+                return function () {
+                    const context = this, args = arguments;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), wait);
+                };
+            }
+            $(window).scroll(debounce(function () {
+                
+                var currentHeight = $(window).scrollTop();
+                var currentState = parseInt($('#currentState').val());
+                if (currentHeight >= 100 && currentState === 0) {
+                    currentState = 1;
+                    $('#currentState').val(currentState);
+                    $.ajax({
+                        type: "GET",
+                        url: "/Shop/_PartialPopularProductsWidget",
+                        async: true,
+                        processData: true,
+                        cache: true,
+                        success: function (result) {
+                            $("#popular-products-div").append(result);
+                            $("#popular-product-carousel").owlCarousel({
+                                loop: true,
+                                margin: 20,
+                                nav: true,
+                                dots: false,
+                                autoplay: true,
+                                autoplayTimeout: 4000,
+                                autoplayHoverPause: true,
+                                responsive: {
+                                    0: {
+                                        items: 1
+                                    },
+                                    576: {
+                                        items: 2
+                                    },
+                                    768: {
+                                        items: 3
+                                    },
+                                    992: {
+                                        items: 4
+                                    }
+                                },
+                                navText: [
+                                    '<span class="fa fa-chevron-left"></span>',
+                                    '<span class="fa fa-chevron-right"></span>'
+                                ]
+                            });
+                        }
+                    });
 
+                }
+                else if (currentHeight >= 200 && currentState === 1) {
+                    currentState = 2;
+                    
+                    $('#currentState').val(currentState);
+                    var productCode = $('#product-code').val();
+                    $.ajax({
+                        type: "GET",
+                        url: "/Shop/_PartialRelatedProductsWidget",
+                        async: true,
+                        processData: true,
+                        cache: true,
+                        data: {productCode : productCode},
+                        success: function (result) {
+                            $("#related-products-div").append(result);
+                            $("#related-product-carousel").owlCarousel({
+                                loop: true,
+                                margin: 20,
+                                nav: true,
+                                dots: false,
+                                autoplay: true,
+                                autoplayTimeout: 4000,
+                                autoplayHoverPause: true,
+                                responsive: {
+                                    0: {
+                                        items: 1
+                                    },
+                                    576: {
+                                        items: 2
+                                    },
+                                    768: {
+                                        items: 3
+                                    },
+                                    992: {
+                                        items: 4
+                                    }
+                                },
+                                navText: [
+                                    '<span class="fa fa-chevron-left"></span>',
+                                    '<span class="fa fa-chevron-right"></span>'
+                                ]
+                            });
+                        }
+                    });
+
+                }
+
+            }, 50));
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();
                 // Remove active class from siblings and add it to the clicked button
