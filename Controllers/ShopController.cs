@@ -241,7 +241,7 @@ namespace BirileriWebSitesi.Controllers
                 string basePath;
 
                 if (environment == "Production")
-                    basePath = "https://birilerigt.com/";
+                    basePath = "/home/birileri/apps/birileriwebsitesi/publish/wwwroot";
                 else
                     basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";
 
