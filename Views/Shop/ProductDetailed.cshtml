@@ -260,7 +260,16 @@
                    clickable: true,
                },
             });
+            var baseProductCode = $("#product-code").val();
 
+            $.ajax({
+                    type: "POST",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    async: true,
+                    url: "/Shop/IncreasePopularity",
+                    data: { baseProductCode: baseProductCode },
+                    
+                });
 
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();

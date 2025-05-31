@@ -135,6 +135,8 @@ namespace BirileriWebSitesi.Controllers
             {
                 if (string.IsNullOrEmpty(productCode))
                     return RedirectToAction("NotFound", "Home");
+
+
                 Product? product;
                 bool isBaseProduct = false;
                 int counter = 0;
@@ -239,7 +241,7 @@ namespace BirileriWebSitesi.Controllers
                 string basePath;
 
                 if (environment == "Production")
-                    basePath = "https://birilerigt.com/wwwroot";
+                    basePath = "https://birilerigt.com/";
                 else
                     basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";
 
@@ -255,16 +257,21 @@ namespace BirileriWebSitesi.Controllers
             
                     if (Directory.Exists(folderPath))
                     {
+                        _logger.LogWarning("Directory exists: " + folderPath);
                         var files = Directory.GetFiles(folderPath)
-                            .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
-                                        f.EndsWith(".png") || f.EndsWith(".avif"))
-                            .OrderBy(f => f) // optional: sort by name
-                            .ToList();
+                                .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
+                                            f.EndsWith(".png") || f.EndsWith(".avif"))
+                                .OrderBy(f => f) // optional: sort by name
+                                .ToList();
             
-                        imagePaths = files.Select(f =>
-                            folderUrlPath + Path.GetFileName(f)).ToList();
+                            imagePaths = files.Select(f =>
+                                folderUrlPath + Path.GetFileName(f)).ToList();
                     }
-                
+                else
+                {
+                    _logger.LogWarning("Directory does not exist: " + folderPath);
+                }
+
                 initialVariantImage.FilePaths = imagePaths;
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
@@ -300,6 +307,26 @@ namespace BirileriWebSitesi.Controllers
                 return RedirectToAction("NotFound","Home");
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> IncreasePopularity(string baseProductCode)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(baseProductCode);
+                if (product != null)
+                {
+                    product.Popularity += 1;
+                    await _context.SaveChangesAsync();
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return Ok();
+            }
+        }
         public IActionResult _PartialProductCard(IEnumerable<Product> products)
         {
             try
@@ -329,18 +356,31 @@ namespace BirileriWebSitesi.Controllers
                 {
                     return BadRequest(new { success = false, message = "Varyant Seçeneği Bulunamadı." });
                 }
-                string variantCode = productCode;
+                string bundleSuffix = string.Empty;
+                string variantCode = string.Empty;
                 string variantName = productName;
+                if (productCode.Length == 12)
+                {
+                    variantCode = productCode.Substring(0, 11);
+                    bundleSuffix = "B";
+                }
+                else
+                    variantCode = productCode;
+
                 foreach (var item in variantAttributes)
                 {
                     variantCode = variantCode + item.Key;
                     variantName = variantName + " " + item.Value;
                 }
+
+                if (!string.IsNullOrEmpty(bundleSuffix))
+                    variantCode = variantCode + bundleSuffix;
+
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
                 string basePath;
                 
                 if (environment == "Production")
-                    basePath = "https://birilerigt.com/wwwroot"; 
+                    basePath = "https://birilerigt.com/"; 
                 else
                     basePath = basePath = "C:\\Users\\kayac\\OneDrive\\Desktop\\1-c#\\appDev\\BirileriWebSitesi\\wwwroot";  
               
@@ -352,19 +392,24 @@ namespace BirileriWebSitesi.Controllers
                 string folderUrlPath = $"/images/resource/products/{imagePath}/";
                 List<string> imagePaths = new List<string>();
             
-                    if (Directory.Exists(folderPath))
-                    {
+                if (Directory.Exists(folderPath))
+                {
+                    _logger.LogWarning("Directory exists: " + folderPath);  
                         var files = Directory.GetFiles(folderPath)
-                            .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
-                                        f.EndsWith(".png") || f.EndsWith(".avif"))
-                            .OrderBy(f => f) // optional: sort by name
-                            .ToList();
+                        .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
+                                    f.EndsWith(".png") || f.EndsWith(".avif"))
+                        .OrderBy(f => f) 
+                        .ToList();
             
-                        imagePaths = files.Select(f =>
-                            folderUrlPath + Path.GetFileName(f)).ToList();
-                    }
-                
-                ProductDetailedVariantImageViewModel imageModel = new();
+                    imagePaths = files.Select(f =>
+                        folderUrlPath + Path.GetFileName(f)).ToList();
+                }
+                else
+                {
+                    _logger.LogWarning("Directory does not exist: " + folderPath);
+                }
+
+                    ProductDetailedVariantImageViewModel imageModel = new();
                 imageModel.FilePaths = imagePaths;
                 imageModel.ProductVariantName = variantName;
                 decimal variantPrice = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
