@@ -54,6 +54,14 @@
             cursor: pointer;
             text-align: right;
         }
+
+        .post-thumb {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 180px; /* or same as your image height if needed */
+        }
+
     </style>
 }
 <button class="mobile-filter-toggle" id="mobileFilterButton" style="display:none;" onclick="toggleMobileFilter()">
@@ -128,37 +136,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script>
         $(document).ready(function () {
-            if (window.innerWidth < 992) {
-                $("#pagination-list").css("display","none");
+            currentState = 0;
+            $('#currentState').val("0");
+            lastWidth = window.innerWidth;
+            if (window.innerWidth >= 992)
+            {
+                $("#pagination-list").css("display","block");
+
             }
-            //initilaze carousel
-            $("#product-carousel").owlCarousel({
-            loop: true,
-            margin: 20,
-            nav: true,
-            dots: false,
-            autoplay: true,
-            autoplayTimeout: 4000,
-            autoplayHoverPause: true,
-            responsive: {
-                0: {
-                    items: 1
-                },
-                576: {
-                    items: 2
-                },
-                768: {
-                    items: 3
-                },
-                992: {
-                    items: 4
-                }
-            },
-            navText: [
-                '<span class="fa fa-chevron-left"></span>',
-                '<span class="fa fa-chevron-right"></span>'
-            ]
-        });
+            else
+            {
+                $("#mobileFilterButton").css("display","block");
+                $(".styled-pagination").remove();
+
+            }
+           
             //initialize nav active line
             $(".dropdown").removeClass("current");
             $(".shop").addClass("current");
@@ -173,7 +165,8 @@
             }
             $(window).scroll(debounce(function () {
                 var currentHeight = $(window).scrollTop();
-                var currentState = parseInt($('#currentState').val());
+                currentState = parseInt($('#currentState').val());
+
                 if (currentHeight >= 100 && currentState === 0) {
                     currentState = 1;
                     $('#currentState').val(currentState);
@@ -181,14 +174,12 @@
                         type: "GET",
                         url: "/Shop/_PartialPopularProductsWidget",
                         async: true,
-                        processData: true,
-                        cache: true,
                         success: function (result) {
-                            $("#popular-products-div").append(result);
+                            $("#popular-products-div").html(result);
                             $("#popular-product-carousel").owlCarousel({
                                 loop: true,
                                 margin: 20,
-                                nav: true,
+                                nav: false,
                                 dots: false,
                                 autoplay: true,
                                 autoplayTimeout: 4000,
@@ -207,21 +198,18 @@
                                         items: 4
                                     }
                                 },
-                                navText: [
-                                    '<span class="fa fa-chevron-left"></span>',
-                                    '<span class="fa fa-chevron-right"></span>'
-                                ]
                             });
                         }
                     });
 
                 }
-            }, 50));
+            }, 100));
             //load extra product
             let isLoading = false;
             $(window).on("scroll", function () {
                 if (isLoading) return;
                 if (window.innerWidth >= 992) return;
+
                 const currentPage = parseInt($("#page-number").val());
                 const totalPage = parseInt($("#total-page").val());
                 if(currentPage >= totalPage) return;
@@ -248,7 +236,11 @@
                         success: function (response) {
                             $("#product-content").append(response);
                             isLoading = false;
-                            $("#page-number").val(nextPage)
+                            $("#page-number").val(nextPage);
+                             if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
                         },
                         error: function (xhr) {
                             var response = JSON.parse(xhr.responseText);
@@ -266,7 +258,7 @@
                 let searchString = $(`${visibleSidebar} .product-search`).val();
                 let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
                 let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
-
+                let pageNumber = parseInt($("#page-number").val()) + 1;
                 var button = $(this);
 
                 $.ajax({
@@ -282,6 +274,11 @@
                     },
                     success: function (response) {
                         $("#product-content").html(response);
+                        $("#page-number").val(pageNumber);
+                         if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
@@ -297,6 +294,7 @@
                 let searchString = $(`${visibleSidebar} .product-search`).val();
                 let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
                 let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
+                let pageNumber = parseInt($("#page-number").val()) - 1;
                 var button = $(this);
 
                 $.ajax({
@@ -312,6 +310,11 @@
                     },
                     success: function (response) {
                         $("#product-content").html(response);
+                        $("#page-number").val(pageNumber);
+                         if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
@@ -327,6 +330,7 @@
                 let searchString = $(`${visibleSidebar} .product-search`).val();
                 let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
                 let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
+                let pageNumber = parseInt($(this).data("number"));
                 var button = $(this);
 
                 $.ajax({
@@ -342,6 +346,13 @@
                     },
                     success: function (response) {
                         $("#product-content").html(response);
+                        $("#page-number").val(pageNumber);
+                        $(".pagination-number").removeClass("active");
+                        button.addClass("active");
+                         if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
@@ -373,6 +384,10 @@
                     },
                     success: function (response) {
                         $("#product-content").html(response);
+                         if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
@@ -406,6 +421,10 @@
                     },
                     success: function (response) {
                         $("#product-content").html(response);
+                          if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
@@ -441,7 +460,10 @@
                         $("#product-content").html(response);
                         $(".filter-by-catalog-list").removeClass("active-category");
                         clickedItem.addClass("active-category");
-                
+                 if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
 
                     },
                     error: function (xhr) {
@@ -495,77 +517,88 @@
         function toggleMobileFilter() {
             const sidebar = document.getElementById("mobileFilterSidebar");
             sidebar.classList.toggle("active");
+             if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
         }
-        window.addEventListener('resize', () => {
-            const sidebarMobile = document.getElementById("mobileFilterSidebar");
-            const sidebarPc = document.getElementById("pcFilterSidebar");
-            const filterButtonMobile = document.getElementById("mobileFilterButton");
-            const pagination = document.getElementById("pagination-list");
-            if (window.innerWidth >= 992) {
-                sidebarMobile.classList.remove("active");
-                sidebarPc.style.display = "block";
-                filterButtonMobile.style.display = "none";
+         window.addEventListener('resize', () => {
+             const sidebarMobile = document.getElementById("mobileFilterSidebar");
+             const sidebarPc = document.getElementById("pcFilterSidebar");
+             const filterButtonMobile = document.getElementById("mobileFilterButton");
+             if (window.innerWidth >= 992) {
+                 sidebarMobile.classList.remove("active");
+                 sidebarPc.style.display = "block";
+                 filterButtonMobile.style.display = "none";
+                  $("#pagination-list").remove();
+
+                renderPagination($("#page-number").val(),$("#total-page").val());
+                const pagination = document.getElementById("pagination-list");
                 pagination.style.display="block";
-                }
-            else {
-                sidebarPc.classList.add("active");
-                sidebarPc.style.display = "none";
-                filterButtonMobile.style.display = "block";
-                pagination.style.display="none";
+                $("#pagination-list").css("display","block");
             }
-             $("#popular-product-carousel").owlCarousel({
-            loop: true,
-            margin: 20,
-            nav: true,
-            dots: false,
-            autoplay: true,
-            autoplayTimeout: 4000,
-            autoplayHoverPause: true,
-            responsive: {
-                0: {
-                    items: 1
-                },
-                576: {
-                    items: 2
-                },
-                768: {
-                    items: 3
-                },
-                992: {
-                    items: 4
+             else {
+
+                 sidebarPc.classList.add("active");
+                 sidebarPc.style.display = "none";
+                 filterButtonMobile.style.display = "block";
+                 $(".styled-pagination").remove();
+                 $("#pagination-list").css("display","none");
+             }
+               if (Math.abs(lastWidth - window.innerWidth) > 200) {
+                   lastWidth = window.innerWidth;
+                    $.ajax({
+                        type: "GET",
+                        url: "/Shop/_PartialPopularProductsWidget",
+                        async: true,
+                        success: function (result) {
+                            $("#popular-products-div").html(result);
+                            $("#popular-product-carousel").owlCarousel({
+                                loop: true,
+                                margin: 20,
+                                nav: false,
+                                dots: false,
+                                autoplay: true,
+                                autoplayTimeout: 4000,
+                                autoplayHoverPause: true,
+                                responsive: {
+                                    0: {
+                                        items: 1
+                                    },
+                                    576: {
+                                        items: 2
+                                    },
+                                    768: {
+                                        items: 3
+                                    },
+                                    992: {
+                                        items: 4
+                                    }
+                                },
+                            });
+                        }
+                    });
+
                 }
-            },
-            navText: [
-                '<span class="fa fa-chevron-left"></span>',
-                '<span class="fa fa-chevron-right"></span>'
-            ]
-        });$("#related-product-carousel").owlCarousel({
-            loop: true,
-            margin: 20,
-            nav: true,
-            dots: false,
-            autoplay: true,
-            autoplayTimeout: 4000,
-            autoplayHoverPause: true,
-            responsive: {
-                0: {
-                    items: 1
-                },
-                576: {
-                    items: 2
-                },
-                768: {
-                    items: 3
-                },
-                992: {
-                    items: 4
-                }
-            },
-            navText: [
-                '<span class="fa fa-chevron-left"></span>',
-                '<span class="fa fa-chevron-right"></span>'
-            ]
-        });
-        });
+         });
+                 function renderPagination(currentPage, totalPages) {
+            let html = `<div class="row clearfix"> <ul class="styled-pagination text-center" id="pagination-list">`;
+
+            if (currentPage > 1) {
+                html += `<li class="prev"><a class="pagination-previous"><span class="fa fa-angle-left"></span></a></li>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<li><a class="pagination-number${i === currentPage ? ' active' : ''}" data-number="${i}">${i}</a></li>`;
+            }
+
+            if (currentPage < totalPages) {
+                html += `<li class="next"><a class="pagination-next"><span class="fa fa-angle-right"></span></a></li>`;
+            }
+
+            html += `</ul> </div>`;
+
+            $("#pagination-div").html(html); // append new
+        }
     </script>
 }

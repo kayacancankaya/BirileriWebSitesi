@@ -239,7 +239,7 @@ namespace BirileriWebSitesi.Controllers
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
                
                 string? basePath = Environment.GetEnvironmentVariable("BasePath");
-
+                _logger.LogWarning("BasePath: " + basePath);
                 if (string.IsNullOrEmpty(basePath))
                 {
                     basePath = _configuration["BasePath"];
@@ -334,7 +334,7 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Product> popularProducts = await _context.Products
                                                       .Where(p => p.IsActive)
                                                       .OrderByDescending(p => p.Popularity)
-                                                      .Take(10)
+                                                      .Take(6)
                                                       .ToListAsync();
                
 
@@ -360,6 +360,7 @@ namespace BirileriWebSitesi.Controllers
 
                 relatedProducts = await _context.Products
                                         .Where(p => relatedProductCodes.Contains(p.ProductCode))
+                                        .Take(6)
                                         .ToListAsync();
 
 

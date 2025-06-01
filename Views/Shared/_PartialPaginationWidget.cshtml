@@ -5,7 +5,7 @@
 @if(Model.TotalPage>1)
 {
  
-    <ul class="styled-pagination text-center" id="pagination-list">
+    <ul class="styled-pagination text-center" id="pagination-list" >
 
         <span class="alert-text"></span>
         @if(Model.CurrentPage !=1)
@@ -17,11 +17,11 @@
         {
             if(i == Model.CurrentPage)
             {
-                <li><a class="pagination-number active">@i</a></li>
+                <li><a class="pagination-number active" data-number="@i">@i</a></li>
             }
             else
             {
-                <li><a class="pagination-number">@i</a></li>
+                <li><a class="pagination-number" data-number="@i">@i</a></li>
             }
         }
         @if(Model.CurrentPage < Model.TotalPage)

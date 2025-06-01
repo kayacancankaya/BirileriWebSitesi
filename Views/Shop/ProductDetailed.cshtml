@@ -112,6 +112,13 @@
     color: white;
     }
 
+        .post-thumb {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 180px; /* or same as your image height if needed */
+        }
+
 </style>
 }
 
@@ -236,8 +243,35 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script>
         $(document).ready(function () {
+            currentState = 0;
+            $('#currentState').val("0");
+            lastWidth = window.innerWidth;
+            
             $(".dropdown").removeClass("current");
             $(".shop").addClass("current");
+            $("#popular-product-carousel").owlCarousel({
+                                loop: true,
+                                margin: 20,
+                                nav: false,
+                                dots: false,
+                                autoplay: true,
+                                autoplayTimeout: 4000,
+                                autoplayHoverPause: true,
+                                responsive: {
+                                    0: {
+                                        items: 1
+                                    },
+                                    576: {
+                                        items: 2
+                                    },
+                                    768: {
+                                        items: 3
+                                    },
+                                    992: {
+                                        items: 4
+                                    }
+                                },
+                            });
             if ($('.quantity-spinner').length) {
                 $(".quantity-spinner").TouchSpin({
                     min: 1,
@@ -311,11 +345,11 @@
                         processData: true,
                         cache: true,
                         success: function (result) {
-                            $("#popular-products-div").append(result);
+                            $("#popular-products-div").html(result);
                             $("#popular-product-carousel").owlCarousel({
                                 loop: true,
                                 margin: 20,
-                                nav: true,
+                                nav: false,
                                 dots: false,
                                 autoplay: true,
                                 autoplayTimeout: 4000,
@@ -334,10 +368,6 @@
                                         items: 4
                                     }
                                 },
-                                navText: [
-                                    '<span class="fa fa-chevron-left"></span>',
-                                    '<span class="fa fa-chevron-right"></span>'
-                                ]
                             });
                         }
                     });
@@ -356,11 +386,11 @@
                         cache: true,
                         data: {productCode : productCode},
                         success: function (result) {
-                            $("#related-products-div").append(result);
+                            $("#related-products-div").html(result);
                             $("#related-product-carousel").owlCarousel({
                                 loop: true,
                                 margin: 20,
-                                nav: true,
+                                nav: false,
                                 dots: false,
                                 autoplay: true,
                                 autoplayTimeout: 4000,
@@ -379,17 +409,13 @@
                                         items: 4
                                     }
                                 },
-                                navText: [
-                                    '<span class="fa fa-chevron-left"></span>',
-                                    '<span class="fa fa-chevron-right"></span>'
-                                ]
                             });
                         }
                     });
 
                 }
 
-            }, 50));
+            }, 100));
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();
                 // Remove active class from siblings and add it to the clicked button
@@ -492,6 +518,73 @@
                 });
             });
         });
-
+         window.addEventListener('resize', () => {
+          
+                if (Math.abs(lastWidth - window.innerWidth) > 200) {
+                    lastWidth = window.innerWidth;
+                     $.ajax({
+                         type: "GET",
+                         url: "/Shop/_PartialPopularProductsWidget",
+                         async: true,
+                         success: function (result) {
+                             $("#popular-products-div").html(result);
+                             $("#popular-product-carousel").owlCarousel({
+                                 loop: true,
+                                 margin: 20,
+                                 nav: false,
+                                 dots: false,
+                                 autoplay: true,
+                                 autoplayTimeout: 4000,
+                                 autoplayHoverPause: true,
+                                 responsive: {
+                                     0: {
+                                         items: 1
+                                     },
+                                     576: {
+                                         items: 2
+                                     },
+                                     768: {
+                                         items: 3
+                                     },
+                                     992: {
+                                         items: 4
+                                     }
+                                 },
+                             });
+                         }
+                     });
+                     $.ajax({
+                         type: "GET",
+                         url: "/Shop/_PartialRelatedProductsWidget",
+                         async: true,
+                         success: function (result) {
+                             $("#related-products-div").html(result);
+                             $("#related-product-carousel").owlCarousel({
+                                 loop: true,
+                                 margin: 20,
+                                 nav: false,
+                                 dots: false,
+                                 autoplay: true,
+                                 autoplayTimeout: 4000,
+                                 autoplayHoverPause: true,
+                                 responsive: {
+                                     0: {
+                                         items: 1
+                                     },
+                                     576: {
+                                         items: 2
+                                     },
+                                     768: {
+                                         items: 3
+                                     },
+                                     992: {
+                                         items: 4
+                                     }
+                                 },
+                             });
+                         }
+                     });
+                 }
+          });
     </script>
 }

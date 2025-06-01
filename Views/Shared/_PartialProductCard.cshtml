@@ -16,7 +16,7 @@
 @if(Model.products.Count() > 0)
 {
     ProductVariant firstVariant = new();
-    <div class="row clearfix">
+    <div class="row clearfix" id="product-detailed-div">
         <!--Shop Item-->
         @foreach (Product item in Model.products)
         {
@@ -98,5 +98,6 @@ else
 
 <input type="hidden" id="page-number" value="@Model.pagination.CurrentPage" />
 <input type="hidden" id="total-page" value="@Model.pagination.TotalPage" />
-
+<div id="pagination-div">
 @Html.Partial("_PartialPaginationWidget", Model.pagination) 
+</div>
