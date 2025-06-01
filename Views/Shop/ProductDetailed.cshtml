@@ -133,12 +133,12 @@
                 <div class="product-details">
 
                     <!--Basic Details-->
-                    <div class="basic-details">
-                        <div class="row clearfix">
-                            <div class="image-column col-lg-6 col-md-12 col-sm-12" id="variant-image" >
+                    <div class="basic-details d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="image-column col-lg-6 col-md-12 col-sm-12 " id="variant-image" >
                                 @Html.Partial("_PartialProductVariantImage", Model.ProductVariantImage)
                             </div>
-                            <div class="info-column col-lg-6 col-md-12 col-sm-12" >
+                            <div class="info-column col-lg-6 col-md-12 col-sm-12 " >
 
                                 <div class="details-header" id="variant-info">
                                     @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
@@ -197,7 +197,7 @@
                     </div>
                     <!--Basic Details ends-->
                     <!--Product Info Tabs-->
-                    <div class="product-info-tabs">
+                    <div class="product-info-tabs ml-3">
                         <!--Product Tabs-->
                         <div class="prod-tabs tabs-box">
 
@@ -224,10 +224,10 @@
         </div>
 
         <!--Popular Product Div-->
-        <div class="row clearfix" id="popular-products-div" style="margin-top:30px;">
+        <div class="row clearfix m-1" id="popular-products-div">
         </div>
         <!--Related Product Div-->
-        <div class="row clearfix" id="related-products-div">
+        <div class="row clearfix m-1" id="related-products-div">
         </div>
     </div>
 </div>
@@ -243,8 +243,8 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script>
         $(document).ready(function () {
-            currentState = 0;
-            $('#currentState').val("0");
+
+            var currentState = parseInt($('#currentState').val());
             lastWidth = window.innerWidth;
             
             $(".dropdown").removeClass("current");
@@ -334,7 +334,6 @@
             $(window).scroll(debounce(function () {
                 
                 var currentHeight = $(window).scrollTop();
-                var currentState = parseInt($('#currentState').val());
                 if (currentHeight >= 100 && currentState === 0) {
                     currentState = 1;
                     $('#currentState').val(currentState);
@@ -372,11 +371,6 @@
                         }
                     });
 
-                }
-                else if (currentHeight >= 200 && currentState === 1) {
-                    currentState = 2;
-                    
-                    $('#currentState').val(currentState);
                     var productCode = $('#product-code').val();
                     $.ajax({
                         type: "GET",
@@ -414,7 +408,6 @@
                     });
 
                 }
-
             }, 100));
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();

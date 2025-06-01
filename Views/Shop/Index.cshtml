@@ -31,6 +31,17 @@
             margin-right: 5px;
         }
 
+        .close-sidebar-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            border: none;
+            background: none;
+            color: #333;
+            cursor: pointer;
+            z-index: 1001;
+        }
         .mobile-sidebar {
             position: fixed;
             top: 12%;
@@ -103,8 +114,9 @@
 
              <!--Sidebar Mobile-->
             <div id="mobileFilterSidebar" class="mobile-sidebar d-lg-none">
-                 <aside class="sidebar">
-
+                
+                 <aside class="sidebar p-1">
+                   
                  <!-- Search -->
                  <div class="sidebar-widget search-box">
                      <div class="form-group">
@@ -133,7 +145,10 @@
     <script src="~/js/jquery-ui.min.js" defer></script>
 }
 @section AdditionalScripts {
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
     <script>
         $(document).ready(function () {
             currentState = 0;
@@ -212,9 +227,11 @@
 
                 const currentPage = parseInt($("#page-number").val());
                 const totalPage = parseInt($("#total-page").val());
+
                 if(currentPage >= totalPage) return;
+                
                 // When user is near the bottom of the page
-                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 1000) {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 2000) {
                     isLoading = true;
                     const visibleSidebar = $("#pcFilterSidebar").is(":visible") ? "#pcFilterSidebar" : "#mobileFilterSidebar";
                     let catalogID =  $(`${visibleSidebar} #catalog-id`).val();
@@ -222,10 +239,11 @@
                     let minPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 0);
                     let maxPrice = $(`${visibleSidebar} .price-range-slider`).slider("values", 1);
                     const nextPage = currentPage + 1;
-
+                    console.log("getting");
                     $.ajax({
                         type: "GET",
                         url: "/Shop/ShopFiltered",
+                        async:true,
                         data: {
                            catalogID: catalogID,
                             searchFilter: searchString,
@@ -235,7 +253,49 @@
                         },
                         success: function (response) {
                             $("#product-content").append(response);
-                            isLoading = false;
+                            $("#page-number").val(nextPage);
+                             if (window.innerWidth < 992)
+                             {
+                                 $(".styled-pagination").remove();
+                             }
+                             isLoading = false;
+                        },
+                        error: function (xhr) {
+                            var response = JSON.parse(xhr.responseText);
+                            showAlert(null, response.message, "danger");
+                        }
+                    });
+                    $("#partial-popular-product-div").remove();
+                    $.ajax({
+                        type: "GET",
+                        url: "/Shop/_PartialPopularProductsWidget",
+                        async:true,
+
+                        success: function (response) {
+                            $("#popular-products-div").append(response);
+                              $("#popular-product-carousel").owlCarousel({
+                                loop: true,
+                                margin: 20,
+                                nav: false,
+                                dots: false,
+                                autoplay: true,
+                                autoplayTimeout: 4000,
+                                autoplayHoverPause: true,
+                                responsive: {
+                                    0: {
+                                        items: 1
+                                    },
+                                    576: {
+                                        items: 2
+                                    },
+                                    768: {
+                                        items: 3
+                                    },
+                                    992: {
+                                        items: 4
+                                    }
+                                },
+                            });
                             $("#page-number").val(nextPage);
                              if (window.innerWidth < 992)
                              {
@@ -245,7 +305,6 @@
                         error: function (xhr) {
                             var response = JSON.parse(xhr.responseText);
                             showAlert(null, response.message, "danger");
-                            isLoading = false;
                         }
                     });
                 }
@@ -512,6 +571,22 @@
                     }
                 });
             });
+
+            // Close button handler
+            // document.getElementById("closeMobileSidebar").addEventListener("click", function () {
+            //     document.getElementById("mobileFilterSidebar").classList.remove("active");
+            // });
+
+            // Close when clicking outside of the sidebar
+            // document.addEventListener("click", function (event) {
+            //     const sidebar = document.getElementById("mobileFilterSidebar");
+            //     const isClickInside = sidebar.contains(event.target);
+
+            //     if (!isClickInside && sidebar.classList.contains("active")) {
+            //         sidebar.classList.remove("active");
+            //     }
+            // });
+          
         });
 
         function toggleMobileFilter() {
@@ -522,6 +597,22 @@
                                  $(".styled-pagination").remove();
                              }
         }
+        document.addEventListener("DOMContentLoaded", function () {
+           
+            // Close when clicking outside of the sidebar
+            document.addEventListener("click", function (event) {
+                const sidebar = document.getElementById("mobileFilterSidebar");
+                const filterButton = document.getElementById("mobileFilterButton");
+
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isFilterButton = filterButton?.contains(event.target);
+
+                if (!isClickInsideSidebar && !isFilterButton && sidebar.classList.contains("active")) {
+                    sidebar.classList.remove("active");
+                }
+            });
+        });
+
          window.addEventListener('resize', () => {
              const sidebarMobile = document.getElementById("mobileFilterSidebar");
              const sidebarPc = document.getElementById("pcFilterSidebar");
