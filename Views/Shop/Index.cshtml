@@ -192,32 +192,31 @@
                         async: true,
                         success: function (result) {
                             $("#popular-products-div").html(result);
-                            $("#popular-product-carousel").owlCarousel({
-                                loop: true,
-                                margin: 20,
-                                nav: false,
-                                dots: false,
-                                autoplay: true,
-                                autoplayTimeout: 4000,
-                                autoplayHoverPause: true,
-                                responsive: {
-                                    0: {
-                                        items: 1
+                            // Wait for DOM to update, then init Swiper
+                            setTimeout(function () {
+                                new Swiper('.popular-products-swiper', {
+                                    slidesPerView: 1,
+                                    spaceBetween: 20,
+                                    loop: true,
+                                    autoplay: {
+                                        delay: 4000,
+                                        disableOnInteraction: false,
                                     },
-                                    576: {
-                                        items: 2
-                                    },
-                                    768: {
-                                        items: 3
-                                    },
-                                    992: {
-                                        items: 4
+                                    breakpoints: {
+                                        576: {
+                                            slidesPerView: 2
+                                        },
+                                        768: {
+                                            slidesPerView: 3
+                                        },
+                                        992: {
+                                            slidesPerView: 4
+                                        }
                                     }
-                                },
-                            });
+                                });
+                            }, 100); // slight delay helps on mobile
                         }
                     });
-
                 }
             }, 100));
             //load extra product
