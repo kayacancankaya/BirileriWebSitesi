@@ -31,6 +31,7 @@
 
 
 <style>
+
         #variant-image .swiper {
             width: 100%;
             max-width: 500px; 
@@ -114,8 +115,30 @@
             justify-content: center;
             align-items: center;
             height: 180px; /* or same as your image height if needed */
+            max-width: 100%;
         }
 
+        .image-column img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .content {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        @@media (max-width: 768px) {
+            .info-column
+
+        {
+            width: 100%; /* Adjust width for smaller screens */
+        }
+
+        }
+
+        .tabs-content {
+            overflow-y: auto; /* Enable vertical scrolling if needed */
+        }
 </style>
 }
 
@@ -255,41 +278,31 @@
             setTimeout(function () {
                     if (currentState === 0) {
                         currentState = 1;
+                        var productCode = $('#product-code').val();
+
+
                         $.ajax({
                             type: "GET",
                             url: "/Shop/_PartialPopularProductsWidget",
                             async: true,
                             success: function (result) {
                                 $("#popular-products-div").html(result);
-            
-                                setTimeout(function () {
-                                    new Swiper('.popular-products-swiper', {
-                                        slidesPerView: 1,
-                                        spaceBetween: 20,
-                                        loop: true,
-                                        autoplay: {
-                                            delay: 4000,
-                                            disableOnInteraction: false,
-                                        },
-                                        breakpoints: {
-                                            576: { slidesPerView: 2 },
-                                            768: { slidesPerView: 3 },
-                                            992: { slidesPerView: 4 }
-                                        }
-                                    });
-                                }, 100); // short wait for DOM render
                             }
                         });
-                        var productCode = $('#product-code').val();
+                         var productCode = $('#product-code').val();
+
                         $.ajax({
                             type: "GET",
                             url: "/Shop/_PartialRelatedProductsWidget",
+                            data: { productCode: productCode },
                             async: true,
                             success: function (result) {
                                 $("#related-products-div").html(result);
-            
-                                setTimeout(function () {
-                                    new Swiper('.related-products-swiper', {
+                                
+                            }
+                        });
+                         setTimeout(function () {
+                                    new Swiper('.products-swiper', {
                                         slidesPerView: 1,
                                         spaceBetween: 20,
                                         loop: true,
@@ -303,11 +316,13 @@
                                             992: { slidesPerView: 4 }
                                         }
                                     });
-                                }, 100); // short wait for DOM render
-                            }
-                        });
-                    }
-                }, 2000); // Load after 2 seconds
+                                }, 300)
+                        
+                     }
+                }, 1000); // Load after 1 seconds
+
+               ;
+           
 
 
             $(".dropdown").removeClass("current");

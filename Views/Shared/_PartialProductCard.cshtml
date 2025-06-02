@@ -31,7 +31,7 @@
                     actualPrice = discountedPrice;
                 }
             }
-
+            decimal totalPrice = actualPrice * item.MinOrder;
             <div class="shop-item col-lg-4 col-md-6 col-sm-12">
                 <div class="inner-box">
                     <div class="image">
@@ -66,6 +66,7 @@
                                 <input type="hidden" class="product-code" value="@item.ProductCode" />
                                 <input type="hidden" class="price" value="@actualPrice" />
                                 <input type="hidden" class="quantity" value="1" />
+                                <input type="hidden" class="total-price" value="@totalPrice" />
                                 <span class="alert-text"></span>
                                 @if (item.Banner == "Stokta")
                                 {

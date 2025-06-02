@@ -1,29 +1,31 @@
 ﻿ 
 @model IEnumerable<Product>
 <!-- Popular Products -->
-<div class="sidebar-widget related-posts" id="partial-popular-product-div">
+<div class="sidebar-widget related-posts" >
     <div class="sidebar-title">
         <h2>Popüler Ürünler</h2>
         <div class="separater"></div>
     </div>
 </div>
 
-<div class="swiper popular-products-swiper" id="popular-product-carousel">
+<div class="swiper products-swiper" id="popular-product-carousel">
     <div class="swiper-wrapper">
         @foreach (var item in Model)
         {
+            string imagePath = item.ProductVariants.FirstOrDefault()?.ImagePath ?? item.ProductCode;
+            string productName = @item.ProductName.Length > 30 ? @item.ProductName.Substring(0, 29) + "..." : @item.ProductName;
             <div class="swiper-slide">
                 <div class="post text-center p-2">
                     <figure class="post-thumb">
                         <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">
-                            <img loading="lazy" src="@Url.Content($"~/images/resource/products/{item.ProductCode}/1.jpg")"
+                            <img loading="lazy" src="@Url.Content($"~/images/resource/products/{imagePath}/1.jpg")"
                                  alt="@item.ProductName"
                                  style="width: 180px; height: 180px; object-fit: cover;" />
                         </a>
                     </figure>
                     <h4>
                         <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">
-                            @item.ProductName
+                            @productName
                         </a>
                     </h4>
                     <div class="rating">

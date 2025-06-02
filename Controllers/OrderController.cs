@@ -28,7 +28,7 @@ namespace BirileriWebSitesi.Controllers
         private readonly IUserAuditService _userAuditService;
         public OrderController(ILogger<CartController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager,
                                 IProductService productService, IBasketService basketService, IOrderService orderService,
-                                IUserAuditService userAuditService)
+                                IUserAuditService userAuditService, IEmailService emailService)
         {
             _logger = logger;
             _context = context;
@@ -37,6 +37,7 @@ namespace BirileriWebSitesi.Controllers
             _basketService = basketService;
             _orderService = orderService;
             _userAuditService = userAuditService;
+            _emailService = emailService;
         }
         [Authorize]
         public async Task<IActionResult> CheckOut()

@@ -320,6 +320,7 @@ namespace BirileriWebSitesi.Controllers
                 IEnumerable<Product> popularProducts = await _context.Products
                                                       .Where(p => p.IsActive)
                                                       .OrderByDescending(p => p.Popularity)
+                                                      .Include(p => p.ProductVariants)
                                                       .Take(6)
                                                       .ToListAsync();
                
@@ -346,6 +347,7 @@ namespace BirileriWebSitesi.Controllers
 
                 relatedProducts = await _context.Products
                                         .Where(p => relatedProductCodes.Contains(p.ProductCode))
+                                        .Include(p=>p.ProductVariants)
                                         .Take(6)
                                         .ToListAsync();
 
