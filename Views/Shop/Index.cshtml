@@ -147,13 +147,42 @@
 @section AdditionalScripts {
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
-
+ 
     <script>
         $(document).ready(function () {
-            currentState = 0;
+            var currentState = 0;
             $('#currentState').val("0");
+
+                setTimeout(function () {
+                    if (currentState === 0) {
+                        currentState = 1;
+                        $.ajax({
+                            type: "GET",
+                            url: "/Shop/_PartialPopularProductsWidget",
+                            success: function (result) {
+                                $("#popular-products-div").html(result);
+            
+                                setTimeout(function () {
+                                    new Swiper('.popular-products-swiper', {
+                                        slidesPerView: 1,
+                                        spaceBetween: 20,
+                                        loop: true,
+                                        autoplay: {
+                                            delay: 4000,
+                                            disableOnInteraction: false,
+                                        },
+                                        breakpoints: {
+                                            576: { slidesPerView: 2 },
+                                            768: { slidesPerView: 3 },
+                                            992: { slidesPerView: 4 }
+                                        }
+                                    });
+                                }, 100); // short wait for DOM render
+                            }
+                        });
+                    }
+                }, 2000); // Load after 2 seconds
+
             lastWidth = window.innerWidth;
             if (window.innerWidth >= 992)
             {
@@ -170,55 +199,7 @@
             //initialize nav active line
             $(".dropdown").removeClass("current");
             $(".shop").addClass("current");
-            //load extra content
-            function debounce(func, wait) {
-                let timeout;
-                return function () {
-                    const context = this, args = arguments;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(context, args), wait);
-                };
-            }
-            $(window).scroll(debounce(function () {
-                var currentHeight = $(window).scrollTop();
-                currentState = parseInt($('#currentState').val());
-
-                if (currentHeight >= 100 && currentState === 0) {
-                    currentState = 1;
-                    $('#currentState').val(currentState);
-                    $.ajax({
-                        type: "GET",
-                        url: "/Shop/_PartialPopularProductsWidget",
-                        async: true,
-                        success: function (result) {
-                            $("#popular-products-div").html(result);
-                            // Wait for DOM to update, then init Swiper
-                            setTimeout(function () {
-                                new Swiper('.popular-products-swiper', {
-                                    slidesPerView: 1,
-                                    spaceBetween: 20,
-                                    loop: true,
-                                    autoplay: {
-                                        delay: 4000,
-                                        disableOnInteraction: false,
-                                    },
-                                    breakpoints: {
-                                        576: {
-                                            slidesPerView: 2
-                                        },
-                                        768: {
-                                            slidesPerView: 3
-                                        },
-                                        992: {
-                                            slidesPerView: 4
-                                        }
-                                    }
-                                });
-                            }, 100); // slight delay helps on mobile
-                        }
-                    });
-                }
-            }, 100));
+           
             //load extra product
             let isLoading = false;
             $(window).on("scroll", function () {
@@ -674,41 +655,7 @@
                  $(".styled-pagination").remove();
                  $("#pagination-list").css("display","none");
              }
-               if (Math.abs(lastWidth - window.innerWidth) > 200) {
-                   lastWidth = window.innerWidth;
-                    $.ajax({
-                        type: "GET",
-                        url: "/Shop/_PartialPopularProductsWidget",
-                        async: true,
-                        success: function (result) {
-                            $("#popular-products-div").html(result);
-                            $("#popular-product-carousel").owlCarousel({
-                                loop: true,
-                                margin: 20,
-                                nav: false,
-                                dots: false,
-                                autoplay: true,
-                                autoplayTimeout: 4000,
-                                autoplayHoverPause: true,
-                                responsive: {
-                                    0: {
-                                        items: 1
-                                    },
-                                    576: {
-                                        items: 2
-                                    },
-                                    768: {
-                                        items: 3
-                                    },
-                                    992: {
-                                        items: 4
-                                    }
-                                },
-                            });
-                        }
-                    });
-
-                }
+               
          });
                  function renderPagination(currentPage, totalPages) {
             let html = `<div class="row clearfix"> <ul class="styled-pagination text-center" id="pagination-list">`;
