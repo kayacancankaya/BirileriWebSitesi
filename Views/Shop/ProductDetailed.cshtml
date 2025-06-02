@@ -485,9 +485,9 @@
             $(document).on("click", ".add-to-cart", function () {
                 var userId = $(this).closest('.clearfix').find('.user-id').val();
                 var productCode = $('#variant-code').val();
-                var price = $('#variant-price').text();
-                var quantity = "1";
-
+                int quantity = 1;
+                var price = parseFloat($('#variant-price').text());
+               
                 var button = $(this);
                 $.ajax({
                     type: "POST",
@@ -524,8 +524,8 @@
             $(document).on("click", ".add-to-inquiry", function () {
                 var userId = $(this).closest('.clearfix').find('.user-id').val();
                 var productCode = $('#variant-code').val();
-                var price = $('#variant-price').text();
-                var quantity = "1";
+                var price = parseFloat($('#variant-price').text());
+                int quantity = 1;
 
                 var button = $(this);
                 $.ajax({
