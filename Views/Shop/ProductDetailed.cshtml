@@ -188,9 +188,17 @@
                                 
                                 <div class="other-options clearfix">
                                     @* <div class="item-quantity"><input class="quantity-spinner" type="text" value="1" name="quantity"></div> *@
-                                    <input type="hidden" class="user-id" value="@userId" />
-                                    <span class="alert-text"></span>
-                                    <button type="button" class="theme-btn btn-style-one add-to-cart" style="margin-top:20px;">Sepete Ekle</button>
+                                    @if (item.ProductVariantInfo.Quantity > 0)
+                                    {
+                                        <span class="alert-text"></span>
+                                        <button type="button" class="theme-btn btn-style-one add-to-cart" style="margin-top:20px;">Sepete Ekle</button>
+                                    }
+                                    else
+                                    {
+                                        <span class="alert-text"></span>
+                                        <button type="button" class="theme-btn btn-style-one add-to-inquiry" style="margin-top:20px;background-color:#08c9c6;">Talep Oluştur</button>
+                                    }
+                                    
                                 </div>
                             </div>
                         </div>
@@ -231,7 +239,9 @@
         </div>
     </div>
 </div>
-<input type="hidden" name="cırrentState" value="0" />
+<input type="hidden" id="currentState" value="0" />
+<input type="hidden" class="user-id" value="@userId" />
+<input type="hidden" id="quantity" value="@model.ProductVariantInfo.Quantity" />
 @section FancyBox {
     <script src="~/js/jquery.fancybox.min.js" defer></script>
 }
