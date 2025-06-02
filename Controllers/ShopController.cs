@@ -139,6 +139,7 @@ namespace BirileriWebSitesi.Controllers
                 Product? product;
                 bool isBaseProduct = false;
                 int counter = 0;
+                int quantity = 0;
                 string? initialVariantName = string.Empty;
                 decimal variantPrice = decimal.Zero;
                 string? selectedVariantAttribute = string.Empty;
@@ -159,6 +160,10 @@ namespace BirileriWebSitesi.Controllers
                     variantPrice = await _context.ProductVariants.Where(c => c.ProductCode == productCode)
                                                                     .Select(p => p.Price)
                                                                     .FirstOrDefaultAsync();
+                                                
+                    quantity = await _context.ProductVariants.Where(c => c.ProductCode == productCode)
+                                                                    .Select(q => q.Quantity)
+                                                                    .FirstOrDefaultAsync();
                     if (productCode.EndsWith("B"))
                         selectedVariantAttribute = productCode.Substring(11, productCode.Length - 12);
                     else
@@ -172,6 +177,7 @@ namespace BirileriWebSitesi.Controllers
                                                         .FirstOrDefaultAsync();
                     isBaseProduct = true;
                     variantPrice = product.ProductVariants.FirstOrDefault().Price;
+                    quantity = product.ProductVariants.FirstOrDefault().Quantity;
                 }
 
                 if (product == null)
@@ -233,6 +239,7 @@ namespace BirileriWebSitesi.Controllers
                 initialVariantInfo.VariantCode = productVariant;
                 initialVariantInfo.VariantName =  initialVariantName;
                 initialVariantInfo.VariantPrice = variantPrice;
+                initialVariantInfo.Quantity = quantity;
                 initialVariantInfo.SelectedVariantAttribute = selectedVariantAttribute;
                 //get image path of variant to display initializing page
                 ProductDetailedVariantImageViewModel initialVariantImage = new();
@@ -244,7 +251,6 @@ namespace BirileriWebSitesi.Controllers
                 {
                     basePath = _configuration["BasePath"];
                 }
-
 
                 string? imagePath = await _context.ProductVariants.Where(p => p.ProductCode == productVariant)
                                                                     .Select(i => i.ImagePath)
@@ -270,27 +276,11 @@ namespace BirileriWebSitesi.Controllers
                 initialVariantImage.FilePaths = imagePaths;
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
-                //get related products
-                List<string> relatedProductCodes = await _context.RelatedProducts.Where(c => c.ProductCode == productCode)
-                                                                                 .Select(r => r.RelatedProductCode)
-                                                                                 .ToListAsync();
-                List<Product> relatedProducts = new List<Product>();
-
-                relatedProducts = await _context.Products
-                                        .Where(p => relatedProductCodes.Contains(p.ProductCode))
-                                        .ToListAsync();
-
-                IEnumerable<Product> popularProducts = await _context.Products.Where(a => a.IsActive == true)
-                                                                        .OrderByDescending(p => p.Popularity)
-                                                                        .Take(3)
-                                                                        .ToListAsync();
 
                 ProductDetailedViewModel model = new();
                 model.Product = product;
                 model.GlobalVariants = globalVariants;
                 model.VariantAttributes = variantAttributes;
-                model.RelatedProducts = relatedProducts;
-                model.PopularProducts = popularProducts;
                 model.ProductVariantInfo = initialVariantInfo;
                 model.ProductVariantImage = initialVariantImage;
                 return View(model);
