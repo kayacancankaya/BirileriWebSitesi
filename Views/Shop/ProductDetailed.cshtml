@@ -258,6 +258,7 @@
                         $.ajax({
                             type: "GET",
                             url: "/Shop/_PartialPopularProductsWidget",
+                            async: true,
                             success: function (result) {
                                 $("#popular-products-div").html(result);
             
@@ -283,6 +284,7 @@
                         $.ajax({
                             type: "GET",
                             url: "/Shop/_PartialRelatedProductsWidget",
+                            async: true,
                             success: function (result) {
                                 $("#related-products-div").html(result);
             
