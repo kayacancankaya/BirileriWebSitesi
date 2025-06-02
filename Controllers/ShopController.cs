@@ -451,7 +451,7 @@ namespace BirileriWebSitesi.Controllers
                                                                      .Select(p => p.Price)
                                                                      .FirstOrDefaultAsync();
                                                                      
-                decimal quantity = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
+                int quantity = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
                                                                      .Select(q => q.Quantity)
                                                                      .FirstOrDefaultAsync();
 
