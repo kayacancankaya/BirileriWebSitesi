@@ -127,6 +127,7 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+                _logger.LogWarning("user:{userId},{productCode},{price},{quantity}");
                 if (price * quantity > 100000)
                     return Ok(new { success = false, message = "Sepet Miktarı 100.000₺'den Büyük Olamaz." });
                 
@@ -178,8 +179,9 @@ namespace BirileriWebSitesi.Controllers
 
                 return Ok(new { success = true, message = "Ürün Sepete Eklendi", TotalProduct = totalProduct });
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex,ex.Message.ToString());
                 return Ok(new { success = false, message = "Ürün Sepete Eklenirken Hata ile Karşılaşıldı." });
 
             }
