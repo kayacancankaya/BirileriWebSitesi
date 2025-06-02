@@ -61,15 +61,26 @@
 
                         <div class="clearfix">
                             <div class="pull-left">
-                                
-                                    <input type="hidden" class="user-id" value="@userId" />
+
+                                <input type="hidden" class="user-id" value="@userId" />
                                 <input type="hidden" class="product-code" value="@item.ProductCode" />
-                                    <input type="hidden" class="price" value="@actualPrice" />
-                                    <input type="hidden" class="quantity" value="@item.MinOrder" />
-                                    <span class="alert-text"></span>
+                                <input type="hidden" class="price" value="@actualPrice" />
+                                <input type="hidden" class="quantity" value="@item.MinOrder" />
+                                <span class="alert-text"></span>
+                                @if (item.Banner == "Stokta")
+                                {
+
                                     <a class="add-cart add-to-cart" style="background-color:transparent">
                                         <span class="fa fa-cart-plus"></span>Sepete Ekle
                                     </a>
+
+                                }
+                                else
+                                {
+                                    <a class="add-cart add-to-inquiry" style="background-color:transparent">
+                                        <span class="fa fa-envelope"></span>Talep Oluştur
+                                    </a>                                
+                                }
                             </div>
                             <div class="pull-right">
                                 <!--Rating-->

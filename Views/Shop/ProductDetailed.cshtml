@@ -510,6 +510,45 @@
                     }
                 });
             });
+
+            $(document).on("click", ".add-to-inquiry", function () {
+                var userId = $(this).closest('.clearfix').find('.user-id').val();
+                var productCode = $('#variant-code').val();
+                var price = $('#variant-price').text();
+                var quantity = 1;
+
+                var button = $(this);
+                $.ajax({
+                    type: "POST",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    async: true,
+                    url: "/Cart/AddToInquiry",
+                    data: {
+                        userId: userId,
+                        productCode: productCode,
+                        price: price,
+                        quantity: quantity
+                    },
+                    success: function (response) {
+                        if(response.success)
+                        {
+                               showAlert(button, response.message, "success");
+                                let currentItem = response.totalProduct;
+                                $(".inquiry .inquiry-count").text(currentItem);
+                        }
+                         else{
+                            showAlert(button, response.message, "error");
+                            let currentItem = response.totalProduct;
+                            $(".inquiry .inquiry-count").text(currentItem);
+                        }
+                    },
+                    error: function (xhr) {
+                        var response = JSON.parse(xhr.responseText);
+
+                        showAlert(button, response.message, "danger");
+                    }
+                });
+            });
         });
          window.addEventListener('resize', () => {
           

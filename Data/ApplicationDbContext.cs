@@ -1,5 +1,6 @@
 ﻿using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.BasketAggregate;
+using BirileriWebSitesi.Models.InquiryAggregate;
 using BirileriWebSitesi.Models.OrderAggregate;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,9 @@ namespace BirileriWebSitesi.Data
         public DbSet<VariantAttribute> VariantAttributes { get; set; }
         public DbSet<Bundle> Bundles { get; set; }
         public DbSet<Basket> Baskets { get; set; }
+        public DbSet<Inquiry> Inquiries { get; set; }
         public DbSet<BasketItem> BasketItems { get; set; }
+        public DbSet<InquiryItem> InquiryItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Address> Addresses { get; set; }
@@ -48,6 +51,10 @@ namespace BirileriWebSitesi.Data
             modelBuilder.Entity<Basket>()
                          .HasKey(c => c.BuyerId);
             modelBuilder.Entity<BasketItem>()
+                        .HasKey(bi => new { bi.ProductCode, bi.BuyerID });
+            modelBuilder.Entity<Inquiry>()
+                         .HasKey(c => c.BuyerId);
+            modelBuilder.Entity<InquiryItem>()
                         .HasKey(bi => new { bi.ProductCode, bi.BuyerID });
             modelBuilder.Entity<Order>()
                          .HasKey(c => c.Id); 
@@ -99,6 +106,11 @@ namespace BirileriWebSitesi.Data
                      .WithMany(p => p.BasketItems)          
                      .HasForeignKey(p => p.ProductCode)
                      .HasPrincipalKey(p => p.ProductCode);
+            modelBuilder.Entity<InquiryItem>()
+                     .HasOne(p => p.ProductVariant)           
+                     .WithMany(p => p.InquiryItems)          
+                     .HasForeignKey(p => p.ProductCode)
+                     .HasPrincipalKey(p => p.ProductCode);
             modelBuilder.Entity<OrderItem>()
                      .HasOne(p => p.ProductVariant)
                      .WithMany(p => p.OrderItems)
@@ -139,6 +151,12 @@ namespace BirileriWebSitesi.Data
 
             modelBuilder.Entity<BasketItem>()
                 .HasOne(b => b.Basket)
+                .WithMany(bi => bi.Items)
+                .HasForeignKey(bi => bi.BuyerID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<InquiryItem>()
+                .HasOne(b => b.Inquiry)
                 .WithMany(bi => bi.Items)
                 .HasForeignKey(bi => bi.BuyerID)
                 .OnDelete(DeleteBehavior.Cascade);

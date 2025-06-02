@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Helpers;
 using BirileriWebSitesi.Models.OrderAggregate;
+using BirileriWebSitesi.Models.InquiryAggregate;
 
 namespace BirileriWebSitesi.Controllers
 {
@@ -317,6 +318,46 @@ namespace BirileriWebSitesi.Controllers
             {
                 _logger.LogError(ex, ex.Message.ToString());
                 return StatusCode(500, new { success = false, message = ex.Message.ToString() });
+            }
+        }
+
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CheckOutInquiry()
+        {
+            try
+            {
+
+                string? userID = string.Empty;
+                string? email = string.Empty;
+                if (User.Identity.IsAuthenticated)
+                {
+                    userID = _userManager.GetUserId(User);
+                    IdentityUser user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
+                    email = await _userManager.GetEmailAsync(user);
+                }
+                else
+                    return Ok(new { success = false, message = "Kullanıcı Bulunamadı." });
+                
+                Inquiry inquiry = await _basketService.GetInquiryBasketAsync(userID);
+                
+                bool result = await _emailService.SendInquiryEmailAsync(email, inquiry);
+                if(result)
+                {
+                    TempData["SuccessMessage"] = "Talebiniz Alındı. En kısa sürede sizinle iletişime geçilecektir.";
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    TempData["DangerMessage"] = "Talebiniz Alınırken Hata ile Karşılaşıldı. Lütfen daha sonra tekrar deneyiniz.";
+                    return RedirectToAction("Inquiry", "Cart");
+                }
+            }
+            catch
+            {
+                return Ok(new { success = false, message = "İstek Gönderilirken Hata ile Karşılaşıldı." });
+
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using BirileriWebSitesi.Models.BasketAggregate;
+using BirileriWebSitesi.Models.InquiryAggregate;
 using BirileriWebSitesi.Models.OrderAggregate;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,6 +35,7 @@ namespace BirileriWebSitesi.Models
 
         public virtual Product Product { get; set; } = new();
         public ICollection<BasketItem> BasketItems { get; set; } = new List<BasketItem>();
+        public ICollection<InquiryItem> InquiryItems { get; set; } = new List<InquiryItem>();
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<Discount> Discounts { get; set; } = new List<Discount>();
     }

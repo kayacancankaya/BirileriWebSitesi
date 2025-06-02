@@ -2,10 +2,9 @@
 using MailKit.Security;
 using MimeKit;
 using BirileriWebSitesi.Interfaces;
-using Azure.Core;
-using Humanizer;
 using BirileriWebSitesi.Models.OrderAggregate;
 using System.Text;
+using BirileriWebSitesi.Models.InquiryAggregate;
 
 namespace BirileriWebSitesi.Services
 {
@@ -320,10 +319,62 @@ namespace BirileriWebSitesi.Services
 
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Sipariş e-postası gönderilirken hata oluştu: {Message}", ex.Message);
                 return false;
 
+            }
+        }
+        public async Task<bool> SendInquiryEmailAsync(string email, Inquiry inquiry)
+        {
+            try
+            {
+
+                var mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
+                mimeMessage.To.Add(MailboxAddress.Parse(_configuration["SMTP:InfoAddress"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
+                mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
+
+                mimeMessage.Subject = $"Toptan Talep";
+
+                // Build HTML content
+                var sb = new StringBuilder();
+                sb.AppendLine("<h3>İstek Bilgileri:</h3><ul>");
+
+                sb.AppendLine($"Mail Adresi: {email}<br>");
+
+                foreach (var item in inquiry.Items)
+                {
+                    sb.AppendLine($"<li>{item.ProductName} - {item.Quantity} x {item.UnitPrice:C}</li>");
+                }
+
+
+                mimeMessage.Body = new TextPart("html")
+                {
+                    Text = sb.ToString()
+                };
+                sb.AppendLine("</ul>");
+
+                using var smtp = new SmtpClient
+                {
+                    Timeout = 10000 // Timeout in milliseconds (10 seconds)
+                };
+
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.SendAsync(mimeMessage);
+                await smtp.DisconnectAsync(true);
+
+                return true;
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Toptan İstek e-postası gönderilirken hata oluştu: {Message}", ex.Message);
+                throw;
             }
         }
     }
