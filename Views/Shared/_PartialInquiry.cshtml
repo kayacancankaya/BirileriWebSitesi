@@ -72,10 +72,7 @@
                 <ul class="totals-table">
                     <li class="clearfix total"><span class="col">Toplam</span><span class="col ">@Model.TotalAmount ₺</span></li>
                     <li class="text-right">
-                        <form asp-controller="Order" asp-action="CheckOutInquiry" method="post" style="display:inline;">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="theme-btn proceed-btn" style="cursor:pointer;">İstek Gönder</button>
-                        </form>
+                        <a type="submit" class="theme-btn proceed-btn" id="check-out-inquiry" style="cursor:pointer;">İstek Gönder</a>
                     </li>
                 </ul>
             </div>
