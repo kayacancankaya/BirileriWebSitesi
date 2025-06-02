@@ -157,6 +157,7 @@
                         $.ajax({
                             type: "GET",
                             url: "/Shop/_PartialPopularProductsWidget",
+                            async: true,
                             success: function (result) {
                                 $("#popular-products-div").html(result);
             
