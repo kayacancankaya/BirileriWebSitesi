@@ -450,12 +450,16 @@ namespace BirileriWebSitesi.Controllers
                 decimal variantPrice = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
                                                                      .Select(p => p.Price)
                                                                      .FirstOrDefaultAsync();
+                                                                     
+                decimal quantity = await _context.ProductVariants.Where(v => v.ProductCode == variantCode)
+                                                                     .Select(q => q.Quantity)
+                                                                     .FirstOrDefaultAsync();
 
                 ProductDetailedVariantInfoViewModel infoModel = new();
                 infoModel.VariantCode = variantCode;
                 infoModel.VariantName = variantName;
                 infoModel.VariantPrice = variantPrice;
-
+                infoModel.Quantity = quantity;
 
                 var imagePartial = await RenderPartialViewToStringAsync("_PartialProductVariantImage", imageModel);
                 var infoPartial = await RenderPartialViewToStringAsync("_PartialProductVariantInfo", infoModel);
