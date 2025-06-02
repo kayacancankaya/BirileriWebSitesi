@@ -354,10 +354,10 @@ namespace BirileriWebSitesi.Controllers
                     return RedirectToAction("Inquiry", "Cart");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message.ToString());
                 return Ok(new { success = false, message = "İstek Gönderilirken Hata ile Karşılaşıldı." });
-
             }
         }
     }
