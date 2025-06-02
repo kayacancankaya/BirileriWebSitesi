@@ -256,32 +256,66 @@
 
             var currentState = parseInt($('#currentState').val());
             lastWidth = window.innerWidth;
+
+            setTimeout(function () {
+                    if (currentState === 0) {
+                        currentState = 1;
+                        $.ajax({
+                            type: "GET",
+                            url: "/Shop/_PartialPopularProductsWidget",
+                            success: function (result) {
+                                $("#popular-products-div").html(result);
             
+                                setTimeout(function () {
+                                    new Swiper('.popular-products-swiper', {
+                                        slidesPerView: 1,
+                                        spaceBetween: 20,
+                                        loop: true,
+                                        autoplay: {
+                                            delay: 4000,
+                                            disableOnInteraction: false,
+                                        },
+                                        breakpoints: {
+                                            576: { slidesPerView: 2 },
+                                            768: { slidesPerView: 3 },
+                                            992: { slidesPerView: 4 }
+                                        }
+                                    });
+                                }, 100); // short wait for DOM render
+                            }
+                        });
+                        var productCode = $('#product-code').val();
+                        $.ajax({
+                            type: "GET",
+                            url: "/Shop/_PartialRelatedProductsWidget",
+                            success: function (result) {
+                                $("#related-products-div").html(result);
+            
+                                setTimeout(function () {
+                                    new Swiper('.related-products-swiper', {
+                                        slidesPerView: 1,
+                                        spaceBetween: 20,
+                                        loop: true,
+                                        autoplay: {
+                                            delay: 4000,
+                                            disableOnInteraction: false,
+                                        },
+                                        breakpoints: {
+                                            576: { slidesPerView: 2 },
+                                            768: { slidesPerView: 3 },
+                                            992: { slidesPerView: 4 }
+                                        }
+                                    });
+                                }, 100); // short wait for DOM render
+                            }
+                        });
+                    }
+                }, 2000); // Load after 2 seconds
+
+
             $(".dropdown").removeClass("current");
             $(".shop").addClass("current");
-            $("#popular-product-carousel").owlCarousel({
-                                loop: true,
-                                margin: 20,
-                                nav: false,
-                                dots: false,
-                                autoplay: true,
-                                autoplayTimeout: 4000,
-                                autoplayHoverPause: true,
-                                responsive: {
-                                    0: {
-                                        items: 1
-                                    },
-                                    576: {
-                                        items: 2
-                                    },
-                                    768: {
-                                        items: 3
-                                    },
-                                    992: {
-                                        items: 4
-                                    }
-                                },
-                            });
+           
             if ($('.quantity-spinner').length) {
                 $(".quantity-spinner").TouchSpin({
                     min: 1,
@@ -332,93 +366,7 @@
                     data: { baseProductCode: baseProductCode },
                     
                 });
-            //load more content
-            function debounce(func, wait) {
-                let timeout;
-                return function () {
-                    const context = this, args = arguments;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(context, args), wait);
-                };
-            }
-            $(window).scroll(debounce(function () {
-                
-                var currentHeight = $(window).scrollTop();
-                if (currentHeight >= 100 && currentState === 0) {
-                    currentState = 1;
-                    $('#currentState').val(currentState);
-                    $.ajax({
-                        type: "GET",
-                        url: "/Shop/_PartialPopularProductsWidget",
-                        async: true,
-                        processData: true,
-                        cache: true,
-                        success: function (result) {
-                            $("#popular-products-div").html(result);
-                            $("#popular-product-carousel").owlCarousel({
-                                loop: true,
-                                margin: 20,
-                                nav: false,
-                                dots: false,
-                                autoplay: true,
-                                autoplayTimeout: 4000,
-                                autoplayHoverPause: true,
-                                responsive: {
-                                    0: {
-                                        items: 1
-                                    },
-                                    576: {
-                                        items: 2
-                                    },
-                                    768: {
-                                        items: 3
-                                    },
-                                    992: {
-                                        items: 4
-                                    }
-                                },
-                            });
-                        }
-                    });
-
-                    var productCode = $('#product-code').val();
-                    $.ajax({
-                        type: "GET",
-                        url: "/Shop/_PartialRelatedProductsWidget",
-                        async: true,
-                        processData: true,
-                        cache: true,
-                        data: {productCode : productCode},
-                        success: function (result) {
-                            $("#related-products-div").html(result);
-                            $("#related-product-carousel").owlCarousel({
-                                loop: true,
-                                margin: 20,
-                                nav: false,
-                                dots: false,
-                                autoplay: true,
-                                autoplayTimeout: 4000,
-                                autoplayHoverPause: true,
-                                responsive: {
-                                    0: {
-                                        items: 1
-                                    },
-                                    576: {
-                                        items: 2
-                                    },
-                                    768: {
-                                        items: 3
-                                    },
-                                    992: {
-                                        items: 4
-                                    }
-                                },
-                            });
-                        }
-                    });
-
-                }
-            }, 100));
+            
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();
                 // Remove active class from siblings and add it to the clicked button
@@ -560,73 +508,6 @@
                 });
             });
         });
-         window.addEventListener('resize', () => {
-          
-                if (Math.abs(lastWidth - window.innerWidth) > 200) {
-                    lastWidth = window.innerWidth;
-                     $.ajax({
-                         type: "GET",
-                         url: "/Shop/_PartialPopularProductsWidget",
-                         async: true,
-                         success: function (result) {
-                             $("#popular-products-div").html(result);
-                             $("#popular-product-carousel").owlCarousel({
-                                 loop: true,
-                                 margin: 20,
-                                 nav: false,
-                                 dots: false,
-                                 autoplay: true,
-                                 autoplayTimeout: 4000,
-                                 autoplayHoverPause: true,
-                                 responsive: {
-                                     0: {
-                                         items: 1
-                                     },
-                                     576: {
-                                         items: 2
-                                     },
-                                     768: {
-                                         items: 3
-                                     },
-                                     992: {
-                                         items: 4
-                                     }
-                                 },
-                             });
-                         }
-                     });
-                     $.ajax({
-                         type: "GET",
-                         url: "/Shop/_PartialRelatedProductsWidget",
-                         async: true,
-                         success: function (result) {
-                             $("#related-products-div").html(result);
-                             $("#related-product-carousel").owlCarousel({
-                                 loop: true,
-                                 margin: 20,
-                                 nav: false,
-                                 dots: false,
-                                 autoplay: true,
-                                 autoplayTimeout: 4000,
-                                 autoplayHoverPause: true,
-                                 responsive: {
-                                     0: {
-                                         items: 1
-                                     },
-                                     576: {
-                                         items: 2
-                                     },
-                                     768: {
-                                         items: 3
-                                     },
-                                     992: {
-                                         items: 4
-                                     }
-                                 },
-                             });
-                         }
-                     });
-                 }
-          });
+        
     </script>
 }
