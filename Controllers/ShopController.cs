@@ -239,7 +239,7 @@ namespace BirileriWebSitesi.Controllers
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
                
                 string? basePath = Environment.GetEnvironmentVariable("BasePath");
-                _logger.LogWarning("BasePath: " + basePath);
+                
                 if (string.IsNullOrEmpty(basePath))
                 {
                     basePath = _configuration["BasePath"];
@@ -254,23 +254,19 @@ namespace BirileriWebSitesi.Controllers
                 string folderUrlPath = $"/images/resource/products/{imagePath}/";
                 List<string> imagePaths = new List<string>();
             
-                    if (Directory.Exists(folderPath))
-                    {
-                        _logger.LogWarning("Directory exists: " + folderPath);
-                        var files = Directory.GetFiles(folderPath)
+                if (Directory.Exists(folderPath))
+                {
+                    _logger.LogWarning("Directory exists: " + folderPath);
+                    var files = Directory.GetFiles(folderPath)
                                 .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || 
                                             f.EndsWith(".png") || f.EndsWith(".avif"))
                                 .OrderBy(f => f) // optional: sort by name
                                 .ToList();
             
-                            imagePaths = files.Select(f =>
-                                folderUrlPath + Path.GetFileName(f)).ToList();
-                    }
-                else
-                {
-                    _logger.LogWarning("Directory does not exist: " + folderPath);
+                    imagePaths = files.Select(f =>
+                    folderUrlPath + Path.GetFileName(f)).ToList();
                 }
-
+               
                 initialVariantImage.FilePaths = imagePaths;
                 initialVariantImage.ProductVariantName = string.Format("{0},{1}", product.ProductName, initialVariantName);
 
