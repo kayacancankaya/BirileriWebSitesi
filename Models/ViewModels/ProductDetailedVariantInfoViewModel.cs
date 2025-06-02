@@ -6,6 +6,6 @@
         public string VariantCode { get; set; } = string.Empty;
         public decimal VariantPrice { get; set; } = decimal.Zero;
         public string SelectedVariantAttribute { get; set; } = string.Empty;
-
+        public int Quantity { get; set; } = 0;
     }
 }
