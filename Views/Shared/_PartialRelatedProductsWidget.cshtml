@@ -5,19 +5,23 @@
         <h2>İlgili Ürünler</h2>
         <div class="separater"></div>
     </div>
-    <div class="owl-carousel " id="related-product-carousel">
-        @foreach (Product item in Model)
+    <div class="swiper popular-products-swiper" id="related-product-carousel">
+    <div class="swiper-wrapper">
+        @foreach (var item in Model)
         {
-            <div class="item">
+            <div class="swiper-slide">
                 <div class="post text-center p-2">
                     <figure class="post-thumb">
                         <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">
-                            <img loading="lazy" src="@Url.Content(string.Format("~/images/resource/products/{0}/1.jpg", item.ProductCode))" alt="@item.ProductName"
+                            <img loading="lazy" src="@Url.Content($"~/images/resource/products/{item.ProductCode}/1.jpg")"
+                                 alt="@item.ProductName"
                                  style="width: 180px; height: 180px; object-fit: cover;" />
                         </a>
                     </figure>
                     <h4>
-                        <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">@item.ProductName</a>
+                        <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">
+                            @item.ProductName
+                        </a>
                     </h4>
                     <div class="rating">
                         <span class="fa fa-star"></span><span class="fa fa-star"></span>
@@ -29,6 +33,5 @@
             </div>
         }
     </div>
-
-
 </div>
+
