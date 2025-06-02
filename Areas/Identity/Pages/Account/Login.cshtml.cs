@@ -160,10 +160,16 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     string cart = Request.Cookies["MyCart"];
                     if (!string.IsNullOrEmpty(cart))
                     {
-                        // await _basketService.TransferBasketAsync(cart, user.Id);
+                        await _basketService.TransferBasketAsync(cart, user.Id);
                         HttpContext.Response.Cookies.Delete("MyCart");
                     }
                    
+                    string inquiry = Request.Cookies["MyInquiry"];
+                    if (!string.IsNullOrEmpty(inquiry))
+                    {
+                        await _basketService.TransferInquiryBasketAsync(inquiry, user.Id);
+                        HttpContext.Response.Cookies.Delete("MyInquiry");
+                    }
                     return RedirectToPage("/Manage/Index");
 
                 }
