@@ -364,21 +364,7 @@ max-height:300px;
                     $("#prod-details-div").css('display','none');
                 }
             });
-            // Swipe pics
-            const swiper = new Swiper('.swiper-single-product', {
-               loop: true,
-               lazy: true,
-               speed: 400,
-               spaceBetween: 100,
-               navigation: {
-                   nextEl: '.swiper-button-next',
-                   prevEl: '.swiper-button-prev',
-               },
-               pagination: {
-                   el: '.swiper-pagination',
-                   clickable: true,
-               },
-            });
+           
             
             var baseProductCode = $("#product-code").val();
             //increase popularity
@@ -425,7 +411,7 @@ max-height:300px;
                         $("#variant-info").html(response.infoPartial);
 
                         // Swipe pics
-                        const swiper = new Swiper('.widget-swiper', {
+                        const swiper = new Swiper('.swiper', {
                            loop: true,
                            lazy: true,
                            speed: 400,
