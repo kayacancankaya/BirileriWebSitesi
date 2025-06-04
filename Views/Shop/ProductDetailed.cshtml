@@ -129,6 +129,9 @@
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
+        .tabs-content {
+            overflow-y: auto; /* Enable vertical scrolling if needed */
+        }
         @@media (max-width: 768px) {
             .info-column
 
@@ -140,11 +143,20 @@
             width: 100%;
         }
 
+         .basic-details .row {
+                flex-direction: column;
+            }
+        
+            .product-info-tabs {
+                padding: 10px;
+                margin: 0 !important;
+            }
+        
+            .content {
+                overflow-wrap: break-word;
+            }
         }
 
-        .tabs-content {
-            overflow-y: auto; /* Enable vertical scrolling if needed */
-        }
 </style>
 }
 
@@ -231,7 +243,7 @@
                     </div>
                     <!--Basic Details ends-->
                     <!--Product Info Tabs-->
-                    <div class="product-info-tabs clearfix ml-3">
+                    <div class="product-info-tabs clearfix px-3">
                         <!--Product Tabs-->
                         <div class="prod-tabs tabs-box">
 
