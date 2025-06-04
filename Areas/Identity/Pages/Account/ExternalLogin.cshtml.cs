@@ -118,13 +118,13 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             if (remoteError != null)
             {
                 ErrorMessage = $"Dış Kaynakta Hata İle Karşılaşıldı: {remoteError}";
-                return RedirectToPage("/Identity/Account/Login", new { ReturnUrl = returnUrl });
+                return Redirect("/Identity/Account/Login", new { ReturnUrl = returnUrl });
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 ErrorMessage = "Dış Kaynaktan Oturum Açma Hatası Alındı.";
-                return RedirectToPage("/Identity/Account/Login", new { ReturnUrl = returnUrl });
+                return Redirect("/Identity/Account/Login", new { ReturnUrl = returnUrl });
             }
             
             // Sign in the user with this external login provider if the user already has a login.
@@ -160,11 +160,11 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     HttpContext.Response.Cookies.Delete("MyInquiry");
                 }
               
-                  return RedirectToPage("/Identity/Account/Manage");
+                  return Redirect("/Identity/Account/Manage");
             }
             if (result.IsLockedOut)
             {
-                 return RedirectToPage("/Identity/Account/Lockout");
+                 return Redirect("/Identity/Account/Lockout");
             }
             else
             {
@@ -238,7 +238,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
                         }
             
-                        return LocalRedirect("./Manage/Index");
+                        return Redirect("/Identity/Account/Manage/Index");
                     }
                 }
                 foreach (var error in result.Errors)
