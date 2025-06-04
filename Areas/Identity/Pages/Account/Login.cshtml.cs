@@ -170,7 +170,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         await _basketService.TransferInquiryBasketAsync(inquiry, user.Id);
                         HttpContext.Response.Cookies.Delete("MyInquiry");
                     }
-                    return RedirectToPage("./Manage/Index");
+                    return RedirectToPage("/Identity/Account/Manage");
 
                 }
                 if (result.RequiresTwoFactor)
