@@ -99,7 +99,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
         
-        public IActionResult OnGet() => ToPage("./Login");
+        public IActionResult OnGet() => RedirectToPage("./Login");
 
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
@@ -118,7 +118,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             if (remoteError != null)
             {
                 ErrorMessage = $"Dış Kaynakta Hata İle Karşılaşıldı: {remoteError}";
-                return ("/Identity/Account/Login", new { ReturnUrl = returnUrl });
+                return  Redirect("/Identity/Account/Login");
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
