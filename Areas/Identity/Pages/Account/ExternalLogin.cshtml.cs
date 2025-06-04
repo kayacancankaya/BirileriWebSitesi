@@ -105,8 +105,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         {
             // Request a  to the external login provider.
 
-            var Url = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, Url);
+            var returningUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, returningUrl);
             return new ChallengeResult(provider, properties);
         }
 
