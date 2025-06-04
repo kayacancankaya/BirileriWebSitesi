@@ -748,17 +748,17 @@
                     },
                     success: function (response) {
                         if (response.success) {
+                            $(".subscribe-btn").prop("disabled", false);
                             showAlert(button, response.message, "success");  // Show success message
-                            $(".subscribe-btn").prop("disabled", false);
                         } else {
-                            showAlert(button, response.message, "danger");  // Show error message
                             $(".subscribe-btn").prop("disabled", false);
+                            showAlert(button, response.message, "danger");  // Show error message
                         }
                     },
                     error: function (xhr) {
+                        $(".subscribe-btn").prop("disabled", false);
                         var response = JSON.parse(xhr.responseText);
                         showAlert(response.message, "danger");
-                        $(".subscribe-btn").prop("disabled", false);
                     }
                 });
             });
