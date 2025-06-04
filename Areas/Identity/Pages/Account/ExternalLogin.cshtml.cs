@@ -99,14 +99,14 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
         
-        public IActionResult OnGet() => RedirectToPage("./Login");
+        public IActionResult OnGet() => ToPage("./Login");
 
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
-            // Request a redirect to the external login provider.
+            // Request a  to the external login provider.
 
-            var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            var Url = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, Url);
             return new ChallengeResult(provider, properties);
         }
 
@@ -118,13 +118,13 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             if (remoteError != null)
             {
                 ErrorMessage = $"Dış Kaynakta Hata İle Karşılaşıldı: {remoteError}";
-                return Redirect("/Identity/Account/Login", new { ReturnUrl = returnUrl });
+                return ("/Identity/Account/Login", new { ReturnUrl = returnUrl });
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 ErrorMessage = "Dış Kaynaktan Oturum Açma Hatası Alındı.";
-                return Redirect("/Identity/Account/Login", new { ReturnUrl = returnUrl });
+                return Redirect("/Identity/Account/Login");
             }
             
             // Sign in the user with this external login provider if the user already has a login.
@@ -160,7 +160,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     HttpContext.Response.Cookies.Delete("MyInquiry");
                 }
               
-                  return Redirect("/Identity/Account/Manage");
+                  return Redirect("/Identity/Account/Manage/Index");
             }
             if (result.IsLockedOut)
             {
