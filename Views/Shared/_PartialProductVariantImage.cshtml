@@ -5,7 +5,7 @@
         {
             <div class="swiper-slide">
                 <a href="@imagePath" class="lightbox-image" title="@Model.ProductVariantName">
-                    <img src="@Url.Content(imagePath)" loading="lazy" alt="@Model.ProductVariantName" />
+                    <img src="@Url.Content(imagePath)" loading="lazy" alt="@Model.ProductVariantName" width:"100%;height:auto;object-fit:cover;"/>
                 </a>
                 <input type="hidden" id="variant-name" value="@Model.ProductVariantName" />
             </div>
