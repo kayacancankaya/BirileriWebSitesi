@@ -29,6 +29,14 @@
     <link id="theme-color-file" href="~/css/color-themes/default-theme.css" rel="stylesheet">
     @RenderSection("CSS", required: false)
     <style>
+        body {
+            overflow-x: hidden;
+        }
+        
+        img, video, iframe {
+            max-width: 100%;
+            height: auto;
+        }
         <!-- alert modal -->
         .modal {
             display: none;
