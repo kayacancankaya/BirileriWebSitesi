@@ -23,7 +23,7 @@
                 <h3>Email Güncelle</h3>
                 <partial name="_StatusMessage" for="StatusMessage" />
                 <div class="row">
-                    <div>
+                    <div class="col-12">
                         <form id="email-form" method="post">
                             <div asp-validation-summary="All" class="text-danger" role="alert"></div>
                             @if (Model.IsEmailConfirmed)

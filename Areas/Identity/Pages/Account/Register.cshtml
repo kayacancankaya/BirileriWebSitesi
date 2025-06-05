@@ -29,7 +29,7 @@
     <div class="auto-container">
         <div class="row clearfix">
             <!--Register via Email-->
-            <div class="column col-lg-6 col-md-12 col-sm-12">
+            <div class="column col-lg-6 col-md-12 col-sm-12 mb-3">
                 
                 <!-- Register Form -->
                 <div class="login-form">
@@ -86,7 +86,7 @@
                                             _ => "fa fa-sign-in-alt" // Default icon for unknown providers
                                         };
 
-                                        <button type="submit" class="theme-btn btn-style-one" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızla giriş yapın.">
+                                        <button type="submit" class="theme-btn btn-style-one mb-3" name="provider" value="@provider.Name" title="@provider.DisplayName hesabınızla giriş yapın.">
                                             <i class="@iconClass me-2"></i> @provider.DisplayName
                                         </button>
                                     }

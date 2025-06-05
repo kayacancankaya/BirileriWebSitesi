@@ -194,21 +194,21 @@
                         </div>
                     </div>
                 </div>
-                
-            </div>
-                
-            <!--Notes-->
-            <div class="form-group col-lg-12 col-md-12 col-sm-12">
-                <div class="field-label">Not</div>
-                <textarea id="other-notes" placeholder="Gönderiye ait var ise özel notlarınızı yazınız..."></textarea>
-            </div>
-            <!--Update user info-->
-            <div class="form-group col-lg-12 col-md-12 col-sm-12">
-                <div class="field-label">Varsayılan Adres Yap</div>
-                <input type="checkbox" id="update-user-info" value="true"
-                @(Model.UpdateUserInfo ? "checked=\"checked\"" : "")>
+                <!--Notes-->
+                <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                    <div class="field-label">Not</div>
+                    <textarea id="other-notes" placeholder="Gönderiye ait var ise özel notlarınızı yazınız..."></textarea>
+                </div>
+
+                <!--Update user info-->
+                <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                    <div class="field-label">Varsayılan Adres Yap</div>
+                    <input type="checkbox" id="update-user-info" value="true"
+                    @(Model.UpdateUserInfo ? "checked=\"checked\"" : "")>
+                </div>
             </div>
         </div>
+
         <!--End Checkout Details-->
         <!--Order Box-->
         <div class="order-box">
@@ -239,7 +239,7 @@
 
         <div class="lower-box text-right">
             <span class="alert-text">  </span>
-            <a id="proceed-to-payment" class="theme-btn order-btn">ÖDEME İŞLEMLERİ</a>
+            <a id="proceed-to-payment" class="theme-btn order-btn" style="border-radius:30px;">ÖDEME İŞLEMLERİ</a>
         </div>
     </div>
 </div>
@@ -298,8 +298,31 @@
                     });
                 }
                 else {
-                    $("#billing-address-div").css("display", "none");
-                    $("#is-billing-same").prop("disabled", false); 
+                    $("#is-billing-same").prop("disabled", false);
+                    var isBillingSame = $(this).is(":checked");
+                    if(isBillingSame)
+                    {
+                        $("#billing-address-div").css("display", "none");
+                    }
+                    else
+                    {
+                           $.ajax({
+                           type: "GET",
+                           url: "/Order/_PartialIsCorporate",
+                           async: true,
+                           data: {
+                                firstName : firstName,
+                                lastName : lastName,
+                                corporateName : corporateName,
+                                vATNumber : vATNumber,
+                                vATState : vATState,
+                                isCorporate : isCorporate,
+                           },
+                           success: function (result) {
+                               $("#is-corporate-div").html(result);
+                           }
+                        });
+                    }
                 }
             });
 

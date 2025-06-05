@@ -2,18 +2,23 @@
 
 @if(!Model.IsCorporate)
 {
-       <!--Form Group-->
-        <div class="form-group col-lg-6 col-md-6 col-sm-12">
-            <div class="field-label">İsim <sup>*</sup></div>
-            <input type="text" id="billing-first-name" value="@Model.FirstName" placeholder="İsim Giriniz...">
-        </div>
+    <div class="container">
+        <div class="row">
+            <!--Form Group-->
+            <div class="form-group col-lg-6">
+                <div class="field-label">İsim <sup>*</sup></div>
+                <input type="text" id="billing-first-name" value="@Model.FirstName" placeholder="İsim Giriniz...">
+            </div>
 
-        <!--Form Group-->
-        <div class="form-group col-lg-6 col-md-6 col-sm-12">
-            <div class="field-label">Soy İsim <sup>*</sup> </div>
-            <input type="text" id="billing-last-name" value="@Model.LastName" placeholder="Soy İsim Giriniz...">
-        </div>
+            <!--Form Group-->
+            <div class="form-group col-lg-6">
+                <div class="field-label">Soy İsim <sup>*</sup> </div>
+                <input type="text" id="billing-last-name" value="@Model.LastName" placeholder="Soy İsim Giriniz...">
+            </div>
 
+        </div>
+    </div>
+       
 }
 else
 {
