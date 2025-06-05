@@ -120,12 +120,20 @@
                 margin: 0 !important;
             }
         
-            
+       
         }
-
+        
         .content {
             overflow-wrap: break-word;
         }
+
+        .tab {
+            display: none;
+        }
+
+            .tab.active-tab {
+                display: block;
+            }
 </style>
 }
 
@@ -133,15 +141,7 @@
 <input type="hidden" id="product-name" value="@Model.Product.ProductName" />
 <input type="hidden" id="variant-name" value="" />
 <!--Product Container-->
-<div class="sidebar-page-container">
-    <div class="auto-container">
-        <div class="row clearfix">
-            <div class="shop-single">
-                <div class="product-details">
-
-                    <!--Basic Details-->
-                    <div class="basic-details">
-                        <div class="container">
+<div class="container" style="margin-top:60px;">
                             <div class="row">
 
                                 <div class="col-lg-6 col-md-12 col-sm-12 align-self-start" id="variant-image" >
@@ -212,43 +212,44 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!--Basic Details ends-->
-                    <!--Product Info Tabs-->
-                    <div class="product-info-tabs clearfix px-3">
-                        <!--Product Tabs-->
-                        <div class="prod-tabs tabs-box">
 
-                            <!--Tab Btns-->
-                            <ul class="tab-btns tab-buttons clearfix">
-                                <li data-tab="#prod-details" class="tab-btn">AÇIKLAMA</li>
-                            </ul>
+<!--Basic Details ends-->
+<!--Product Info Tabs-->
+<div class="container my-3">
+    <div class="row">
+        <div class="col-12">
+            <div class="product-info-tabs clearfix px-3">
+                <!--Product Tabs-->
+                <div class="prod-tabs tabs-box">
 
-                            <!--Tabs Container-->
-                            <div class="tabs-content" id="prod-details-div">
+                    <!--Tab Btns-->
+                    <ul class="tab-btns tab-buttons clearfix">
+                        <li data-tab="#prod-details" class="tab-btn btn-style-one" style="max-width:140px;cursor:pointer;background-color:cadetblue">AÇIKLAMA</li>
+                    </ul>
 
-                                <!--Tab-->
-                                <div class="tab" id="prod-details">
-                                    <div class="content">
-                                        @Model.Product.ProductDescription
-                                    </div>
-                                </div>
+                    <!--Tabs Container-->
+                    <div class="tabs-content pt-3" id="prod-details-div">
+
+                        <!--Tab-->
+                        <div class="tab" id="prod-details">
+                            <div class="content">
+                                @Model.Product.ProductDescription
                             </div>
                         </div>
                     </div>
-                    <!--End Product Info Tabs-->
                 </div>
             </div>
         </div>
-
-        <!--Popular Product Div-->
-     @*    <div class="row clearfix m-1" id="popular-products-div">
-        </div>
-        <!--Related Product Div-->
-        <div class="row clearfix m-1" id="related-products-div">
-        </div> *@
     </div>
 </div>
+                    
+<!--Popular Product Div-->
+<div class="row clearfix m-1" id="popular-products-div">
+</div>
+<!--Related Product Div-->
+<div class="row clearfix m-1" id="related-products-div">
+</div>
+
 <input type="hidden" id="currentState" value="0" />
 <input type="hidden" class="user-id" id="user-id" value="@userId" />
 
@@ -265,12 +266,20 @@
             var currentState = parseInt($('#currentState').val());
             lastWidth = window.innerWidth;
             setTimeout(function () {
-                                    new Swiper('.swiper', {
+                                    new Swiper('.swiper-single-product', {
                                         slidesPerView: 1,
                                         loop: false,
                                         autoplay: false,
 
-                                        breakpointsBase:'container',
+                                        breakpoints: {
+                                            768: {
+                                                slidesPerView: 1, // Number of slides per view on tablets and larger screens
+                                            },
+                                            575: {
+                                                slidesPerView: 1, // Number of slides per view on smaller screens
+                                                spaceBetween: 10 // Adjust spacing between slides as needed
+                                            }
+                                        },
                                         navigation: {
                                             nextEl: '.swiper-button-next',
                                             prevEl: '.swiper-button-prev',
@@ -283,54 +292,51 @@
 
                                     });
                                 }, 300);
-            // setTimeout(function () {
-            //         if (currentState === 0) {
-            //             currentState = 1;
-            //             var productCode = $('#product-code').val();
+            setTimeout(function () {
+                    if (currentState === 0) {
+                        currentState = 1;
+                        var productCode = $('#product-code').val();
 
 
-            //             $.ajax({
-            //                 type: "GET",
-            //                 url: "/Shop/_PartialPopularProductsWidget",
-            //                 async: true,
-            //                 success: function (result) {
-            //                     $("#popular-products-div").html(result);
-            //                 }
-            //             });
+                        $.ajax({
+                            type: "GET",
+                            url: "/Shop/_PartialPopularProductsWidget",
+                            async: true,
+                            success: function (result) {
+                                $("#popular-products-div").html(result);
+                            }
+                        });
                         
 
-            //             $.ajax({
-            //                 type: "GET",
-            //                 url: "/Shop/_PartialRelatedProductsWidget",
-            //                 data: { productCode: productCode },
-            //                 async: true,
-            //                 success: function (result) {
-            //                     $("#related-products-div").html(result);
+                        $.ajax({
+                            type: "GET",
+                            url: "/Shop/_PartialRelatedProductsWidget",
+                            data: { productCode: productCode },
+                            async: true,
+                            success: function (result) {
+                                $("#related-products-div").html(result);
                                 
-            //                 }
-            //             });
-            //              setTimeout(function () {
-            //                         new Swiper('.widget-swiper', {
-            //                             slidesPerView: 1,
-            //                             spaceBetween: 20,
-            //                             loop: true,
-            //                             autoplay: {
-            //                                 delay: 4000,
-            //                                 disableOnInteraction: false,
-            //                             },
-            //                             breakpoints: {
-            //                                 576: { slidesPerView: 2 },
-            //                                 768: { slidesPerView: 3 },
-            //                                 992: { slidesPerView: 4 }
-            //                             }
-            //                         });
-            //                     }, 300)
+                            }
+                        });
+                         setTimeout(function () {
+                                    new Swiper('.widget-swiper', {
+                                        slidesPerView: 1,
+                                        spaceBetween: 20,
+                                        loop: true,
+                                        autoplay: {
+                                            delay: 4000,
+                                            disableOnInteraction: false,
+                                        },
+                                        breakpoints: {
+                                            576: { slidesPerView: 2 },
+                                            768: { slidesPerView: 3 },
+                                            992: { slidesPerView: 4 }
+                                        }
+                                    });
+                                }, 300)
                         
-            //          }
-            //     }, 1000); // Load after 1 seconds
-
-               
-           
+                     }
+                }, 1000); 
 
 
             $(".dropdown").removeClass("current");
@@ -406,14 +412,43 @@
                         $("#variant-image").html(response.imagePartial);  
                         $("#variant-info").html(response.infoPartial);
 
-                        // Swipe pics
-                        const swiper = new Swiper('.widget-swiper', {
-                           loop: true,
-                           lazy: true,
-                           speed: 400,
-                           spaceBetween: 100,
-                           
-                        });
+                       setTimeout(function () {
+                                    new Swiper('.swiper-single-product', {
+                                        slidesPerView: 1,
+                                        loop: false,
+                                        autoplay: false,
+
+                                        navigation: {
+                                            nextEl: '.swiper-button-next',
+                                            prevEl: '.swiper-button-prev',
+                                        },
+                                        pagination: {
+                                            el: '.swiper-pagination',
+                                            clickable: true,
+                                            type: 'bullets',
+                                        },
+
+                                    });
+                                }, 300);
+            
+                         setTimeout(function () {
+                                    new Swiper('.widget-swiper', {
+                                        slidesPerView: 1,
+                                        spaceBetween: 20,
+                                        loop: true,
+                                        autoplay: {
+                                            delay: 4000,
+                                            disableOnInteraction: false,
+                                        },
+                                        breakpoints: {
+                                            576: { slidesPerView: 2 },
+                                            768: { slidesPerView: 3 },
+                                            992: { slidesPerView: 4 }
+                                        }
+                                    });
+                                }, 500)
+
+
                     },
                     error: function (xhr) {
 
