@@ -38,32 +38,6 @@
     overflow: hidden;
 }
 
-.swiper-single-product {
-  width: 100%;
-  height: auto;
-max-width: 100%;
-max-height:300px;
-}
-
-.swiper-wrapper {
-  display: flex;
-  flex-wrap: nowrap;
-}
-.variant-img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  display: block;
-  max-width: 100%;
-max-height:300px;
-}
-            /* Adjust swiper navigation buttons inside the boundaries */
-            #variant-image .swiper-button-prev,
-            #variant-image .swiper-button-next {
-                color: #000;
-                top: 50%;
-                transform: translateY(-50%);
-            }
 
     .product-variants {
     margin-top: 20px;
@@ -146,13 +120,12 @@ max-height:300px;
                 margin: 0 !important;
             }
         
-            .content {
-                overflow-wrap: break-word;
-            }
+            
         }
-.swiper-wrapper {
-    display: flex !important;
-}
+
+        .content {
+            overflow-wrap: break-word;
+        }
 </style>
 }
 
@@ -168,17 +141,19 @@ max-height:300px;
 
                     <!--Basic Details-->
                     <div class="basic-details">
+                        <div class="container">
+                            <div class="row">
 
-                            <div class="col-lg-6 col-md-12 col-sm-12 " id="variant-image" >
+                                <div class="col-lg-6 col-md-12 col-sm-12 align-self-start" id="variant-image" >
                                 @Html.Partial("_PartialProductVariantImage", Model.ProductVariantImage)
-                            </div>
-                            <div class="info-column col-lg-6 col-md-12 col-sm-12 " >
-
-                                <div class="details-header" id="variant-info">
-                                    @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
                                 </div>
-                                <!--variant list-->
-                                <div class="product-variants">
+                                <div class="info-column col-lg-6 col-md-12 col-sm-12 align-self-start" >
+
+                                    <div class="details-header" id="variant-info">
+                                        @Html.Partial("_PartialProductVariantInfo", Model.ProductVariantInfo)
+                                    </div>
+                                    <!--variant list-->
+                                    <div class="product-variants">
                                     <h5>Varyasyonlar</h5>
                                     <div class="variant-container">
                                         @foreach (var globalVariant in Model.GlobalVariants)
@@ -220,7 +195,7 @@ max-height:300px;
                                 </div>
 
                                 
-                                <div class="other-options clearfix">
+                                    <div class="other-options clearfix">
                                     @* <div class="item-quantity"><input class="quantity-spinner" type="text" value="1" name="quantity"></div> *@
                                     @if (Model.ProductVariantInfo.Quantity > 0)
                                     {
@@ -234,7 +209,8 @@ max-height:300px;
                                     }
                                     
                                 </div>
-
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!--Basic Details ends-->
@@ -266,11 +242,11 @@ max-height:300px;
         </div>
 
         <!--Popular Product Div-->
-        <div class="row clearfix m-1" id="popular-products-div">
+     @*    <div class="row clearfix m-1" id="popular-products-div">
         </div>
         <!--Related Product Div-->
         <div class="row clearfix m-1" id="related-products-div">
-        </div>
+        </div> *@
     </div>
 </div>
 <input type="hidden" id="currentState" value="0" />
@@ -288,54 +264,72 @@ max-height:300px;
 
             var currentState = parseInt($('#currentState').val());
             lastWidth = window.innerWidth;
-
             setTimeout(function () {
-                    if (currentState === 0) {
-                        currentState = 1;
-                        var productCode = $('#product-code').val();
-
-
-                        $.ajax({
-                            type: "GET",
-                            url: "/Shop/_PartialPopularProductsWidget",
-                            async: true,
-                            success: function (result) {
-                                $("#popular-products-div").html(result);
-                            }
-                        });
-                         var productCode = $('#product-code').val();
-
-                        $.ajax({
-                            type: "GET",
-                            url: "/Shop/_PartialRelatedProductsWidget",
-                            data: { productCode: productCode },
-                            async: true,
-                            success: function (result) {
-                                $("#related-products-div").html(result);
-                                
-                            }
-                        });
-                         setTimeout(function () {
                                     new Swiper('.swiper', {
                                         slidesPerView: 1,
-                                        spaceBetween: 20,
-                                        loop: true,
-                                        autoplay: {
-                                            delay: 4000,
-                                            disableOnInteraction: false,
-                                        },
-                                        breakpoints: {
-                                            576: { slidesPerView: 2 },
-                                            768: { slidesPerView: 3 },
-                                            992: { slidesPerView: 4 }
-                                        }
-                                    });
-                                }, 300)
-                        
-                     }
-                }, 1000); // Load after 1 seconds
+                                        loop: false,
+                                        autoplay: false,
 
-               ;
+                                        breakpointsBase:'container',
+                                        navigation: {
+                                            nextEl: '.swiper-button-next',
+                                            prevEl: '.swiper-button-prev',
+                                        },
+                                        pagination: {
+                                            el: '.swiper-pagination',
+                                            clickable: true,
+                                            type: 'bullets',
+                                        },
+
+                                    });
+                                }, 300);
+            // setTimeout(function () {
+            //         if (currentState === 0) {
+            //             currentState = 1;
+            //             var productCode = $('#product-code').val();
+
+
+            //             $.ajax({
+            //                 type: "GET",
+            //                 url: "/Shop/_PartialPopularProductsWidget",
+            //                 async: true,
+            //                 success: function (result) {
+            //                     $("#popular-products-div").html(result);
+            //                 }
+            //             });
+                        
+
+            //             $.ajax({
+            //                 type: "GET",
+            //                 url: "/Shop/_PartialRelatedProductsWidget",
+            //                 data: { productCode: productCode },
+            //                 async: true,
+            //                 success: function (result) {
+            //                     $("#related-products-div").html(result);
+                                
+            //                 }
+            //             });
+            //              setTimeout(function () {
+            //                         new Swiper('.widget-swiper', {
+            //                             slidesPerView: 1,
+            //                             spaceBetween: 20,
+            //                             loop: true,
+            //                             autoplay: {
+            //                                 delay: 4000,
+            //                                 disableOnInteraction: false,
+            //                             },
+            //                             breakpoints: {
+            //                                 576: { slidesPerView: 2 },
+            //                                 768: { slidesPerView: 3 },
+            //                                 992: { slidesPerView: 4 }
+            //                             }
+            //                         });
+            //                     }, 300)
+                        
+            //          }
+            //     }, 1000); // Load after 1 seconds
+
+               
            
 
 
@@ -413,19 +407,12 @@ max-height:300px;
                         $("#variant-info").html(response.infoPartial);
 
                         // Swipe pics
-                        const swiper = new Swiper('.swiper', {
+                        const swiper = new Swiper('.widget-swiper', {
                            loop: true,
                            lazy: true,
                            speed: 400,
                            spaceBetween: 100,
-                           navigation: {
-                               nextEl: '.swiper-button-next',
-                               prevEl: '.swiper-button-prev',
-                           },
-                           pagination: {
-                               el: '.swiper-pagination',
-                               clickable: true,
-                           },
+                           
                         });
                     },
                     error: function (xhr) {
