@@ -38,6 +38,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
      
         public async Task OnGetAsync()
         {
+            ViewData["ActivePage"] = ManageNavPages.TransferForm;
             string userID = _userManager.GetUserId(User);
             OrderInfos = await _orderService.GetBankTransferOrdersForUserAsync(userID);
             OrderSelectList = new SelectList(OrderInfos, "Key", "Value");

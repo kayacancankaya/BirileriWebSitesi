@@ -165,15 +165,15 @@ namespace BirileriWebSitesi.Data
             modelBuilder.Entity<Order>()
                         .HasOne(o => o.ShipToAddress)
                         .WithMany(a => a.Orders)
-                        .HasForeignKey(o => o.ShipToAddressId)
-                        .OnDelete(DeleteBehavior.Restrict); // Optional, depending on your cascade behavior preference
+                        .HasForeignKey(o => o.ShipToAddressId);
+                        //.OnDelete(DeleteBehavior.Restrict); // Optional, depending on your cascade behavior preference
 
             // Configure Order -> BillingAddress (One-to-One or many-to-one depending on your logic)
             modelBuilder.Entity<Order>()
                         .HasOne(o => o.BillingAddress)
                         .WithMany() // If BillingAddress is not used for multiple orders, use .WithOne()
-                        .HasForeignKey(o => o.BillingAddressId)
-                        .OnDelete(DeleteBehavior.Restrict); // Optional
+                        .HasForeignKey(o => o.BillingAddressId);
+                        //.OnDelete(DeleteBehavior.Restrict); // Optional
 
             modelBuilder.Entity<PaymentLog>()
                 .HasOne(O => O.Order)

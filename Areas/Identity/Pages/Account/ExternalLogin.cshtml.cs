@@ -170,7 +170,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             {
                 // If the user does not have an account, then ask the user to create an account.
                 
-                _logger.LogWarning("External call back action new user.");
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
@@ -186,7 +185,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
-            _logger.LogWarning("On Post Confirmation started.");
             returnUrl = returnUrl ?? Url.Content("~/Identity/Account/Manage");
             // Get the information about the user from the external login provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
@@ -209,8 +207,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                        _logger.LogError("User created an account using {Name} provider.", info.LoginProvider);
 
+                        _logger.LogWarning("login with external succeded");
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -223,7 +221,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)
                         {
-                            _logger.LogWarning($"require confirmation, on post confirmation.");
+                            _logger.LogWarning("register confirmation");
                             return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
                         }
 
@@ -237,7 +235,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                             string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                             await _userAudit.CreateUserAudit(user.Id, DateTime.UtcNow, ip);
                         }
-            
+
+                        _logger.LogWarning("redirect to account");
                         return Redirect("/Identity/Account/Manage/Index");
                     }
                 }

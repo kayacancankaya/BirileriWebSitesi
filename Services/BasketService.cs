@@ -20,10 +20,12 @@ namespace BirileriWebSitesi.Services
         private readonly ILogger<BasketService> _logger;
       
         public BasketService(ApplicationDbContext context,
-                             IProductService productService)
+                             IProductService productService,
+                             ILogger<BasketService> logger)
         {
             _context = context;
             _productService = productService;
+            _logger = logger;
         }
 
         public async Task<Dictionary<int,string>> AddItemToBasketAsync(string userId, string productCode, decimal price, int quantity)
@@ -492,7 +494,9 @@ namespace BirileriWebSitesi.Services
                     result.Add(productCode, quantity);
 
                 }
-                Basket basket = await _context.Baskets.Where(b => b.BuyerId == userID).FirstOrDefaultAsync();
+                Basket basket = await _context.Baskets.Where(b => b.BuyerId == userID)
+                                                        .Include(i=>i.Items)
+                                                        .FirstOrDefaultAsync();
                 if (basket == null)
                     basket = new(userID);
                 else
@@ -551,7 +555,9 @@ namespace BirileriWebSitesi.Services
                     result.Add(productCode, quantity);
 
                 }
-                Inquiry basket = await _context.Inquiries.Where(b => b.BuyerId == userID).FirstOrDefaultAsync();
+                Inquiry basket = await _context.Inquiries.Where(b => b.BuyerId == userID)
+                                                           .Include(i=>i.Items)
+                                                           .FirstOrDefaultAsync();
                 if (basket == null)
                     basket = new(userID);
                 else
@@ -560,7 +566,7 @@ namespace BirileriWebSitesi.Services
                 foreach (var item in result)
                 {
 
-                    unitPrice = await _productService.GetPriceAsync(item.Key);
+                     unitPrice = await _productService.GetPriceAsync(item.Key);
                     string productName = await _productService.GetProductNameAsync(productCode);
                     string imagePath = await _productService.GetImagePathAsync(productCode);
                     basket.AddItem(item.Key, unitPrice, quantity, userID, productName, imagePath);

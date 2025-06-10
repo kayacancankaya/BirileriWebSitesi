@@ -45,24 +45,6 @@
                     </tbody>
                 </table>
             </div>
-
-            @* <div class="cart-options clearfix">
-                 <div class="pull-left">
-            <div class="apply-coupon clearfix">
-            <div class="form-group clearfix">
-            <input type="text" name="coupon-code" value="" placeholder="Coupon Code">
-            </div>
-            <div class="form-group clearfix">
-            <button type="button" class="theme-btn coupon-btn">Apply Coupon</button>
-            </div>
-            </div>
-            </div> 
-
-                 <div class="pull-right">
-                    <button type="button" class="theme-btn cart-btn update-cart">SEPETİ GÜNCELLE</button>
-                </div> 
-
-            </div> *@
         </div>
 
         <div class="row clearfix" style="margin-top:30px;">
@@ -72,7 +54,8 @@
                 <ul class="totals-table">
                     <li class="clearfix total"><span class="col">Toplam</span><span class="col ">@Model.TotalAmount ₺</span></li>
                     <li class="text-right">
-                        <a type="submit" class="theme-btn proceed-btn" id="checkout-inquiry" style="cursor:pointer;">İstek Gönder</a>
+                        <span class="alert-text"></span>
+                        <a class="theme-btn proceed-btn" id="checkout-inquiry" style="cursor:pointer;">İstek Gönder</a>
                     </li>
                 </ul>
             </div>

@@ -3,7 +3,6 @@ using BirileriWebSitesi.Helpers;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.OrderAggregate;
-using BirileriWebSitesi.Services;
 using Iyzipay.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -23,10 +22,11 @@ namespace BirileriWebSitesi.Controllers
         private readonly IEmailService _emailService;
         private readonly IIyzipayPaymentService _iyzipayService;
         private readonly IUserAuditService _userAuditService;
+        private readonly IInventoryService _inventoryService;
         public PaymentController(ILogger<CartController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager,
                                 IProductService productService, IBasketService basketService,
                                 IOrderService orderService, IEmailService emailService, IIyzipayPaymentService iyizpayService
-                                , IUserAuditService userAuditService)
+                                , IUserAuditService userAuditService, IInventoryService inventoryService)
         {
             _logger = logger;
             _context = context;
@@ -36,6 +36,7 @@ namespace BirileriWebSitesi.Controllers
             _userAuditService = userAuditService;
             _orderService = orderService;
             _basketService = basketService;
+            _inventoryService = inventoryService;
         }
         [HttpGet]
         public IActionResult Index()
@@ -120,6 +121,7 @@ namespace BirileriWebSitesi.Controllers
                     model.Country = userAudit.Country;
                 }
                 string resultString = string.Empty;
+                //if credit card payment
                 if (model.PaymentType == 1)
                 {
                     if (!StringHelper.IsValidCVV(model.CVV))
@@ -147,12 +149,14 @@ namespace BirileriWebSitesi.Controllers
                         if (resultString == "success")
                         {
                             await _basketService.DeleteBasketAsync(buyerID);
-                            await _orderService.UpdateOrderStatus(model.OrderId, "Approved");
-                
-                            if(!String.IsNullOrEmpty(model.EmailAddress))
-                                await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"CreditCard");
-                            
-                            return Ok(new { success = true, is3Ds = true, message = "Siparişiniz İşleme Alındı." });
+                            await _orderService.UpdateOrderStatus(model.OrderId, "Approved", 1);
+                            Order order = await _orderService.GetOrderAsync(model.OrderId);
+                            await _inventoryService.UpdateInventoryAsync(order, 2);
+
+                            if (!String.IsNullOrEmpty(model.EmailAddress))
+                                await _emailService.SendPaymentEmailAsync(model.EmailAddress, model.OrderId, "CreditCard");
+
+                            return Ok(new { success = true, is3Ds = false, message = "Siparişiniz İşleme Alındı." });
                         }
                         else
                         {
@@ -161,11 +165,13 @@ namespace BirileriWebSitesi.Controllers
                         }
                     }
                 }
+                //if bank transfer
                 else
                 {
                     await _basketService.DeleteBasketAsync(buyerID);
-                    await _orderService.UpdateOrderStatus(model.OrderId, "Bank Transfer");
-                    
+                    await _orderService.UpdateOrderStatus(model.OrderId, "Bank Transfer", model.PaymentType);
+                    Order order = await _orderService.GetOrderAsync(model.OrderId);
+                    await _inventoryService.UpdateInventoryAsync(order,2);
                     if(!String.IsNullOrEmpty(model.EmailAddress))
                         await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"BankAccount");
                     return Ok(new { success = true, is3Ds = false, message = "Banka Ödemesi ile Ödeme Tanımlanmıştır." });
@@ -202,7 +208,8 @@ namespace BirileriWebSitesi.Controllers
                 paymentLog.LastFourDigits = payment.LastFourDigits;
                 paymentLog.Status = payment.Status;
                 paymentLog.PaidAt = DateTime.UtcNow;
-
+                var paymentLogOrder = await _context.Orders.FindAsync(Convert.ToInt32(payment.BasketId));
+                paymentLog.Order = paymentLogOrder;
                 if (payment.Status == "success")
                 {
                     TempData["SuccessMessage"] = "Siparişiniz Başarıyla İşleme Alındı.";
@@ -211,8 +218,10 @@ namespace BirileriWebSitesi.Controllers
                                                           .FirstOrDefaultAsync();
                     if(!string.IsNullOrEmpty(userId))
                         await _basketService.DeleteBasketAsync(userId);
-                    await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved");
+                    await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Approved",1);
                     await _orderService.RecordPayment(paymentLog);
+                    Order order = await _orderService.GetOrderAsync(Convert.ToInt32(payment.BasketId));
+                    await _inventoryService.UpdateInventoryAsync(order, 2);
 
                     string? mailAddress = await _context.Orders
                         .Where(i => i.Id == Convert.ToInt32(payment.BasketId))
@@ -220,7 +229,7 @@ namespace BirileriWebSitesi.Controllers
                         .Select(b => b.BillingAddress.EmailAddress)
                         .FirstOrDefaultAsync();
 
-                    if(string.IsNullOrEmpty(mailAddress))
+                    if (string.IsNullOrEmpty(mailAddress))
                         mailAddress = await _context.Orders
                              .Include(b => b.ShipToAddress)
                             .Select(b => b.ShipToAddress.EmailAddress)
@@ -236,8 +245,7 @@ namespace BirileriWebSitesi.Controllers
                         return LocalRedirect("/Identity/Account/Manage");
                     }
 
-                    Order order = await _orderService.GetOrderAsync(Convert.ToInt32(payment.BasketId));
-                    await _emailService.SendCustomerOrderMailAsync(order);
+                    await _emailService.SendCustomerOrderMailAsync(paymentLogOrder);
                     TempData["SuccessMessage"] = "Ödemeniz alındı. Siparişiniz en geç 2 gün içerisinde hazırlanarak kargoya teslim edilecektir. ";
                     return LocalRedirect("/Identity/Account/Manage");
                 }
@@ -245,7 +253,8 @@ namespace BirileriWebSitesi.Controllers
                 {
                     _logger.LogError("Payment failed: " + payment.Status + DateTime.Now.ToString());
                     TempData["DangerMessage"] = "Siparişiniz oluşturulamadı. Lütfen daha sonra tekrar deneyiniz.";
-                    await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed");
+                    await _orderService.UpdateOrderStatus(Convert.ToInt32(payment.BasketId), "Failed", 1);
+                    
                     await _orderService.RecordPayment(paymentLog);
                     return RedirectToAction("Index","Home");
                 }

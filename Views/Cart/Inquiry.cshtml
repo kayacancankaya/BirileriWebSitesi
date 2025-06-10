@@ -12,9 +12,6 @@
 }
 
 
-
-@Html.AntiForgeryToken()
-<input name="__RequestVerificationToken" type="hidden" value="TOKEN_VALUE" />
 <!--Cart Section-->
 <section class="cart-section" id="inquiry-content">
     @Html.Partial("_PartialInquiry", Model)
@@ -68,7 +65,7 @@
                 });
             });
             $(document).on("click", "#checkout-inquiry", function () {
-                
+                $("#checkout-inquiry").text("İşlem Yapılıyor...").prop("disabled",true);
                 var button = $(this);
                 $.ajax({
                     type: "POST",
@@ -76,6 +73,8 @@
                     async: true,
                     url: "/Order/CheckOutInquiry",
                     success: function (response) {
+                        $("#checkout-inquiry").text("İstek Gönder").prop("disabled",false);
+               
                         if(response.success)
                         {
                                showAlert(button, response.message, "success");
@@ -89,35 +88,33 @@
                         }
                     },
                     error: function (xhr) {
-                        var response = JSON.parse(xhr.responseText);
-
-                        showAlert(button, response.message, "danger");
+                         $("#checkout-inquiry").text("İstek Gönder").prop("disabled",false);
+                            if (xhr.status === 401) {
+                                window.location.href = "/Identity/Account/Login";
+                                return;
+                            }
+                        var responseText = xhr.responseText;
+                        console.error("Raw responseText:", xhr.responseText);
+                        try {
+                            if (responseText) {
+                                var response = JSON.parse(responseText);
+                                showAlert(button, response.message || "Bir hata oluştu.", "danger");
+                            } else {
+                                showAlert(button, "Sunucudan geçerli bir yanıt alınamadı.", "danger");
+                            }
+                        } catch (e) {
+                            showAlert(button, "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.", "danger");
+                        }
                     }
+                    
                 });
             });
-            $(document).on("click", ".bootstrap-touchspin", function () {
-                var productCode = $(this).closest("td").find(".quantity-spinner").data("productcode");
-                var quantity = $(this).closest("td").find(".quantity-spinner").val();
-
-                $.ajax({
-                    type: "POST",
-                    url: "/Cart/InquiryItemAmountChanged",
-                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
-                    data: {
-                        productCode: productCode,
-                        quantity: quantity
-                    },
-                    async: true,
-                    success: function (response) {
-                        $("#inquiry-content").html(response);
-                        initializeQuantitySpinner();
-                    },
-                    error: function (xhr) {
-                        var response = JSON.parse(xhr.responseText);
-
-                    }
-                });
+            $(document).on("click", ".bootstrap-touchspin-up, .bootstrap-touchspin-down", function () {
+                var $input = $(this).closest("td").find(".quantity-spinner");
+                $input.trigger("change");
             });
+
+            $(document).on("change", ".quantity-spinner", handleQuantityChange);
         });
         function initializeQuantitySpinner() {
             if ($('.quantity-spinner').length) {
@@ -146,6 +143,34 @@
                 "align-items": "center",
                 "justify-content": "center",
             });
+        };
+        function handleQuantityChange() {
+           var $input = $(this);
+           var productCode = $input.data("productcode");
+           var quantity = $input.val();
+
+           $.ajax({
+               type: "POST",
+               url: "/Cart/InquiryItemAmountChanged",
+               headers: { "RequestVerificationToken": getAntiForgeryToken() },
+               data: {
+                   productCode: productCode,
+                   quantity: quantity
+               },
+               async: true,
+               success: function (response) {
+                   $("#inquiry-content").html(response);
+                   initializeQuantitySpinner(); // Rebind after AJAX load
+               },
+               error: function (xhr) {
+                   try {
+                       var response = JSON.parse(xhr.responseText);
+                       console.error(response.message || "Sunucu hatası");
+                   } catch (e) {
+                       console.error("Beklenmeyen bir hata oluştu");
+                   }
+               }
+           });
         };
     </script>
 }

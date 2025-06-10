@@ -22,27 +22,28 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
-            ViewData["ActivePage"] = ManageNavPages.Orders;
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            try
             {
-                return RedirectToPage("/Account/Login");
-            }
 
-            Orders = await _context.Orders
-                .Where(o => o.BuyerId == user.Id &&
-                            o.Status > 0 )
-                .OrderByDescending(o => o.OrderDate)
-                .Include(o=>o.OrderItems)
-                .ToListAsync();
-            //foreach (var o in Orders)
-            //{
-            //    decimal qumulativeSum = 0;
-            //    foreach (var item in o.OrderItems)
-            //        qumulativeSum += item.Units * item.UnitPrice;
-            //    o.TotalAmount = qumulativeSum;
-            //}
-            return Page();
+                ViewData["ActivePage"] = ManageNavPages.Orders;
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToPage("/Account/Login");
+                }
+
+                Orders = await _context.Orders
+                    .Where(o => o.BuyerId == user.Id &&
+                                o.Status > 0 )
+                    .OrderByDescending(o => o.OrderDate)
+                    .Include(o=>o.OrderItems)
+                    .ToListAsync();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("NotFound", "Home");
+            }
         }
     }
 }

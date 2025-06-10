@@ -29,7 +29,7 @@
                             @if (Model.IsEmailConfirmed)
                             {
                                 <div class="form-floating mb-3 pl-1 input-group">
-                                    <div class="mb-2">
+                                    <div class="mb-0">
                                         <label asp-for="Email" class="form-label w-100 fw-bold" style="display: block;">Email</label>
                                     </div>
 
@@ -44,15 +44,15 @@
                             else
                             {
                                 <div class="form-floating mb-3">
-                                    <label asp-for="Email" class="form-label"></label>
 
                                     <input asp-for="Email" class="form-control" placeholder="Lütfen mail adresinizi giriniz." disabled />
+                                    <label asp-for="Email" class="form-label" for="Email"></label>
                                     <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Doğrulama Maili Gönder</button>
                                 </div>
                             }
                             <div class="form-floating mb-3 pl-1">
-                                <label asp-for="Input.NewEmail" class="form-label"></label>
                                 <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Lütfen yeni mailinizi giriniz." />
+                                <label asp-for="Input.NewEmail" class="form-label"></label>
                                 <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
                             </div>
                             <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="w-100 btn btn-lg btn-primary">Email Değiştir</button>

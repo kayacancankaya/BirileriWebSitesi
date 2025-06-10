@@ -5,6 +5,9 @@ using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models.OrderAggregate;
 using System.Text;
 using BirileriWebSitesi.Models.InquiryAggregate;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using static BirileriWebSitesi.Models.Enums.AprrovalStatus;
+using BirileriWebSitesi.Helpers;
 
 namespace BirileriWebSitesi.Services
 {
@@ -50,9 +53,7 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
-                _logger.LogWarning("Ödeme e-postası gönderiliyor: {OrderID}, {PaymentType}, {To}", orderID, paymentType, to);
                 var email = new MimeMessage();
-                _logger.LogWarning("user:  {To}", orderID, paymentType, to);
                 email.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
                 email.To.Add(MailboxAddress.Parse(to));
                 string htmlMessage = string.Empty;
@@ -73,8 +74,6 @@ namespace BirileriWebSitesi.Services
                         </tr>
                     </table>";
 
-                    _logger.LogWarning("subject:{0}", subject);
-                    _logger.LogWarning("html:{0}", htmlMessage);
                 }
                 
                 else
@@ -180,7 +179,7 @@ namespace BirileriWebSitesi.Services
                 mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC1"]));
                 mimeMessage.Cc.Add(MailboxAddress.Parse(_configuration["SMTP:CC2"]));
 
-                 mimeMessage.Subject = $"{order.Id} Sipariş Havale Formu";
+                mimeMessage.Subject = $"{order.Id} Sipariş Havale Formu";
 
                     // Build HTML content
                     var sb = new StringBuilder();
@@ -350,12 +349,12 @@ namespace BirileriWebSitesi.Services
                     sb.AppendLine($"<li>{item.ProductName} - {item.Quantity} x {item.UnitPrice:C}</li>");
                 }
 
+                sb.AppendLine("</ul>");
 
                 mimeMessage.Body = new TextPart("html")
                 {
                     Text = sb.ToString()
                 };
-                sb.AppendLine("</ul>");
 
                 using var smtp = new SmtpClient
                 {
@@ -377,5 +376,127 @@ namespace BirileriWebSitesi.Services
                 throw;
             }
         }
+
+        public async Task<bool> SendOrderCancelledEmailAsync(Order order, string userEmail, string type)
+        {
+            try
+            {
+                string html = string.Empty;
+                string subject = type == "Products Recieved" ? $"Sipariş İptal Talebiniz Alındı - {order.Id}" : $"Siparişiniz İptal Edildi - {order.Id}";
+                string subjectAdmin = type == "Products Recieved" ? $"Sipariş İptal Talebi - {order.Id}" : $"Sipariş İptali - {order.Id}";
+                string statusText = ((ApprovalStatus)order.Status).ToString();
+                statusText = StringHelper.ConvertToTurkishStatus(statusText);
+                string paymentType = order.PaymentType == 1 ? "Kredit Kartı" : "Hesaba Havale"; 
+
+                // Build HTML content
+                var sb = new StringBuilder();
+                sb.AppendLine("<h3>Sipariş Bilgileri:</h3>");
+
+                sb.AppendLine($"<p>Durumu: {statusText} </p></br>");
+                sb.AppendLine($"<p>Ödeme Şekli: {paymentType} </p></br>");
+                if (type == "Products Recieved")
+                   sb.AppendLine($"<p>Ödeminiz siparişler tarafımıza ulaştığında yapılacaktır.</p></br>");
+                sb.Append("<ul>");
+                foreach (var item in order.OrderItems)
+                    sb.AppendLine($"<li>{item.ProductName} - {item.Units} x {item.UnitPrice:C}</li>");
+                sb.AppendLine("</ul>");
+
+                html = sb.ToString();
+               //send email to user
+               await SendEmail(userEmail, null, null,subject, html);
+               //send email to admin
+               await SendEmail(_configuration["SMTP:InfoAddress"], _configuration["SMTP:CC1"], _configuration["SMTP:CC2"],
+                                subjectAdmin, html);
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Email gönderilirken hata oluştu: {Message}", ex.Message);
+                return false;
+            }
+        }
+        public async Task<bool> SendOrderItemCancelledEmailAsync(Order order,OrderItem item, string userEmail, string type)
+        {
+            try
+            {
+                string html = string.Empty;
+                string subject = type == "Products Recieved" ? $"Ürün İptal Talebiniz Alındı - {order.Id}" : $"Ürününüz İptal Edildi - {order.Id}";
+                string subjectAdmin = type == "Products Recieved" ? $"Ürün İptal Talebi - {order.Id}" : $"Ürün İptali - {order.Id}";
+                string statusText = item.IsRefunded ? "Geri Ödeme Yapıldı" : "Geri Ödeme Yapılmadı";
+                string paymentType = order.PaymentType == 1 ? "Kredit Kartı" : "Hesaba Havale"; 
+
+                // Build HTML content
+                var sb = new StringBuilder();
+                sb.AppendLine("<h3>Ürün Bilgileri:</h3>");
+
+                sb.AppendLine($"<p>Ödeme Şekli: {paymentType} </p></br>");
+                sb.AppendLine($"<p>Durumu: {statusText} </p></br>");
+                if (type == "Products Recieved")
+                   sb.AppendLine($"<p>Ödeminiz siparişler tarafımıza ulaştığında yapılacaktır.</p></br>");
+                sb.Append("<ul>");
+                sb.AppendLine($"<li>{item.ProductName} - {item.Units} x {item.UnitPrice:C}</li>");
+                sb.AppendLine("</ul>");
+
+                html = sb.ToString();
+               //send email to user
+               await SendEmail(userEmail, null, null,subject, html);
+               //send email to admin
+               await SendEmail(_configuration["SMTP:InfoAddress"], _configuration["SMTP:CC1"], _configuration["SMTP:CC2"],
+                                subjectAdmin, html);
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Email gönderilirken hata oluştu: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        private async Task<bool> SendEmail(string to, string? cc1, string?cc2,string subject,
+                                string html)
+        {
+            try
+            {
+
+                var mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress("Birileri", _configuration["SMTP:Username"]));
+                mimeMessage.To.Add(MailboxAddress.Parse(to));
+                if (!string.IsNullOrEmpty(cc1))
+                    mimeMessage.Cc.Add(MailboxAddress.Parse(cc1));
+                if (!string.IsNullOrEmpty(cc2))
+                    mimeMessage.Cc.Add(MailboxAddress.Parse(cc2));
+
+                mimeMessage.Subject = subject;
+
+                mimeMessage.Body = new TextPart("html")
+                {
+                    Text = html
+                };
+
+
+                using var smtp = new SmtpClient
+                {
+                    Timeout = 10000 // Timeout in milliseconds (10 seconds)
+                };
+
+                await smtp.ConnectAsync("mail.kurumsaleposta.com", 465, SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(_configuration["SMTP:Username"], _configuration["SMTP:Password"]);
+                await smtp.SendAsync(mimeMessage);
+                await smtp.DisconnectAsync(true);
+
+                return true;
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Toptan İstek e-postası gönderilirken hata oluştu: {Message}", ex.Message);
+                throw;
+            }
+        }
+
     }
+
 }

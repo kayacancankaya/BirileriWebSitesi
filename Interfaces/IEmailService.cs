@@ -11,5 +11,7 @@ namespace BirileriWebSitesi.Interfaces
         Task<bool> SendBankTransferNoticeEmailAsync(Order order, string note);
         Task<bool> SendCustomerOrderMailAsync(Order order);
         Task<bool> SendInquiryEmailAsync(string email, Inquiry inquiry);
+        Task<bool> SendOrderCancelledEmailAsync(Order order,string email, string type);
+        Task<bool> SendOrderItemCancelledEmailAsync(Order order,OrderItem item,string email, string type);
     }
 }

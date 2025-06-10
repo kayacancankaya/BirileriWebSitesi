@@ -47,10 +47,10 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public decimal TotalAmount => Convert.ToDecimal(_orderItems.Sum(i => i.Units * i.UnitPrice));
         [ForeignKey(nameof(ShipToAddressId))]
         [JsonIgnore]
-        public virtual Address ShipToAddress { get; private set; }
+        public virtual Address? ShipToAddress { get; private set; }
         [ForeignKey(nameof(BillingAddressId))]
         [JsonIgnore]
-        public virtual Address BillingAddress { get; private set; }
+        public virtual Address? BillingAddress { get; private set; }
         public bool IsInBuyRegion { get; private set; } = false;
         public bool UpdateUserInfo { get; set; } = false;
         public string AdditionalNotes { get; set; } = string.Empty;
@@ -76,6 +76,10 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public int PaymentType { get; set; } = 1;
         public int InstallmentAmount { get; set; } = 1;
         public int Status { get; set; } = (int)ApprovalStatus.Pending;
+        public DateTime? ShipmentReadyDate { get; set; } = DateTime.Now.AddDays(2);
+        public DateTime? ShipmentDate { get; set; } = null;
+        public DateTime? DeliveryDate { get; set; } = null;
+        public DateTime? CanceledAt { get; set; } = null;
         public virtual PaymentLog? PaymentLog { get; set; } 
     }
 }

@@ -11,7 +11,6 @@ namespace BirileriWebSitesi.Controllers
         {
             _logger = logger;
         }
-        
         public IActionResult Index()
         {
             try
@@ -159,7 +158,6 @@ namespace BirileriWebSitesi.Controllers
                 return BadRequest();
             }
         }
-
         public IActionResult ContactUs()
         {
             try

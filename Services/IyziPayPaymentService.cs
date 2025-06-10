@@ -1,11 +1,15 @@
-﻿using BirileriWebSitesi.Interfaces;
+﻿using BirileriWebSitesi.Data;
+using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models;
 using BirileriWebSitesi.Models.OrderAggregate;
 using Iyzipay.Model;
 using Iyzipay.Request;
 using Microsoft.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NuGet.Protocol.Plugins;
 using System.Globalization;
+using OrderItem = BirileriWebSitesi.Models.OrderAggregate.OrderItem;
 
 namespace BirileriWebSitesi.Services
 {
@@ -14,14 +18,17 @@ namespace BirileriWebSitesi.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<IyziPayPaymentService> _logger;
         private readonly IOptions<IyzipayOptions> _iyzipayOptions;
+        private readonly ApplicationDbContext _context;
         public IyziPayPaymentService(IConfiguration configuration, 
                                      ILogger<IyziPayPaymentService> logger,
-                                     IOptions<IyzipayOptions> iyzipayOptions)
+                                     IOptions<IyzipayOptions> iyzipayOptions,
+                                     ApplicationDbContext context)
         {
             _configuration = configuration;
             _logger = logger;
             _iyzipayOptions = iyzipayOptions;
-            
+            _context = context;
+
         }
         public async Task<string> IyziPayCreate3dsReqAsync(Order order, PaymentRequestModel model)
         {
@@ -137,13 +144,9 @@ namespace BirileriWebSitesi.Services
                 PaymentCard paymentCard = new PaymentCard();
                 paymentCard.CardHolderName = model.CardHolderName;
                 paymentCard.CardNumber = model.CreditCardNumber;
-                //Card number: 5890040000000016
-
-                //Expire Month: 12
-
-                //Expire Year: 2030
-
-                //CVC: 123
+                //Card number: 5890040000000016 3ds
+                //5526080000000006
+                
                 paymentCard.ExpireMonth = model.ExpMonth;
                 paymentCard.ExpireYear = model.ExpYear;
                 paymentCard.Cvc = model.CVV;
@@ -301,6 +304,160 @@ namespace BirileriWebSitesi.Services
             {
                 _logger.LogError(ex, ex.Message.ToString());
                 return null;
+            }
+        }
+        public async Task<bool> CancelOrderAsync(Order order)
+        {
+            try
+            {
+                Iyzipay.Options options = await GetIyzipayOptionsAsync();
+                if (options == null) return false;
+
+                PaymentLog? payment = await _context.PaymentLogs
+                                                .FirstOrDefaultAsync(pl => pl.OrderId == order.Id);
+                if (payment == null)
+                    return true; // No payment log found, nothing to cancel
+
+                DateTime? deliveryDate = DateTime.MinValue;
+                if (order.DeliveryDate != null)
+                    deliveryDate = order.DeliveryDate;
+                // if payment is made 24 hours ago, cancel payment api
+                if (DateTime.Now < payment.PaidAt.AddDays(1))
+                {
+                    CreateCancelRequest request = new CreateCancelRequest();
+                    request.PaymentId = payment.PaymentId;
+                    request.Ip = payment.Ip;
+                    request.Reason = "other";
+                    request.Description = "Customer changed mind.";
+                    request.ConversationId = Guid.NewGuid().ToString();
+                    request.Locale = Locale.TR.ToString();
+                    var cancelResponse = await Iyzipay.Model.Cancel.Create(request, options);
+                    if (cancelResponse.Status == "success")
+                    {
+                        order.Status = 6; // Set status to Cancelled
+                        order.CanceledAt = DateTime.Now;
+                        _context.Orders.Update(order);
+                        await _context.SaveChangesAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to cancel order {OrderId}: {ErrorMessage}", order.Id, cancelResponse.ErrorMessage);
+                        return false;
+                    }
+                }
+                //if delivery date is less than 15 days, refund payment api
+                else if (deliveryDate.Value.AddDays(15) <= DateTime.Now)
+                {
+                    var retrieveRequest = new RetrievePaymentRequest();
+                    retrieveRequest.PaymentId = payment.PaymentId;
+
+                    var paymentDetails = await Iyzipay.Model.Payment.Retrieve(retrieveRequest, options);
+                    bool allRefunded = true;
+                    foreach (var item in order.OrderItems)
+                    {
+                        Iyzipay.Model.PaymentItem paymentItem = paymentDetails.PaymentItems.Where(i => i.ItemId == item.ProductCode).FirstOrDefault();
+
+                        CreateRefundRequest request = new CreateRefundRequest();
+                        request.PaymentTransactionId = paymentItem.PaymentTransactionId;
+                        request.Price = paymentItem.PaidPrice.ToString();
+                        request.Ip = payment.Ip == null ? string.Empty : payment.Ip;
+                        request.Reason = "other";
+                        request.Description = "Customer changed mind.";
+                        request.ConversationId = Guid.NewGuid().ToString();
+                        request.Currency = Currency.TRY.ToString();
+                        request.Locale = Locale.TR.ToString();
+                     
+                        var refundResponse = await Iyzipay.Model.Refund.Create(request, options);
+                        if (refundResponse.Status == "success")
+                        {
+                            item.IsRefunded = true;
+                            item.RefundDate = DateTime.UtcNow;
+                            _context.Update(item);
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                            allRefunded = false;
+                    }
+
+
+                    if (allRefunded)
+                    {
+                        order.Status = 6; // Set status to Cancelled
+                        order.CanceledAt = DateTime.Now;
+                        _context.Orders.Update(order);
+                        await _context.SaveChangesAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to refund order {OrderId} ", order.Id);
+                        return false;
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Order {OrderId} cannot be cancelled or refunded after 15 days of delivery date.", order.Id);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cancel Order Iyzico procedure failed for {OrderId}", order.Id);
+                return false;
+            }
+        }
+        public async Task<int> CancelOrderItemAsync(Order order, OrderItem item)
+        {
+            try
+            {
+                Iyzipay.Options options = await GetIyzipayOptionsAsync();
+                if (options == null) return -1;
+
+                PaymentLog? payment = await _context.PaymentLogs
+                                                .FirstOrDefaultAsync(pl => pl.OrderId == order.Id);
+                if (payment == null)
+                    return 1; // No payment log found, nothing to cancel
+
+                DateTime? deliveryDate = DateTime.MinValue;
+                if (order.DeliveryDate != null)
+                    deliveryDate = order.DeliveryDate;
+                // if payment is made 24 hours ago, cancel payment api
+                if (DateTime.Now < payment.PaidAt.AddDays(1))
+                    return 2;
+
+                //if delivery date is less than 15 days, refund payment api
+                else if (deliveryDate.Value.AddDays(15) <= DateTime.Now)
+                {
+                    var retrieveRequest = new RetrievePaymentRequest();
+                    retrieveRequest.PaymentId = payment.PaymentId;
+
+                    var paymentDetails = await Iyzipay.Model.Payment.Retrieve(retrieveRequest, options);
+                    Iyzipay.Model.PaymentItem paymentItem = paymentDetails.PaymentItems.Where(i => i.ItemId == item.ProductCode).FirstOrDefault();
+
+                    CreateRefundRequest request = new CreateRefundRequest();
+                    request.PaymentTransactionId = paymentItem.PaymentTransactionId;
+                    request.Price = paymentItem.PaidPrice.ToString();
+                    request.Ip = payment.Ip == null ? string.Empty : payment.Ip;
+                    request.Reason = "other";
+                    request.Description = "Customer changed mind.";
+                    request.ConversationId = Guid.NewGuid().ToString();
+                    request.Currency = Currency.TRY.ToString();
+                    request.Locale = Locale.TR.ToString();
+
+                    var refundResponse = await Iyzipay.Model.Refund.Create(request, options);
+                    if (refundResponse.Status == "success")
+                        return 1;
+
+                }
+                else
+                    return 3; // Order cannot be cancelled or refunded after 15 days of delivery date
+                return -1;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cancel Order Iyzico procedure failed for {OrderId}", order.Id);
+                return -1;
             }
         }
 

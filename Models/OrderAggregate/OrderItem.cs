@@ -16,6 +16,11 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         [Required]
         [ForeignKey(nameof(Order))]
         public int OrderId { get;  set; }
+        public bool IsRefunded { get; set; } = false;
+
+        public DateTime? RefundDate { get; set; } = null;
+
+
 
 #pragma warning disable CS8618 // Required by Entity Framework
         public OrderItem() { }

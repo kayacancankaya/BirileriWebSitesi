@@ -22,9 +22,10 @@ namespace BirileriWebSitesi.Models
         public string? BinNumber { get; set; }
         public string? LastFourDigits { get; set; } 
         public string? Status { get; set; }
+        public string? Ip { get; set; }
         public DateTime PaidAt { get; set; }
         [ForeignKey(nameof(OrderId))]
-        public virtual Order Order { get; set; } = new Order();
+        public virtual Order? Order { get; set; } 
     }
 
 }

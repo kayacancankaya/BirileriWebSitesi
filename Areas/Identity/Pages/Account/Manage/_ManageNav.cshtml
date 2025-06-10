@@ -8,12 +8,16 @@
 @{
     var userId = UserManager.GetUserId(User);
     bool hasOrders = false;
+    bool hasAddress = false;
     if (!string.IsNullOrEmpty(userId))
     {
         hasOrders = await Context.Orders.Where(s=>s.Status != 0 &&
                                                   s.Status != 2)
                                         .AnyAsync(o => o.BuyerId == userId);
+        hasAddress = await Context.Addresses.AnyAsync(a => a.UserId == userId);
+        
     }
+    
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
 <section class="manage-nav-section">
@@ -26,6 +30,10 @@
                     {
                         <li class="nav-item"><a class="nav-link @ManageNavPages.OrdersNavClass(ViewContext)" id="orders" asp-page="./Orders">Sipariş Bilgileri</a></li>
                         <li class="nav-item"><a class="nav-link @ManageNavPages.TranferFormClass(ViewContext)" id="tranfers" asp-page="./TransferNoticeForm">Banka Havale Bildirimi</a></li> 
+                    }
+                    @if(hasAddress)
+                    {
+                        <li class="nav-item"><a class="nav-link @ManageNavPages.AddressesNavClass(ViewContext)" id="addresses" asp-page="./Addresses">Adres Bilgileri</a></li>
                     }
                     <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email Güncelle</a></li>
                     <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Şifre İşlemleri</a></li>

@@ -1,0 +1,132 @@
+﻿@model BirileriWebSitesi.Models.OrderAggregate.Address
+<div class="row clearfix">
+    <form type="post" asp-page="Addresses" id="address-form">
+        @if (Model.IsBilling == false ||
+            (Model.IsBilling == true &&
+             Model.IsCorporate == false))
+        {
+            <!--First Name-->
+            <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+                <label for="first-name" class="form-label">İsim</label>
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+                <input type="text" class="form-control" value="@Model.FirstName" asp-for="FirstName" aria-describedby="isim"
+                        id="first-name" placeholder="İsim">
+            </div>
+            <!--Last Name-->
+            <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+                <label for="last-name" class="form-label">Soy İsim</label>
+                <span asp-validation-for="LastName" class="text-danger"></span>
+                <input type="text" class="form-control" value="@Model.LastName" asp-for="LastName" aria-describedby="soyisim"
+                       id="last-name" placeholder="Soy İsim">
+            </div>
+        }
+        else
+        {
+            <!--Corporate Name-->
+            <div class="mb-3 col-lg-12 col-md-12 col-sm-12">
+                <label for="corporate-name" class="form-label">Firma İsmi - Şahıs Şirketi İsim Soy İsim</label>
+                <span asp-validation-for="CorporateName" class="text-danger"></span>
+                <input type="text" class="form-control" value="@Model.CorporateName" asp-for="CorporateName" aria-describedby="firmaIsmi"
+                       id="corporate-name" placeholder="Firma İsmi">
+            </div>
+            <!--Corporate Name-->
+            <div class="mb-3 col-lg-6 col-md-12 col-sm-12">
+                <label for="vat" class="form-label">Vergi No</label>
+                <span asp-validation-for="VATnumber" class="text-danger"></span>
+                <input type="text" class="form-control" value="@Model.VATnumber" asp-for="VATnumber" aria-describedby="vergiNo"
+                       id="vat" placeholder="Vergi No Giriniz...">
+            </div>
+            <!--VAT State-->
+            <div class="mb-3 col-lg-6 col-md-12 col-sm-12">
+                <label for="vat" class="form-label">Vergi Dairesi</label>
+                <span asp-validation-for="VATstate" class="text-danger"></span>
+                <input type="text" class="form-control" value="@Model.VATstate" asp-for="VATstate" aria-describedby="vergiDairesi"
+                       id="vat-state" placeholder="Vergi Dairesi Giriniz...">
+            </div>
+        }
+
+        <!--Email Address-->
+        <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+            <label for="email-address" class="form-label">Email</label>
+            <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            <input type="email" class="form-control" value="@Model.EmailAddress" asp-for="EmailAddress" aria-describedby="email"
+                   id="email-address" placeholder="Email">
+        </div>
+        <!--Phone-->
+        <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+            <label for="phone" class="form-label">Telefon</label>
+            <span asp-validation-for="Phone" class="text-danger"></span>
+            <input type="tel" class="form-control" value="@Model.Phone" asp-for="Phone" aria-describedby="telefon"
+                   id="phone" placeholder="Telefon">
+        </div>
+        <!--Address-->
+        <div class="mb-3 col-lg-12 col-md-12 col-sm-12">
+            <label for="address-detailed" class="form-label">Adres</label>
+            <span asp-validation-for="AddressDetailed" class="text-danger"></span>
+            <textarea class="form-control" value="@Model.AddressDetailed" asp-for="AddressDetailed" aria-describedby="adres" rows="3"
+                      id="address-detailed" placeholder="Adres">
+            </textarea>
+        </div>
+        <!--City-->
+        <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+            <label for="city" class="form-label">Şehir</label>
+            <span asp-validation-for="City" class="text-danger"></span>
+            <input type="text" class="form-control" value="@Model.City" asp-for="City" aria-describedby="şehir"
+                   id="city" placeholder="Şehir">
+        </div>
+        <!--State-->
+        <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+            <label for="state" class="form-label">İlçe</label>
+            <span asp-validation-for="State" class="text-danger"></span>
+            <input type="text" class="form-control" value="@Model.State" asp-for="State" aria-describedby="ilçe"
+                   id="state" placeholder="İlçe">
+        </div>
+        <!--Street-->
+        <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+            <label for="street" class="form-label">İlçe</label>
+            <span asp-validation-for="Street" class="text-danger"></span>
+            <input type="text" class="form-control" value="@Model.Street" asp-for="Street" aria-describedby="mahalle"
+                   id="street" placeholder="Mahalle">
+        </div>
+        <!--Zip Code-->
+        <div class="mb-3 col-lg-6 col-md-6 col-sm-12">
+            <label for="zip" class="form-label">Posta Kodu</label>
+            <span asp-validation-for="ZipCode" class="text-danger"></span>
+            <input type="text" class="form-control" value="@Model.ZipCode" asp-for="ZipCode" aria-describedby="postaKodu"
+                   id="zip" placeholder="Posta Kodu">
+        </div>
+        @if (Model.IsBilling == false)
+        {
+            <!--Is Billing Same-->
+            <div class="form-check mb-3 ml-3 col-lg-12 col-md-12 col-sm-12">
+                <input class="form-check-input" type="checkbox" asp-for="IsBillingSame"
+                    id="is-billing-same"
+                >
+                <label class="form-check-label" for="is-billing-same">
+                    Fatura Adresi Aynı
+                </label>
+            </div>
+        }
+        <!--Is Default-->
+        <div class="form-check mb-3 ml-3 col-lg-12 col-md-12 col-sm-12">
+            <input class="form-check-input" type="checkbox"  asp-for="SetAsDefault"
+             id="set-as-default"
+            >
+            <label class="form-check-label" for="update-user-info">
+                Varsayılan Olarak Ayarla
+            </label>
+        </div>
+
+        <input type="checkbox" style="display:none" asp-for="IsCorporate" id="is-corporate"/>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="UserId" />
+        <div class="col-12 mb-3 clearfix">
+            <span class="alert-text d-block mb-1" id="update-button-text" style="display:none;">  </span>
+            <input class="btn btn-primary" id="update-address-button" type="submit"  data-handler="UpdateAddress" aria-describedby="güncelle" value="Güncelle">
+        </div>
+        <div class="col-12 mb-3">
+            <span class="alert-text d-block mb-1" id="delete-button-text" style="display:none;">  </span>
+            <input class="btn btn-danger" id="delete-address-button" type="submit" data-handler="DeleteAddress" aria-describedby="sil" value="Sil">
+        </div> 
+    </form>
+</div>

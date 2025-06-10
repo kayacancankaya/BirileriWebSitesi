@@ -36,6 +36,7 @@
                                 </td>
                                 <td><h4 class="prod-title">@item.ProductName</h4></td>
                                 <td class="sub-total">@item.UnitPrice</td>
+                                <td class="qty">
                                 <td class="qty"><div class="item-quantity" style="color:black"><input style="color:black" data-productCode="@item.ProductCode" class="quantity-spinner" type="text" value="@item.Quantity" name="quantity"></div></td>
                                 <td class="total">@itemTotal</td>
                                 <td><span class="alert-text"></span><a data-productcode="@item.ProductCode" class="remove-btn"><span class="fa fa-remove"></span></a></td>
@@ -71,7 +72,7 @@
                 <!--Totals Table-->
                 <ul class="totals-table">
                     <li class="clearfix total"><span class="col">Toplam</span><span class="col ">@Model.TotalAmount ₺</span></li>
-                    <li class="text-right"><a class="theme-btn proceed-btn" asp-controller="Order" asp-action="CheckOut" style="cursor:pointer;">SEPETİ ONAYLA</a></li>
+                    <li class="text-right"><span class="alert-text"></span><a class="theme-btn proceed-btn" asp-controller="Order" asp-action="CheckOut" style="cursor:pointer;">SEPETİ ONAYLA</a></li>
                 </ul>
             </div>
 

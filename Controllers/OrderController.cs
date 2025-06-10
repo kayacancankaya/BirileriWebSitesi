@@ -1,7 +1,6 @@
 ﻿using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models.BasketAggregate;
 using BirileriWebSitesi.Models;
-using Iyzipay.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -59,7 +58,7 @@ namespace BirileriWebSitesi.Controllers
                     user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
                 }
                 else
-                    return RedirectToAction("NotFound","Home");
+                    return RedirectToAction("NotFound", "Home");
                 bool isInBuyRegion = false;
                 string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 bool isProduction = environment == "Production";
@@ -67,16 +66,16 @@ namespace BirileriWebSitesi.Controllers
                 {
                     string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                     isInBuyRegion = await _userAuditService.IsInBuyRegion(userID, ip);
-                    
+
                     if (!isInBuyRegion)
                     {
                         TempData["WarningMessage"] = "Hizmetimiz Türkiye sınırları içinde geçerlidir.";
                         return RedirectToAction("Index", "Home");
                     }
                 }
-                else 
+                else
                     isInBuyRegion = true;
-                
+
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
@@ -119,22 +118,21 @@ namespace BirileriWebSitesi.Controllers
 
                 }
 
-              _logger.LogWarning("order init");
                 Order order = new(userID, shipToAddress, billingAddress, orderItems, isInBuyRegion, true, 1);
                 if (order.TotalAmount > 100000)
                 {
                     TempData["DangerMessage"] = "Sepet Miktarı 100000₺'den Büyük Olamaz.";
-                    return RedirectToAction("Index","Cart");
+                    return RedirectToAction("Index", "Cart");
                 }
 
-              
+
                 return View(order);
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-               return RedirectToAction("NotFound", "Home");
+                return RedirectToAction("NotFound", "Home");
             }
         }
         public IActionResult _PartialIsCorporate(Models.OrderAggregate.Address address)
@@ -172,11 +170,11 @@ namespace BirileriWebSitesi.Controllers
                 }
 
                 string? buyerID = _userManager.GetUserId(User);
-                  string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                                if (ip == "::1")
-                                   ip = "212.252.136.146";
-                               
-                                
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                if (ip == "::1")
+                    ip = "212.252.136.146";
+
+
                 if (string.IsNullOrEmpty(buyerID))
                     return BadRequest(new { success = false, message = "Kullanıcı Bulunamadı." });
 
@@ -340,11 +338,11 @@ namespace BirileriWebSitesi.Controllers
                 }
                 else
                     return Ok(new { success = false, message = "Kullanıcı Bulunamadı." });
-                
+
                 Inquiry inquiry = await _basketService.GetInquiryBasketAsync(userID);
-                
+
                 bool result = await _emailService.SendInquiryEmailAsync(email, inquiry);
-                if(result)
+                if (result)
                 {
                     TempData["SuccessMessage"] = "Talebiniz Alındı. En kısa sürede sizinle iletişime geçilecektir.";
                     return RedirectToAction("Index", "Home");
@@ -359,6 +357,73 @@ namespace BirileriWebSitesi.Controllers
             {
                 _logger.LogError(ex, ex.Message.ToString());
                 return Ok(new { success = false, message = "İstek Gönderilirken Hata ile Karşılaşıldı." });
+            }
+        }
+
+
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CancelOrderAsync(int orderId)
+        {
+            try
+            {
+                int resultInt = await _orderService.CancelOrderAsync(orderId);
+                string userID = string.Empty;
+                IdentityUser? user = new();
+
+                if (!User.Identity.IsAuthenticated)
+                {
+                    TempData["DangerMessage"] = "Kullanıcı Bulunamadı." ;
+                    return Redirect("/Identity/Account/Manage/Orders");
+                }
+                userID = _userManager.GetUserId(User);
+                user = await _userManager.Users.Where(i => i.Id == userID).FirstOrDefaultAsync();
+                string email = user.Email;
+                Order order = await _orderService.GetOrderAsync(orderId);
+                if (resultInt == -1)
+                {
+                    TempData["DangerMessage"] = "Sipariş İptal Edilirken Hata ile Karşılaşıldı. \n" +
+                                                 "Lütfen İletişim Kutusundan Bizimle İletişime Geçiniz.";
+                }
+                else if (resultInt == 0)
+                {
+                    TempData["DangerMessage"] = "İlgili Sipariş Sistemde Bulunamadı. \n" +
+                                                 "Lütfen İletişim Kutusundan Bizimle İletişime Geçiniz.";
+                }
+                else if (resultInt == 1)
+                {
+                    TempData["SuccessMessage"] = "Siparişiniz İptal Edildi.";
+                    await _emailService.SendOrderCancelledEmailAsync(order,email, "Products Not Recieved" );
+                }
+                else if (resultInt == 2)
+                {
+                    TempData["SuccessMessage"] = "Sipariş İptal Talebiniz Alındı.\nÜrünler Tarafımıza Ulaştığında Ücret İadesi Sağlanacaktır.";
+                    await _emailService.SendOrderCancelledEmailAsync(order, email, "Products Recieved");
+                }
+                else if (resultInt == 3)
+                {
+                    TempData["DangerMessage"] = "Ödeme iade edilirken hata ile karşılaşıldı. \n" +
+                                                 "Lütfen İletişim Kutusundan Bizimle İletişime Geçiniz.";
+                }
+
+                else if (resultInt == 4)
+                {
+                    TempData["SuccessMessage"] = "Siparişiniz İptal Edildi.";
+                    await _emailService.SendOrderCancelledEmailAsync(order, email, "Products Not Recieved");
+                }
+
+                else if (resultInt == 5)
+                {
+                    TempData["SuccessMessage"] = "Sipariş İptal Talebiniz Alındı.\nÜrünler Tarafımıza Ulaştığında Ücret İadesi Sağlanacaktır.";
+                    await _emailService.SendOrderCancelledEmailAsync(order, email, "Products Recieved");
+                }
+                return Redirect("/Identity/Account/Manage/Orders");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return Ok(new { success = false, message = "Sepet Temizlenirken Hata ile Karşılaşıldı." });
             }
         }
     }

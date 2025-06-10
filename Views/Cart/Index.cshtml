@@ -11,10 +11,15 @@
                                     toptan spor malzemesi">
 }
 
-
-
-@Html.AntiForgeryToken()
-<input name="__RequestVerificationToken" type="hidden" value="TOKEN_VALUE" />
+@section CSS {
+    <style>
+        *, *:before, *:after {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+    </style>
+}
 <!--Cart Section-->
 <section class="cart-section" id="cart-content">
     @Html.Partial("_PartialCart",Model)
@@ -30,9 +35,12 @@
     <script>
         $(document).ready(function (){
 
+        
             $(".dropdown").removeClass("current");
             $(".cart").addClass("current");
             initializeQuantitySpinner();
+
+            $(".quantity-spinner").prop("readonly", false);
             $(document).on("click", ".remove-btn", function () {
                 var productCode = $(this).data("productcode");
                 var button = $(this);
@@ -67,29 +75,13 @@
                     }
                 });
             });
-            $(document).on("click", ".bootstrap-touchspin", function () {
-                var productCode = $(this).closest("td").find(".quantity-spinner").data("productcode");
-                var quantity = $(this).closest("td").find(".quantity-spinner").val();
-
-                $.ajax({
-                    type: "POST",
-                    url: "/Cart/CartItemAmountChanged",
-                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
-                    data: {
-                        productCode: productCode,
-                        quantity: quantity
-                    },
-                    async: true,
-                    success: function (response) {
-                        $("#cart-content").html(response);
-                        initializeQuantitySpinner();
-                    },
-                    error: function (xhr) {
-                        var response = JSON.parse(xhr.responseText);
-                        
-                    }
-                });
+            
+            $(document).on("click", ".bootstrap-touchspin-up, .bootstrap-touchspin-down", function () {
+                var $input = $(this).closest("td").find(".quantity-spinner");
+                $input.trigger("change"); 
             });
+
+            $(document).on("change", ".quantity-spinner", handleQuantityChange);
         });
         function initializeQuantitySpinner() {
             if ($('.quantity-spinner').length) {
@@ -98,6 +90,7 @@
                 max: 999999,
                 step: 1,
                 verticalbuttons: true,
+                 forcestepdivisibility: 'none',
             });
             }
 
@@ -119,5 +112,33 @@
                 "justify-content": "center",
             });
         };
+        function handleQuantityChange() {
+            var $input = $(this);
+            var productCode = $input.data("productcode");
+            var quantity = $input.val();
+
+            $.ajax({
+                type: "POST",
+                url: "/Cart/CartItemAmountChanged",
+                headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                data: {
+                    productCode: productCode,
+                    quantity: quantity
+                },
+                async: true,
+                success: function (response) {
+                    $("#cart-content").html(response);
+                    initializeQuantitySpinner(); // Rebind after AJAX load
+                },
+                error: function (xhr) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        console.error(response.message || "Sunucu hatası");
+                    } catch (e) {
+                        console.error("Beklenmeyen bir hata oluştu");
+                    }
+                }
+            });
+        }
     </script>
 }

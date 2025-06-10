@@ -265,6 +265,7 @@
 
             var currentState = parseInt($('#currentState').val());
             lastWidth = window.innerWidth;
+             //init product photo swiper
             setTimeout(function () {
                                     new Swiper('.swiper-single-product', {
                                         slidesPerView: 1,
@@ -292,6 +293,7 @@
 
                                     });
                                 }, 300);
+            //init popular product relatated product swiper
             setTimeout(function () {
                     if (currentState === 0) {
                         currentState = 1;
@@ -336,22 +338,11 @@
                                 }, 300)
                         
                      }
-                }, 1000); 
-
-
+                }, 1000);
+            //navigation make active
             $(".dropdown").removeClass("current");
             $(".shop").addClass("current");
            
-            if ($('.quantity-spinner').length) {
-                $(".quantity-spinner").TouchSpin({
-                    min: 1,
-                    max: 100,
-                    step: 1,
-                    verticalbuttons: true,
-                    buttondown_txt: '-',
-                    buttonup_txt: '+'
-                });
-            }
             //description toggler
             $('.tab-btn').on('click', function () {
               var tabId = $(this).data('tab');
@@ -366,10 +357,9 @@
                     $("#prod-details-div").css('display','none');
                 }
             });
-           
-            
-            var baseProductCode = $("#product-code").val();
+
             //increase popularity
+            var baseProductCode = $("#product-code").val();
             $.ajax({
                     type: "POST",
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
@@ -379,13 +369,14 @@
                     
                 });
             
+            //change variation
             $(document).on("click", ".variant-button", function () {
                 var selectedVar = $(this).text().trim();
                 // Remove active class from siblings and add it to the clicked button
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
                 var button = $(this);
-              
+                $(".variant-button").prop("disabled", true);
                 var variantAttributes = {};
 
                 $(".variant-group").each(function () {
@@ -411,6 +402,9 @@
                     success: function (response) {
                         $("#variant-image").html(response.imagePartial);  
                         $("#variant-info").html(response.infoPartial);
+                        $(".variant-button").prop("disabled", false);
+                        // Reinitialize FancyBox for new elements
+                        $(".lightbox-image").fancybox();
 
                        setTimeout(function () {
                                     new Swiper('.swiper-single-product', {
@@ -451,7 +445,7 @@
 
                     },
                     error: function (xhr) {
-
+                         $(".variant-button").prop("disabled", false);
                     try {
                         // Try parsing JSON response
                         var response = JSON.parse(xhr.responseText);
@@ -471,6 +465,8 @@
                 var price = parseFloat($('#variant-price').text());
                
                 var button = $(this);
+
+                 $(".add-to-cart").text("işlem yapılıyor...").prop("disabled", true);
                 $.ajax({
                     type: "POST",
                     headers: { "RequestVerificationToken": getAntiForgeryToken() },
@@ -485,17 +481,20 @@
                     success: function (response) {
                         if(response.success)
                         {
+                            $(".add-to-cart").text("Sepete Ekle").prop("disabled", false);
                                showAlert(button, response.message, "success");
                                 let currentItem = response.totalProduct;
                                 $(".cart .cart-count").text(currentItem);
                         }
                          else{
+                              $(".add-to-cart").text("Sepete Ekle").prop("disabled", false);
                             showAlert(button, response.message, "error");
                             let currentItem = response.totalProduct;
                             $(".cart .cart-count").text(currentItem);
                         }
                     },
                     error: function (xhr) {
+                         $(".add-to-cart").text("Sepete Ekle").prop("disabled", false);
                         var response = JSON.parse(xhr.responseText);
 
                         showAlert(button, response.message, "danger");
@@ -509,7 +508,7 @@
                 var price = parseFloat($('#variant-price').text());
                 var userId = $('#user-id').val();
                 var quantity = 1;
-
+                 $(".add-to-inquiry").text("işlem yapılıyor...").prop("disabled", true);
                 var button = $(this);
                 $.ajax({
                     type: "POST",
@@ -523,6 +522,7 @@
                         quantity: quantity
                     },
                     success: function (response) {
+                        $(".add-to-inquiry").text("Talep Oluştur").prop("disabled", false);
                         if(response.success)
                         {
                                showAlert(button, response.message, "success");
@@ -536,6 +536,7 @@
                         }
                     },
                     error: function (xhr) {
+                        $(".add-to-inquiry").text("Talep Oluştur").prop("disabled", false);
                         var response = JSON.parse(xhr.responseText);
 
                         showAlert(button, response.message, "danger");

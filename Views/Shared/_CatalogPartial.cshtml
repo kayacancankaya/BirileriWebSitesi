@@ -32,7 +32,10 @@
                     <div class="inner-box">
                         <div class="upper-box">
                             <span class="icon @iconClass"></span>
-                            <h3><a href="@Url.Action("OpenPdf", "Home", new { filePath = pdfPath })" target="_blank">@item.Key</a></h3>
+                            <h3>
+                                <a asp-controller="Shop" asp-action="Catalog" asp-route-catalogName="@item.Key"
+                                    @* href="@Url.Action("OpenPdf", "Home", new { filePath = pdfPath })" target="_blank" *@>@item.Key
+                                   </a></h3>
                         </div>
                         <div class="lower-box">
                             <div class="image">

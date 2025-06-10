@@ -14,7 +14,9 @@
     @RenderSection("Description", required: true)
     @RenderSection("Keywords", required: true)
     <!-- Stylesheets -->
-    <link href="~/css/bootstrap.css" rel="stylesheet">
+    @* <link href="~/css/bootstrap.css" rel="stylesheet"> *@
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-..." crossorigin="anonymous">
+
     @RenderSection("RevolutionCSS", required: false)
 
     <link rel="icon" type="image/png" href="~/images/logo-resim.ico" />
@@ -569,7 +571,7 @@
                     @TempData["WarningMessage"]
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tamam</button>
+                    <button type="button" class="btn btn-secondary close-modal-button" data-dismiss="modal">Tamam</button>
                 </div>
             </div>
         </div>
@@ -582,13 +584,13 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-success">
-                    <h5 class="modal-title" id="successModalLabelH">Başarılı</h5>
+                    <h5 class="modal-title" id="successModalLabelH" style="color:white;">Başarılı</h5>
                 </div>
                 <div class="modal-body">
                     @TempData["SuccessMessage"]
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tamam</button>
+                    <button type="button" class="btn btn-secondary close-modal-button" data-dismiss="successModal">Tamam</button>
                 </div>
             </div>
         </div>
@@ -601,13 +603,13 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title" id="dangerModalLabelH">Hata</h5>
+                    <h5 class="modal-title" id="dangerModalLabelH" style="color:white;">Hata</h5>
                 </div>
                 <div class="modal-body">
                     @TempData["DangerMessage"]
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tamam</button>
+                    <button type="button" class="btn btn-secondary close-modal-button" data-dismiss="dangerModal">Tamam</button>
                 </div>
             </div>
         </div>
@@ -624,8 +626,11 @@
     
 
     @* <script src="~/js/popper.min.js"></script> *@
-    <script src="~/js/bootstrap.min.js" defer></script>
-    @* <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script> *@
+@*     <script src="~/js/bootstrap.min.js" defer></script> *@
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"
+            defer></script>  @* <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script> *@
     @RenderSection("FancyBox", required: false)
     
     @* <script src="~/js/owl.js" defer></script> *@
@@ -672,7 +677,11 @@
         $(document).ready(function () {
             let count = 0;
             let countInquiry = 0;
-           
+
+            $(document).on("click", ".close-modal-button", function() {
+                 $(this).closest(".modal").modal('hide');
+            });
+
                 $.ajax({
                     type: "POST",
                     url: "/Cart/InitializeCartNumber",

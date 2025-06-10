@@ -293,16 +293,17 @@
 @section AdditionalScripts {
     <script>
 	    $(document).ready(function () {
-            var force3ds = 0;
-           $(".dropdown").removeClass("current");
-           $(".cart").addClass("current");
+            //make active related navigation button
+            $(".dropdown").removeClass("current");
+            $(".cart").addClass("current");
+
             document.querySelectorAll('.dropdown-toggle').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const content = btn.nextElementSibling;
                     content.style.display = content.style.display === 'block' ? 'none' : 'block';
                 });
             });
-
+            //payment type selection change toggle related
             $(document).on("change", "#payment-1", function () {
                     if (this.checked) {
                         $("#credit-card-info").css("display","block");
@@ -316,6 +317,7 @@
                         $("#agreement-form-payment-type").text("Banka Transferi");
                     }
             });
+            //payment type selection change toggle related
             $(document).on("change", "#payment-2", function () {
                 if (this.checked) {
                     $("#credit-card-info").css("display","none");
@@ -329,6 +331,7 @@
                         $("#agreement-form-payment-type").text("Kredi Kartı");
                 }
             });
+            //validate credit card input
             $(document).on("input","#credit-card-number", function () {
                 const cardNumber = $(this).val().replace(/\s+/g, '');
                 if (cardNumber.length >= 6) {
@@ -379,7 +382,7 @@
                     $("#installment-div").hide();
                 }
             });
-
+            //calculate price iaw installment choice
             $(document).on("change","#installment", function() {
                 var selectedOption = $(this).find("option:selected");
                 var installmentNumber = selectedOption.val();
@@ -397,10 +400,13 @@
                 $("#info-p-total-amount").text(totalPrice);
                 $("#final-price").text(totalPrice);
             });
+            //finish payment
             $(document).on("click", "#finish-payment", function (e) {
 
                     e.preventDefault();
                     var button = $(this);
+                    // Disable button and show loading
+                    $("#finish-payment").text("İşlem Yapılıyor...").prop("disabled", true);
                     let requiredFields = [];
                 
                     var isCreditCardPayment = $("#payment-1").is(":checked");
@@ -458,7 +464,7 @@
                         paymentType = 2;
                     }
 		   
-		    let emailAddress = $("#billing-email-address").val() || $("#shipping-email-address").val() || "";
+		            let emailAddress = $("#billing-email-address").val() || $("#shipping-email-address").val() || "";
 
                     // Check forms are checked
                     $(".dropdown-checkbox").each(function () {
@@ -476,11 +482,6 @@
                         return;
                     }
 
-                    // Disable button and show loading
-                    $("#finish-payment").text("İşlem Yapılıyor...").prop("disabled", true);
-
-
-                    var paymentMethod = $("input[name='payment-group']:checked").attr("id");
                     var orderId = parseInt($("#order-id").val());
                     var installmentAmount = parseInt($("#installment").val());
                     var data = {

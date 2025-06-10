@@ -41,7 +41,6 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnGetAsync(string userId, string code)
         {
             
-            _logger.LogWarning("Confirm email get started.");
             if (userId == null || code == null)
             {
                 return RedirectToPage("/Index");

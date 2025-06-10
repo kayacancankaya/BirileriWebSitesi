@@ -2,16 +2,64 @@
 @model BirileriWebSitesi.Areas.Identity.Pages.Account.Manage.OrderDetailsModel
 @{
     Layout = "/Views/Shared/_Layout.cshtml"; 
+    bool refundAvaiable = false;
+
+    if ((Model.Order.Status == 1 ||
+         Model.Order.Status == 5 ||
+         Model.Order.Status == 3) ||
+        (Model.Order.Status == 4 &&
+         Model.Order.DeliveryDate <= DateTime.Now.AddDays(15)))
+    {
+        refundAvaiable = true;
+    }
+    string statusText = Model.Order.Status == 0 ? "Beklemede" :
+                                    Model.Order.Status == 1 ? "Hazırlanıyor" :
+                                    Model.Order.Status == 2 ? "Başarısız" :
+                                    Model.Order.Status == 3 ? "Kargolandı" :
+                                    Model.Order.Status == 4 ? "Teslim Edildi" :
+                                    Model.Order.Status == 5 ? "Havale Bekleniyor" :
+                                    Model.Order.Status == 6 ? "İptal Edildi" : "Beklemede";
+
+    string statusStyle = Model.Order.Status == 6 ? "color:red;" : "";
 }
 @section Title {
-    <meta name="title" content="Hesap">
+<meta name="title" content="Hesap">
 }
 @section Description {
-    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+<meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
 }
 @section Keywords {
-    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+<meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
                                     toptan spor malzemesi">
+}
+@section CSS {
+<style>
+    .custom-link {
+    margin-left: 5px;
+    padding: 5px;
+    height: 40px;
+    width: auto;
+    border-radius: 10px;
+    background-color: red;
+    color: black;
+    border: 2px solid black;
+    text-decoration: none;
+    display: inline-block;
+    }
+
+    .custom-link:hover {
+    background-color: darkred;
+    color: white;
+    cursor: pointer;
+    border-color:white;
+    }
+    .custom-link:disabled {
+    background-color: lightgray;
+    color: black;
+    cursor: none;
+    border-color:white;
+    }
+</style>
 }
 
 @Html.Partial("_ManageNav")
@@ -27,23 +75,33 @@
                 }
                 else
                 {
+                    string paymentType = Model.Order.PaymentType == 1 ? "Kredi Kartı" : "Havale/EFT";
                     <div class="card">
                         <div class="card-body">
                             <h4>Sipariş No: @Model.Order.Id</h4>
                             <p><strong>Tarih:</strong> @Model.Order.OrderDate.ToString("dd/MM/yyyy")</p>
                             <p><strong>Toplam Tutar:</strong> @Model.Order.TotalAmount.ToString("C") ₺</p>
-                            <p><strong>Durum:</strong> 
-                            
-                                @(Model.Order.Status == 0 ? "Beklemede" :
-                                    Model.Order.Status == 1 ? "Hazırlanıyor" :
-                                    Model.Order.Status == 2 ? "Başarısız" :
-                                    Model.Order.Status == 3 ? "Kargolandı" :
-                                    Model.Order.Status == 4 ? "Teslim Edildi" : "Beklemede")
-                            </p>
+                            <p><strong>Durum:</strong> <span style="@statusStyle">@statusText</span></p>
+                            <p><strong>Ödeme Şekli:</strong> @paymentType </p>
+                            @if (refundAvaiable)
+                            {
+                                <p><strong>İptal Et:</strong>
+                                    <span class="alert-text"></span>
+
+                                    <form method="post" asp-page-handler="CancelOrder" style="display:inline;">
+                                        <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                        <button type="submit" class="custom-link">
+                                            İptal Et
+                                        </button>
+                                    </form>
+
+
+                                </p>
+                            }
                         </div>
                     </div>
 
-                    <h3>Ürünler</h3>
+                    <h3 class="mt-4">Ürünler</h3>
                     @if (Model.Order.OrderItems == null) 
                     {
                         <p>Bu siparişe ait ürün bulunamadı.</p>
@@ -52,7 +110,7 @@
                     {
                         <p>Bu siparişe ait ürün bulunamadı.</p>
                     }
-    
+
                     else
                     {
                         <table class="table">
@@ -70,6 +128,25 @@
                                         <td>@item.ProductVariant.ProductName</td>
                                         <td>@item.Units</td>
                                         <td>@item.UnitPrice.ToString("C") ₺</td>
+                                        <td>
+                                            @if (refundAvaiable)
+                                            {
+                                                if (item.IsRefunded)
+                                                {
+                                                    <span style="color:red;">İptal Edildi</span>
+                                                }
+                                                else
+                                                {
+                                                    <form method="post" asp-page-handler="CancelOrderItem" style="display:inline;">
+                                                        <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                                        <input type="hidden" name="productCode" value="@item.ProductCode" />
+                                                        <button type="submit" class="custom-link">
+                                                            İptal
+                                                        </button>
+                                                    </form>
+                                                }
+                                            }
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -81,3 +158,41 @@
         </div>
     </div>
 </section>
+
+@section AdditionalScripts {
+    <script>
+        $(document).ready(function () {
+
+            //cancel order
+            $(document).on("click", "#cancel-order", function () {
+                var orderId = parseInt($("#order-id").val());
+                var button = $(this);
+
+                 $("#cancel-order").text("işlem yapılıyor...").prop("disabled",true);
+                $.ajax({
+                    url: '@Url.Action("CancelOrderAsync", "Order")',
+                    type: "POST",
+                    headers: { "RequestVerificationToken": getAntiForgeryToken() },
+                    async: true,
+                    data: {
+                        orderId: orderId,
+                    },
+                    success: function (response) {
+                         $("#cancel-order").text("İptal Et").prop("disabled",false);
+                        if(response.success){
+                            showAlert(button, response.message, "success");
+                        }
+                        else{
+                            showAlert(button, response.message, "error");
+                        }
+                    },
+                    error: function () {
+
+                        $("#cancel-order").text("İptal Et").prop("disabled",false);
+                        showAlert(button, "Sipariş İptal Edilirken Hata ile Karşılaşıldı.", "danger");
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -16,6 +16,7 @@ using System.Composition;
 using System.Globalization;
 using static BirileriWebSitesi.Models.Enums.AprrovalStatus;
 using Address = BirileriWebSitesi.Models.OrderAggregate.Address;
+using OrderItem = BirileriWebSitesi.Models.OrderAggregate.OrderItem;
 
 namespace BirileriWebSitesi.Services
 {
@@ -25,14 +26,17 @@ namespace BirileriWebSitesi.Services
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> _logger;
         private readonly IIyzipayPaymentService _iyziPay;
+        private readonly IInventoryService _inventoryService;
 
-        public OrderService (ApplicationDbContext context, ILogger<OrderService> logger,
+        public OrderService(ApplicationDbContext context, ILogger<OrderService> logger,
                                 UserManager<IdentityUser> user,
-                                IIyzipayPaymentService iyzipay)
+                                IIyzipayPaymentService iyzipay,
+                                IInventoryService inventoryService)
         {
             _context = context;
             _logger = logger;
             _iyziPay = iyzipay;
+            _inventoryService = inventoryService;
         }
 
         public Task<Dictionary<Address, Address>> GetAddress(string userId)
@@ -45,24 +49,24 @@ namespace BirileriWebSitesi.Services
             {
                 if (order.ShipToAddress == null)
                     return "Gönderilecek Adres Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.FirstName))
+                if (string.IsNullOrEmpty(order.ShipToAddress.FirstName))
                     return "Gönderilecek Adres İsim Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.LastName))
+                if (string.IsNullOrEmpty(order.ShipToAddress.LastName))
                     return "Gönderilecek Adres Soy İsim Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.EmailAddress))
+                if (string.IsNullOrEmpty(order.ShipToAddress.EmailAddress))
                     return "Gönderilecek Adres Email Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.AddressDetailed))
+                if (string.IsNullOrEmpty(order.ShipToAddress.AddressDetailed))
                     return "Gönderilecek Adres Bilgisi Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.City))
+                if (string.IsNullOrEmpty(order.ShipToAddress.City))
                     return "Gönderilecek Adres Şehir Bilgisi Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.State))
+                if (string.IsNullOrEmpty(order.ShipToAddress.State))
                     return "Gönderilecek Adres İlçe Bilgisi Bulunamadı.";
-                if(string.IsNullOrEmpty(order.ShipToAddress.Street))
+                if (string.IsNullOrEmpty(order.ShipToAddress.Street))
                     return "Gönderilecek Adres Mahalle Bilgisi Bulunamadı.";
 
                 if (order.BillingAddress == null)
                     return "Fatura Adresi Bulunamadı.";
-                if(!order.BillingAddress.IsCorporate)
+                if (!order.BillingAddress.IsCorporate)
                 {
                     if (string.IsNullOrEmpty(order.BillingAddress.FirstName))
                         return "Fatura Adresi İsim Bulunamadı.";
@@ -98,10 +102,10 @@ namespace BirileriWebSitesi.Services
                     order.ShipToAddress.SetAsDefault = true;
                     order.BillingAddress.SetAsDefault = true;
                 }
-                    //update address
-                    //check if addresses exists
+                //update address
+                //check if addresses exists
                 bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);
-                if(result)
+                if (result)
                 {
                     _context.Addresses.Update(order.ShipToAddress);
                     await _context.SaveChangesAsync();
@@ -112,7 +116,7 @@ namespace BirileriWebSitesi.Services
                     await _context.SaveChangesAsync();
                 }
                 result = await CheckIfAddressExistsAsync(order.BillingAddress);
-                if(result)
+                if (result)
                 {
                     _context.Addresses.Update(order.BillingAddress);
                     await _context.SaveChangesAsync();
@@ -122,21 +126,21 @@ namespace BirileriWebSitesi.Services
                     await _context.Addresses.AddAsync(order.BillingAddress);
                     await _context.SaveChangesAsync();
                 }
-                        
-                
-                foreach(Models.OrderAggregate.OrderItem item in order.OrderItems)
+
+
+                foreach (Models.OrderAggregate.OrderItem item in order.OrderItems)
                 {
                     item.ProductVariant = await _context.ProductVariants.Where(p => p.ProductCode == item.ProductCode).FirstOrDefaultAsync();
                     item.ProductVariant.Product = await _context.Products.Where(p => p.ProductCode == item.ProductVariant.BaseProduct)
-                                                                             .Include(c=>c.Catalog)
+                                                                             .Include(c => c.Catalog)
                                                                             .FirstOrDefaultAsync();
                 }
-                
-               order.Status = (int)ApprovalStatus.Pending;
+
+                order.Status = (int)ApprovalStatus.Pending;
 
                 _context.Add(order);
 
-               await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return order.Id.ToString();
             }
@@ -153,12 +157,12 @@ namespace BirileriWebSitesi.Services
 
                 Order order = await GetOrderAsync(model.OrderId);
                 string checkString = await CheckOrderAsync(order, model);
-               
-                if(checkString != "success")
+
+                if (checkString != "success")
                     return "Ödeme Esnasında Hata ile Karşılaşıldı.";
-               
+
                 string htmlResult = await _iyziPay.IyziPayCreate3dsReqAsync(order, model);
-                
+
                 if (htmlResult.TrimStart().StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase))
                     order.Status = (int)ApprovalStatus.Pending;
                 else
@@ -188,18 +192,37 @@ namespace BirileriWebSitesi.Services
 
                 Payment payment = await _iyziPay.IyziPayCreateReqAsync(order, model);
 
-               if (payment.Status == "success")
-                   order.Status = (int)ApprovalStatus.Approved;
-               else
-                   order.Status = (int)ApprovalStatus.Failed;
+                PaymentLog paymentLog = new();
+                paymentLog.ConversationId = payment.ConversationId;
+                paymentLog.OrderId = Convert.ToInt32(payment.BasketId);
+                paymentLog.PaymentId = payment.PaymentId;
+                paymentLog.Price = payment.Price;
+                paymentLog.PaidPrice = payment.PaidPrice;
+                paymentLog.IyziCommissionRateAmount = payment.IyziCommissionRateAmount;
+                paymentLog.IyziCommissionFee = payment.IyziCommissionFee;
+                paymentLog.CardFamily = payment.CardFamily;
+                paymentLog.CardAssociation = payment.CardAssociation;
+                paymentLog.CardType = payment.CardType;
+                paymentLog.BinNumber = payment.BinNumber;
+                paymentLog.LastFourDigits = payment.LastFourDigits;
+                paymentLog.Status = payment.Status;
+                paymentLog.PaidAt = DateTime.UtcNow;
+                var paymentLogOrder = await _context.Orders.FindAsync(Convert.ToInt32(payment.BasketId));
+                paymentLog.Order = paymentLogOrder;
+                await RecordPayment(paymentLog);
 
-               if (!string.IsNullOrEmpty(payment.ErrorMessage))
-                   return payment.ErrorMessage.ToString();
+                if (payment.Status == "success")
+                    order.Status = (int)ApprovalStatus.Approved;
+                else
+                    order.Status = (int)ApprovalStatus.Failed;
+
+                if (!string.IsNullOrEmpty(payment.ErrorMessage))
+                    return payment.ErrorMessage.ToString();
 
                 _context.Orders.Update(order);
                 await _context.SaveChangesAsync();
 
-                if(payment.Status == "success")
+                if (payment.Status == "success")
                     return "success";
                 else
                     return payment.ErrorMessage.ToString();
@@ -226,7 +249,7 @@ namespace BirileriWebSitesi.Services
         public async Task<InstallmentDetail> GetInstallmentInfoAsync(string binNumber, decimal price)
         {
             Iyzipay.Options options = await _iyziPay.GetIyzipayOptionsAsync();
-            
+
             var request = new RetrieveInstallmentInfoRequest
             {
                 Locale = Locale.TR.ToString(),
@@ -265,20 +288,20 @@ namespace BirileriWebSitesi.Services
         {
             try
             {
-               bool result = await _context.Addresses.Where(a=>a.UserId == address.UserId &&
-                                            a.FirstName == address.FirstName &&
-                                            a.LastName == address.LastName &&
-                                            a.EmailAddress == address.EmailAddress &&
-                                            a.Phone == address.Phone &&
-                                            a.City == address.City &&
-                                            a.Street == address.Street &&
-                                            a.ZipCode == address.ZipCode &&
-                                            a.Country == address.Country &&
-                                            a.State == address.State &&
-                                            a.VATnumber == address.VATnumber &&
-                                            a.VATstate == address.VATstate &&
-                                            a.CorporateName == address.CorporateName)
-                                            .AnyAsync();
+                bool result = await _context.Addresses.Where(a => a.UserId == address.UserId &&
+                                             a.FirstName == address.FirstName &&
+                                             a.LastName == address.LastName &&
+                                             a.EmailAddress == address.EmailAddress &&
+                                             a.Phone == address.Phone &&
+                                             a.City == address.City &&
+                                             a.Street == address.Street &&
+                                             a.ZipCode == address.ZipCode &&
+                                             a.Country == address.Country &&
+                                             a.State == address.State &&
+                                             a.VATnumber == address.VATnumber &&
+                                             a.VATstate == address.VATstate &&
+                                             a.CorporateName == address.CorporateName)
+                                             .AnyAsync();
                 return result;
             }
             catch (Exception ex)
@@ -287,7 +310,7 @@ namespace BirileriWebSitesi.Services
                 return false;
             }
         }
-        private async Task<string>CheckOrderAsync(Order order, PaymentRequestModel model)
+        private async Task<string> CheckOrderAsync(Order order, PaymentRequestModel model)
         {
             try
             {
@@ -367,7 +390,7 @@ namespace BirileriWebSitesi.Services
             {
                 _context.PaymentLogs.Add(payment);
                 await _context.SaveChangesAsync();
-                return false;
+                return true;
             }
             catch (Exception ex)
             {
@@ -376,14 +399,14 @@ namespace BirileriWebSitesi.Services
             }
         }
 
-        public async Task<bool> UpdateOrderStatus(int orderID, string status)
+        public async Task<bool> UpdateOrderStatus(int orderID, string status, int paymentType)
         {
             try
             {
                 var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderID);
                 if (order != null)
                 {
-                    switch(status)
+                    switch (status)
                     {
                         case "Pending":
                             order.Status = (int)ApprovalStatus.Pending;
@@ -400,7 +423,7 @@ namespace BirileriWebSitesi.Services
                         default:
                             return false;
                     }
-                    order.PaymentType = 2;
+                    order.PaymentType = paymentType;
                     _context.Orders.Update(order);
                     await _context.SaveChangesAsync();
                     return true;
@@ -420,13 +443,13 @@ namespace BirileriWebSitesi.Services
                 var orderInfos = await _context.Orders
                     .Where(b => b.BuyerId == userID &&
                             b.PaymentType == 2 &&
-                            b.Status == 5 
+                            b.Status == 5
                             )
                     .ToDictionaryAsync(
                         b => b.Id,
                         b => $"Sipariş {b.Id} - {b.OrderDate:dd.MM.yyyy}"
                     );
-        
+
                 return orderInfos ?? new Dictionary<int, string>();
             }
             catch (Exception ex)
@@ -436,5 +459,221 @@ namespace BirileriWebSitesi.Services
             }
         }
 
+        public async Task<int> CancelOrderItemAsync(int orderId, string productCode)
+        {
+            try
+            {
+                Order? order = await _context.Orders
+                                        .Include(o => o.OrderItems)
+                                        .FirstOrDefaultAsync(o => o.Id == orderId);
+                OrderItem item = order.OrderItems.Where(p => p.ProductCode == productCode).FirstOrDefault();
+                if (order == null)
+                    return 0;
+                if (item == null)
+                    return 0;
+
+                // failed or pending orders can be cancelled directly
+                if (order.Status == 2 ||
+                    order.Status == 0 ||
+                    order.Status == 5)
+                {
+                    ProcessRefundToDb(order, item);
+                    return 1;
+                }
+                //If order is approved or in shipping can be refunded
+                else if (order.Status == 1 ||
+                    order.Status == 3)
+                {
+                    // Bank transfer orders cannot be cancelled
+                    if (order.PaymentType == 2)
+                    {
+                        ProcessRefundToDb(order, item);
+                        return 4;
+                    }
+                    int resultInt = await _iyziPay.CancelOrderItemAsync(order, item);
+                    if (resultInt == -1)
+                        return 3;
+                    else if (resultInt == 2)
+                        return 6;
+                    else if (resultInt == 3)
+                        return 7;
+
+                    ProcessRefundToDb(order, item);
+                    return 1;
+                }
+                //orders delivered can be refunded when orders send back
+                else if (order.Status == 4)
+                {
+                    if (order.PaymentType == 2)
+                        return 5; // Bank transfer orders refund
+
+                    return 2;
+                }
+
+                else
+                    return -1;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cancel Order Iyzico procedure failed for {OrderId}", orderId);
+                return -1;
+            }
+        }
+        public async Task<int> CancelOrderAsync(int orderId)
+        {
+            try
+            {
+                Order? order = await _context.Orders
+                                        .Include(o => o.OrderItems)
+                                        .FirstOrDefaultAsync(o => o.Id == orderId);
+                if (order == null)
+                    return 0;
+
+                // failed or pending orders can be cancelled directly
+                if (order.Status == 2 ||
+                    order.Status == 0 ||
+                    order.Status == 5)
+                {
+                    order.Status = 6; // Set status to Cancelled
+                    order.CanceledAt = DateTime.Now;
+                    await _inventoryService.UpdateInventoryAsync(order, 1); // Add stock
+                    _context.Orders.Update(order);
+                    await _context.SaveChangesAsync();
+                    return 1;
+                }
+                //If order is approved or in shipping can be refunded
+                else if (order.Status == 1 ||
+                    order.Status == 3)
+                {
+                    if (order.PaymentType == 2)
+                    {
+                        order.Status = 6; // Set status to Cancelled
+                        order.CanceledAt = DateTime.Now;
+                        await _inventoryService.UpdateInventoryAsync(order, 1); // Add stock
+                        _context.Orders.Update(order);
+                        await _context.SaveChangesAsync();
+                        return 4;
+                    } // Bank transfer orders cannot be cancelled
+                    bool result = await _iyziPay.CancelOrderAsync(order);
+                    if (!result)
+                        return 3;
+                    await _inventoryService.UpdateInventoryAsync(order, 1); // Add stock
+                    return 1;
+                }
+                //orders delivered can be refunded when orders send back
+                else if (order.Status == 4)
+                {
+                    if (order.PaymentType == 2)
+                        return 5; // Bank transfer orders refund
+
+                    return 2;
+                }
+
+                else
+                    return -1;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cancel Order Iyzico procedure failed for {OrderId}", orderId);
+                return -1;
+            }
+        }
+
+        private async Task ProcessRefundToDb(Order order, OrderItem item)
+        {
+            try
+            {
+                item.IsRefunded = true;
+                item.RefundDate = DateTime.UtcNow;
+                bool allRefunded = false;
+                foreach (var orderItem in order.OrderItems)
+                {
+                    if (orderItem.IsRefunded == false)
+                    {
+                        allRefunded = false;
+                        break;
+                    }
+                }
+                if (allRefunded)
+                {
+                    order.Status = 6; // Set status to Cancelled
+                    order.CanceledAt = DateTime.UtcNow;
+                    await _inventoryService.UpdateInventoryAsync(order, 1); // Add stock
+                }
+                else
+                    await _inventoryService.UpdateInventoryItemAsync(item.ProductCode, item.Units, 1); // Add stock
+                _context.Orders.Update(order);
+                _context.OrderItems.Update(item);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cancel Order No Payment procedure failed for {OrderId}", order.Id);
+            }
+        }
+
+        public async Task<bool> UpdateAddressAsync(Address address)
+        {
+            try
+            {
+                var existingAddress = await _context.Addresses
+                    .FirstOrDefaultAsync(a => a.Id == address.Id && a.UserId == address.UserId);
+                //if existing address set as default is different update all db
+                if (address.SetAsDefault == true &&
+                    existingAddress.SetAsDefault == false)
+                {
+                    await _context.Addresses
+                        .Where(a => a.UserId == address.UserId && 
+                                    a.SetAsDefault &&
+                                    a.Id != address.Id)
+                        .ForEachAsync(a => a.SetAsDefault = false);
+                }
+                existingAddress.SetAsDefault = address.SetAsDefault;
+                existingAddress.FirstName = address.FirstName;
+                existingAddress.LastName = address.LastName;
+                existingAddress.AddressDetailed = address.AddressDetailed;
+                existingAddress.State = address.State;
+                existingAddress.City = address.City;
+                existingAddress.CorporateName = address.CorporateName;
+                existingAddress.VATnumber = address.VATnumber;
+                existingAddress.VATstate = address.VATstate;
+                existingAddress.Phone = address.Phone;
+                existingAddress.EmailAddress = address.EmailAddress;
+                existingAddress.IsBilling = address.IsBilling;
+                existingAddress.IsBillingSame = address.IsBillingSame;
+                existingAddress.IsCorporate = address.IsCorporate;
+                existingAddress.ZipCode = address.ZipCode;
+                _context.Update(existingAddress);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return false;
+            }
+        }
+        public async Task<bool> DeleteAddressAsync(int addressId)
+        {
+            try
+            {
+                var existingAddress = await _context.Addresses
+                    .FirstOrDefaultAsync(a => a.Id == addressId);
+                //if existing address set as default is different update all db
+                if (existingAddress == null)
+                    return false;
+                _context.Remove(existingAddress);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return false;
+            }
+        }
     }
 }
+

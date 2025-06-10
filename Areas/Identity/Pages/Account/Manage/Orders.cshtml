@@ -49,7 +49,9 @@
                                               order.Status == 1 ? "Hazırlanıyor" :
                                               order.Status == 2 ? "Başarısız" :
                                               order.Status == 3 ? "Kargolandı" :
-                                              order.Status == 4 ? "Teslim Edildi" : "Beklemede")
+                                              order.Status == 4 ? "Teslim Edildi" : 
+                                              order.Status == 5 ? "Havale/EFT Bekliyor" :
+                                              order.Status == 6 ? "İptal Edildi" : "Beklemede")
                                         </td>
                                         <td><a asp-page="./OrderDetails" asp-route-id="@order.Id">Sipariş Detayı</a> </td>
                                     </tr>

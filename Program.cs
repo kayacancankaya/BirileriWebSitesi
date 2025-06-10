@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Diagnostics;
+using BirileriWebSitesi.Areas.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,12 +99,20 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{ 
+    options.SignIn.RequireConfirmedAccount = true;
+    options.Tokens.ProviderMap.Add("CustomEmailConfirmation",
+        new TokenProviderDescriptor(typeof(CustomEmailConfirmationTokenProvider<IdentityUser>)));
+    options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
+
+})
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders()
     .AddDefaultUI()
     .AddErrorDescriber<TurkishIdentityErrorDescriber>();
 
+
+builder.Services.AddTransient<CustomEmailConfirmationTokenProvider<IdentityUser>>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -118,6 +127,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserAuditService, UserAuditService>(); 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IIyzipayPaymentService, IyziPayPaymentService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -160,7 +170,8 @@ var localizationOptions = new RequestLocalizationOptions
     SupportedCultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList(),
     SupportedUICultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList()
 };
-
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
+       o.TokenLifespan = TimeSpan.FromHours(3));
 var app = builder.Build();
 
 app.UseForwardedHeaders();

@@ -1,0 +1,281 @@
+﻿@page
+@using BirileriWebSitesi.Models.OrderAggregate
+@model BirileriWebSitesi.Areas.Identity.Pages.Account.Manage.AddressesModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    List<Address>? shippingAddresses = Model.Addresses.Where(a => a.IsBilling == false).ToList();
+    List<Address>? billingAddresses = Model.Addresses.Where(a => a.IsBilling == true).ToList();
+}
+@section Title {
+    <meta name="title" content="Hesap">
+}
+@section Description {
+    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+                                            toptan spor malzemesi">
+}
+
+@Html.Partial("_ManageNav")
+
+<section class="manage-section">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="column col-lg-12 col-md-12 col-sm-12">
+
+                <h2>Addreslerim</h2>
+
+                @if (Model.Addresses == null || !Model.Addresses.Any())
+                {
+                    <p>Kayıtlı adresiniz bulunmamaktadır.</p>
+                }
+                else
+                {
+                    <div class="container">
+                        <div class="row">
+
+                            <!--Radio buttons to pick address type-->
+                            <div class="col-12 m-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input " type="radio" name="radio-button" id="delivery-radio-button" value="delivery" checked>
+                                    <label class="form-check-label" for="radio-button">
+                                        Teslimat Adresi
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="radio-button" id="billing-radio-button" value="billing">
+                                    <label class="form-check-label" for="radio-button">
+                                        Fatura Adresi
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                @if (shippingAddresses == null || shippingAddresses.Any())
+                                {
+                                    <div class="btn-group" id="shipping-addresses-dropdown-div">
+                                        <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Teslimat Adresleri
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @foreach(var item in shippingAddresses)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item address-item" data-id="@item.Id">
+                                                        @item.Id - @item.FirstName @item.LastName - @item.Street, @item.City, @item.Country
+                                                        <span class="badge bg-secondary">@item.EmailAddress</span>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="btn-group" id="shipping-addresses-dropdown-div">
+                                        <p>Henüz teslimat adresi eklenmemiş.</p>
+                                    </div>
+                                }
+                                @if (billingAddresses == null || billingAddresses.Any())
+                                {
+                                    <div class="btn-group" id="billing-addresses-dropdown-div" style="display:none;">
+                                        <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Fatura Adresleri
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @foreach (var item in billingAddresses)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item address-item" data-id="@item.Id">
+                                                        @item.Id - @item.FirstName @item.LastName - @item.Street, @item.City, @item.Country
+                                                        <span class="badge bg-secondary">@item.EmailAddress</span>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="btn-group" id="shipping-addresses-dropdown-div">
+                                        <p>Henüz fatura adresi eklenmemiş.</p>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-12">
+                               
+                                <div class="mt-3" id="selected-address-div">
+                                </div>
+
+                                <div id="responeMessage"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+@section AdditionalScripts{
+    <script>
+        $(document).ready(function () {
+            $("#update-button-text").text("").css('color','black');
+            const shippingDiv = document.getElementById("shipping-addresses-dropdown-div");
+            const billingDiv = document.getElementById("billing-addresses-dropdown-div");
+            const selectedDiv = document.getElementById("selected-address-div");
+
+            // Toggle dropdowns on radio selection
+            document.querySelectorAll('input[name="radio-button"]').forEach(radio => {
+                radio.addEventListener("change", function () {
+                    if (this.value === "delivery") {
+                        shippingDiv.style.display = "inline-block";
+                        billingDiv.style.display = "none";
+                    } else {
+                        shippingDiv.style.display = "none";
+                        billingDiv.style.display = "inline-block";
+                    }
+                });
+            });
+
+            // Handle address selection
+            document.querySelectorAll(".address-item").forEach(item => {
+                item.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const id = this.getAttribute("data-id");
+
+                    selectedDiv.innerHTML = ""; // clear existing content
+
+                    fetch(`/Identity/Account/Manage/Addresses?handler=AddressInfo&id=${id}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error("Adres bilgileri yüklenemedi.");
+                            return response.text();
+                        })
+                        .then(html => {
+                            selectedDiv.innerHTML = html;
+                        })
+                        .catch(error => {
+                            selectedDiv.innerHTML = "<p class='text-danger'>Adres bilgileri yüklenemedi.</p>";
+
+                        });
+                });
+            });
+            $(document).on("click", "#update-address-button", function (e) {
+
+                e.preventDefault();
+                 $("#update-button-text").text("").css('color','black');
+                var button = $(this);
+                 var form = $('#address-form');
+                let requiredFields = ["email-address", "city", "state", "address-detailed", "street"];
+                 var handler = $(this).data('handler');
+                var isBillingSame = $('input[type="checkbox"]#is-billing-same').is(':checked');
+                var setAsDefault = $('input[type="checkbox"]#set-as-default').is(':checked');
+                var isCorporate = $('input[type="checkbox"]#is-corporate').is(':checked');
+              
+                
+                if (isCorporate) {
+                    requiredFields.push("corporate-name", "vat", "vat-state");
+                } else {
+                    requiredFields.push("first-name", "last-name");
+                }
+
+                let isValid = true;
+
+                //if fields are filled
+                requiredFields.forEach(function (id) {
+                     
+                    let input = document.getElementById(id);
+                    if (input && input.value.trim() === "") {
+                        isValid = false;
+                        input.style.border = "1px solid red"; // Highlight empty fields
+                    } else {
+                        input.style.border = ""; // Reset style
+                    }
+                });
+                if (!isValid) {
+                    e.preventDefault();
+                    showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
+                    return;
+                }
+
+                // Disable button and show loading
+                $("#update-address-button").text("İşlem Yapılıyor...").prop("disabled", true);
+
+
+                 $.ajax({
+                    url: window.location.pathname + '?handler=' + handler,
+                    method: 'POST',
+                    data: form.serialize(),
+                    async:true,
+                    success: function (result) {
+                        $("#update-address-button").text("Güncelle").prop("disabled", false);
+                        if (result.success) {
+                            $("#update-button-text").text(result.message).css('color','green')
+                                                    .fadeIn()                
+                                                    .delay(2000);
+                        } else {
+                            $("#update-button-text").text(result.message).css('color','red')
+                                                    .fadeIn()
+                                                    .delay(2000)
+                                                    .fadeOut(1000);
+                        }
+                    },
+                    error: function (xhr) {
+                         $("#update-address-button").text("Güncelle").prop("disabled", false);
+                            if (xhr.status === 400 && xhr.responseJSON) {
+                                 $("#update-button-text").text(xhr.responseJSON.errors).css('color','red')
+                                                    .fadeIn()
+                                                    .delay(2000)
+                                                    .fadeOut(1000);
+                            } else {
+                                $("#update-button-text").text('Sunucu hatası oluştu.').css('color','red')
+                                                    .fadeIn()
+                                                    .delay(2000)
+                                                    .fadeOut(1000);
+                            }
+                    }
+                });
+            });
+            $(document).on("click", "#delete-address-button", function (e) {
+
+                e.preventDefault();
+                 $("#delete-button-text").text("").css('color','black');
+                 var form = $('#address-form');
+                var handler = $(this).data('handler');
+                // Disable button and show loading
+                $("#delete-address-button").text("İşlem Yapılıyor...").prop("disabled", true);
+
+                 $.ajax({
+                    url: window.location.pathname + '?handler=' + handler,
+                    method: 'POST',
+                    data: form.serialize(),
+                    async:true,
+                    success: function (result) {
+                        $("#delete-address-button").text("Sil").prop("disabled", false);
+                        if (result.success) {
+                             window.location.href = '/Identity/Account/Manage/Addresses';
+                        } else {
+                            $("#delete-button-text").text(result.message).css('color','red')
+                                                    .fadeIn()
+                                                    .delay(2000)
+                                                    .fadeOut(1000);
+                        }
+                    },
+                    error: function (xhr) {
+                         $("#delete-address-button").text("Sil").prop("disabled", false);
+                            if (xhr.status === 400 && xhr.responseJSON) {
+                                 $("#delete-button-text").text(xhr.responseJSON.errors).css('color','red')
+                                                    .fadeIn()
+                                                    .delay(2000)
+                                                    .fadeOut(1000);
+                            } else {
+                                $("#delete-button-text").text('Sunucu hatası oluştu.').css('color','red')
+                                                    .fadeIn()
+                                                    .delay(2000)
+                                                    .fadeOut(1000);
+                            }
+                    }
+                });
+            });
+        });
+    </script>
+}  

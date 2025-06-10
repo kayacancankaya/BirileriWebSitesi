@@ -76,6 +76,25 @@ namespace BirileriWebSitesi.Helpers
             return Regex.IsMatch(cvv, @"^\d{3,4}$");
         }
 
-
+        public static string ConvertToTurkishStatus(string statusText)
+        {
+            switch (statusText)
+            {
+                case "Pending":
+                    return "Beklemede";
+                case "Approved":
+                    return "Hazırlanıyor";
+                case "Shipped":
+                    return "Kargolandı";
+                case "Delivered":
+                    return "Teslim Edildi";
+                case "BankTransfer":
+                    return "Havale/EFT Bekleniyor";
+                case "Cancelled":
+                    return "İptal Edildi";
+                default:
+                    return statusText; // Return original if no match
+            }
+        }
     }
 }

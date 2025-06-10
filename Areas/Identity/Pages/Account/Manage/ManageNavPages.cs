@@ -56,6 +56,7 @@ namespace  BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
         public static string PersonalData => "PersonalData";
         public static string Orders => "Orders";
         public static string TransferForm => "TransferForm";
+        public static string Addresses => "Addresses";
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -111,6 +112,7 @@ namespace  BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public static string OrdersNavClass(ViewContext viewContext) => PageNavClass(viewContext, Orders);
         public static string TranferFormClass(ViewContext viewContext) => PageNavClass(viewContext, TransferForm);
+        public static string AddressesNavClass(ViewContext viewContext) => PageNavClass(viewContext, Addresses);
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

@@ -247,13 +247,16 @@
 @section AdditionalScripts {
     <script>
         $(document).ready(function (){
-
+            //make active related nav button
             $(".dropdown").removeClass("current");
             $(".cart").addClass("current");
+            //decide if is billingAddress same and iscoorporate from the ondblclick info 
             var isBillingSame = $("#is-billing-same").is(":checked"); 
             if (isBillingSame) {
+                
                 $("#billing-address-div").css("display", "none");
-            }
+            };
+            //toggle related 
             $(document).on("change", "#is-billing-same", function () {
                 var isBillingSame = $(this).is(":checked");
                 
@@ -264,7 +267,7 @@
                     $("#billing-address-div").css("display", "block");
                 }
 
-            })
+            });
             $(document).on("change", "#is-corporate", function () {
              
                 var firstName = $("#billing-first-name").val();
