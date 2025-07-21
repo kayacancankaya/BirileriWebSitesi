@@ -234,9 +234,6 @@
                                     <li class="dropdown shop">
                                         <a asp-controller="Shop" asp-action="Index">Mağaza</a>
                                     </li>
-                                    @* <li class="dropdown blog">
-                                        <a asp-controller="Home" asp-action="Blog">Blog</a>
-                                    </li> *@
                                     <li class="dropdown account">
                                         @if (User.Identity.IsAuthenticated)
                                         {
@@ -246,6 +243,9 @@
                                         {
                                             <a asp-area="Identity" asp-page="/Account/Login">GİRİŞ YAP</a>
                                         }
+                                    </li>
+                                    <li class="dropdown blog">
+                                        <a asp-controller="Blog" asp-action="Index">Blog</a>
                                     </li>
                                     <li class="dropdown about">
                                         <a asp-controller="Home" asp-action="About">Hakkında</a>
@@ -315,9 +315,7 @@
                                     <li class="dropdown shop">
                                         <a asp-controller="Shop" asp-action="Index">Mağaza</a>
                                     </li>
-                                    @* <li class="dropdown blog">
-                                        <a asp-controller="Home" asp-action="Blog">Blog</a>
-                                    </li> *@
+                                   
                                     <li class="dropdown account">
                                         @if (User.Identity.IsAuthenticated)
                                         {
@@ -328,6 +326,9 @@
                                             <a asp-area="Identity" asp-page="/Account/Login">GİRİŞ YAP</a>
                                         }
                                     </li>
+                                    <li class="dropdown blog">
+                                        <a asp-controller="Blog" asp-action="Index">Blog</a>
+                                    </li> 
                                     <li class="dropdown about">
                                         <a asp-controller="Home" asp-action="About">Hakkında</a>
                                     </li>

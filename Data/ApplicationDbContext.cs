@@ -31,6 +31,9 @@ namespace BirileriWebSitesi.Data
         public DbSet<Address> Addresses { get; set; }
         public DbSet<UserAudit> UserAudits { get; set; }
         public DbSet<PaymentLog> PaymentLogs { get; set; }
+        public DbSet<BlogPost> BlogPosts { get; set; }
+        public DbSet<BlogTag> BlogTags { get; set; }
+        public DbSet<BlogCategory> BlogCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +69,12 @@ namespace BirileriWebSitesi.Data
                         .HasKey(i=> i.UserId);
             modelBuilder.Entity<PaymentLog>()
                         .HasKey(i=> i.ConversationId);
+            modelBuilder.Entity<BlogPost>()
+                        .HasKey(i=> i.Id);
+            modelBuilder.Entity<BlogTag>()
+                        .HasKey(i=> i.Id);
+            modelBuilder.Entity<BlogCategory>()
+                        .HasKey(i=> i.Id);
 
 
             modelBuilder.Entity<RelatedProduct>()
@@ -178,7 +187,15 @@ namespace BirileriWebSitesi.Data
             modelBuilder.Entity<PaymentLog>()
                 .HasOne(O => O.Order)
                 .WithOne(p => p.PaymentLog);
-
+            modelBuilder.Entity<BlogPost>()
+                .HasOne(bp => bp.Category)
+                .WithMany(bc => bc.BlogPosts)
+                .HasForeignKey(bp => bp.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<BlogPost>()
+                .HasMany(bp => bp.TagsList)
+                .WithMany(bt => bt.BlogPosts)
+                .UsingEntity(j => j.ToTable("BlogPostTags"));
         }
     }
 }

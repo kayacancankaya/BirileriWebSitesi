@@ -1,0 +1,115 @@
+﻿@model BirileriWebSitesi.Models.ViewModels.BlogViewModel
+@section Title {
+	<meta name="title" content="Blog">
+	<title>"Blog"</title>
+}
+@section Description {
+	<meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+}
+@section Keywords {
+	<meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+	                                    toptan spor malzemesi">
+}
+
+<input type="hidden" id="total-count" value="@Model.TotalBlogPosts" />
+<input type="hidden" id="page-number" value="@Model.PageNumber" />
+<input type="hidden" id="page-size" value="@Model.PageSize" />
+<section class="blog-page-section">
+	<div class="auto-container">
+		<div class="row clearfix" id="blog-content">
+            @if (Model.BlogPosts!= null)
+            {
+                if (Model.BlogPosts.Count() == 0)
+                {
+                    <div class="col-md-12">
+                        <h2 class="text-center">Henüz blog yazısı bulunmamaktadır.</h2>
+                    </div>
+                }
+				else
+                {
+					@Html.Partial("_PartialBlogCardList", Model.BlogPosts);
+				}
+            }
+		</div>
+	</div>
+</section>
+<div id="subscribe-content">
+</div>
+<div id="contact-us-content">
+</div>
+@section AdditionalScripts {
+	<script>
+		$(document).ready(function () {
+			$(".dropdown").removeClass("current");
+			$(".blog").addClass("current");
+			$.ajax({
+				type: "GET",
+				url: "/Home/_PartialSubscribe",
+				async: true,
+				processData: true,
+				cache: true,
+				success: function (result) {
+					$("#subscribe-content").append(result);
+
+				}
+			});
+            var totalCount = parseInt($('#total-count').val());
+            var pageNumber = parseInt($('#page-number').val());
+            var pageSize = parseInt($('#page-size').val());
+			function debounce(func, wait) {
+				let timeout;
+				return function () {
+					const context = this, args = arguments;
+					clearTimeout(timeout);
+					timeout = setTimeout(() => func.apply(context, args), wait);
+				};
+			}
+
+
+			$(window).scroll(debounce(function () {
+				var currentHeight = $(window).scrollTop();
+				var currentState = parseInt($('#currentState').val());
+				if (currentHeight >= 0 && currentState === 0) {
+					currentState = 1;
+					$('#currentState').val(currentState);
+					$.ajax({
+						type: "GET",
+						url: "/Home/_PartialContactUs",
+						async: true,
+						processData: true,
+						cache: true,
+						success: function (result) {
+							$("#contact-us-content").append(result);
+
+						}
+					});
+
+				}
+				else if (currentHeight >= 100 && currentState === 1) {
+					currentState = 2;
+					$('#currentState').val(currentState);
+                    if(totalCount > (pageNumber * pageSize)) {
+                        pageNumber++;
+                        $('#page-number').val(pageNumber);
+                        $.ajax({
+                            type: "GET",
+                            url: "/Blog/LoadMorePosts",
+                            data: { pageNumber: pageNumber, pageSize: pageSize },
+                            async: true,
+                            processData: true,
+                            cache: true,
+                            success: function (result) {
+                                $("#blog-content").append(result);
+                                if (totalCount <= (pageNumber * pageSize)) {
+                                    $(window).off("scroll");
+                                }
+                            }
+                        });
+                    }
+				}
+
+			}, 50));
+
+		});
+	</script>
+}

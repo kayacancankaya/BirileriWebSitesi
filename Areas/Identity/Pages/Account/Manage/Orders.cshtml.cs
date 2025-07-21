@@ -40,7 +40,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account.Manage
                     .ToListAsync();
                 return Page();
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 return RedirectToAction("NotFound", "Home");
             }

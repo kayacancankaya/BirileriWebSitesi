@@ -477,7 +477,7 @@ namespace BirileriWebSitesi.Services
                     order.Status == 0 ||
                     order.Status == 5)
                 {
-                    ProcessRefundToDb(order, item);
+                    await ProcessRefundToDb(order, item);
                     return 1;
                 }
                 //If order is approved or in shipping can be refunded
@@ -487,7 +487,7 @@ namespace BirileriWebSitesi.Services
                     // Bank transfer orders cannot be cancelled
                     if (order.PaymentType == 2)
                     {
-                        ProcessRefundToDb(order, item);
+                        await ProcessRefundToDb(order, item);
                         return 4;
                     }
                     int resultInt = await _iyziPay.CancelOrderItemAsync(order, item);
@@ -498,7 +498,7 @@ namespace BirileriWebSitesi.Services
                     else if (resultInt == 3)
                         return 7;
 
-                    ProcessRefundToDb(order, item);
+                    await ProcessRefundToDb(order, item);
                     return 1;
                 }
                 //orders delivered can be refunded when orders send back

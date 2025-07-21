@@ -66,7 +66,7 @@ namespace BirileriWebSitesi.Services
                 return productName;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return string.Empty;
             }
@@ -86,7 +86,7 @@ namespace BirileriWebSitesi.Services
                 return imagePath;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return string.Empty;
             }

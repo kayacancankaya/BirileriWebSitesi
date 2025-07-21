@@ -23,7 +23,6 @@ namespace BirileriWebSitesi.Controllers
         private readonly IBasketService _basketService;
         private readonly IOrderService _orderService;
         private readonly IEmailService _emailService;
-        private readonly IIyzipayPaymentService _iyizpayService;
         private readonly IUserAuditService _userAuditService;
         public OrderController(ILogger<CartController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager,
                                 IProductService productService, IBasketService basketService, IOrderService orderService,
@@ -284,7 +283,7 @@ namespace BirileriWebSitesi.Controllers
 
                 return Ok(new { success = true, message = "Kayıt Başarılı!" });
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 return Ok(new { success = false, message = "Kayıt esnasında hata ile Karşılaşıldı. Lütfen daha sonra tekrar deneyiniz." });
             }

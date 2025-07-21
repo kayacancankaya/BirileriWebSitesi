@@ -1,0 +1,6 @@
+﻿@model IEnumerable<BirileriWebSitesi.Models.BlogPost>
+
+@foreach (var item in Model)
+{
+    @Html.Partial("_PartialBlogCard", item)
+}

@@ -1,0 +1,104 @@
+﻿@model BirileriWebSitesi.Models.BlogPost
+@section Title {
+	<meta name="title" content="@Model.SeoTitle">
+	<title>@Model.SeoTitle</title>
+}
+@section Description {
+	<meta name="description" content="@Model.SeoDescription">
+}
+@section Keywords {
+	<meta name="keywords" content="@Model.SeoKeywords">
+}
+<input type="hidden" id="blog-id" value="@Model.Id" />
+<!--Sidebar Page Container-->
+<div class="sidebar-page-container">
+    <div class="auto-container">
+        <div class="row clearfix">
+            @if (Model != null)
+            {
+				<!--Content Side-->
+				<div class="content-side col-lg-8 col-md-8 col-sm-12">
+					@Html.Partial("_PartialBlogContent", Model)
+				</div>
+				<!--Sidebar Side-->
+				<div class="sidebar-side col-lg-4 col-md-4 col-sm-12">
+
+				</div>
+            }
+        </div>
+    </div>
+</div>
+<div id="subscribe-content">
+</div>
+<div id="contact-us-content">
+</div>
+@section AdditionalScripts {
+		<script>
+			$(document).ready(function () {
+				$(".dropdown").removeClass("current");
+				$(".blog").addClass("current");
+				var id = parseInt($('#blog-id').val());
+				$$.ajax({
+					type: "GET",
+					url: "/Blog/_PartialBlogSidebar",
+					data: id: id,
+                    
+					async: true,
+					processData: true,
+					cache: true,
+					success: function (result) {
+						$("#blog-content").append(result);
+
+					}
+					});
+
+				function debounce(func, wait) {
+					let timeout;
+					return function () {
+						const context = this, args = arguments;
+						clearTimeout(timeout);
+						timeout = setTimeout(() => func.apply(context, args), wait);
+					};
+				}
+
+
+				$(window).scroll(debounce(function () {
+					var currentHeight = $(window).scrollTop();
+					var currentState = parseInt($('#currentState').val());
+					if (currentHeight >= 0 && currentState === 0) {
+						currentState = 1;
+						$('#currentState').val(currentState);
+							$$.ajax({
+						type: "GET",
+						url: "/Home/_PartialSubscribe",
+						async: true,
+						processData: true,
+						cache: true,
+						success: function (result) {
+							$("#subscribe-content").append(result);
+
+						}
+						});
+					}
+					else if (currentHeight >= 10 && currentState === 1) {
+						currentState = 2;
+						$('#currentState').val(currentState);
+						$.ajax({
+							type: "GET",
+							url: "/Home/_PartialContactUs",
+							async: true,
+							processData: true,
+							cache: true,
+							success: function (result) {
+								$("#contact-us-content").append(result);
+
+							}
+						});
+
+					}
+
+				}, 50));
+
+			});
+		</script>
+}

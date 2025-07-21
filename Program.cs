@@ -128,6 +128,7 @@ builder.Services.AddScoped<IUserAuditService, UserAuditService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IIyzipayPaymentService, IyziPayPaymentService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IBlogInterface, BlogService>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {

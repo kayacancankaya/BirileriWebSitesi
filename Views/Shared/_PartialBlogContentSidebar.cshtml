@@ -1,0 +1,95 @@
+﻿ @model BirileriWebSitesi.Models.ViewModels.BlogContentSidebarViewModel
+<!--Sidebar Side-->
+<div class="sidebar-side col-lg-4 col-md-4 col-sm-12">
+    <aside class="sidebar">
+
+        <!-- Search -->
+        <div class="sidebar-widget search-box">
+            <div class="form-group">
+                <input type="search" name="search-field" value="@Model.SearchQuery" placeholder="Ara ..." required>
+                <button type="submit" class="search-blog-button"><span class="icon fa fa-search"></span></button>
+            </div>
+        </div>
+
+        <!--Blog Category Widget-->
+        <div class="sidebar-widget sidebar-blog-category">
+            <div class="sidebar-title">
+                <h2>Kategoriler</h2>
+                <div class="separater"></div>
+            </div>
+            @if (Model.Categories != null)
+            {
+                if (Model.Categories.Count() == 0)
+                {
+                    <p>Henüz kategori bulunmamaktadır.</p>
+                }
+                else
+                {
+                    <ul class="cat-list">
+                        @foreach (var category in Model.Categories)
+                        {
+                            <li class="clearfix @(category.Id == Model.SelectedCategoryId ? "active" : "")">
+                                <button style="text-decoration:underline;cursor:pointer;background-color:transparent" class="btn-category-filter" data-id="@category.Id">@category.Name</button>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+            else
+            {
+                <p>Henüz kategori bulunmamaktadır.</p>
+            }
+        </div>
+        <!-- Popular Posts -->
+        <div class="sidebar-widget popular-posts">
+            <div class="sidebar-title">
+                <h2>Populer Yazılar</h2>
+                <div class="separater"></div>
+                @foreach (var item in Model.PopularPosts)
+                {
+                    <article class="post">
+                        <figure class="post-thumb"><img loading="lazy" src="@Url.Content(item.ImageUrl))" alt="@item.Title">
+                                                    <a asp-controller="Blog" asp-action="BlogPost" asp-route-path="@item.SeoUrl" class="overlay-box">
+                                                         <span class="icon fa fa-link"></span></a>
+                        </figure>
+                        <div class="text"><a asp-controller="Blog" asp-action="BlogPost" asp-route-path="@item.SeoUrl">@item.Title</a></div>
+                        <div class="post-info">@item.SeenCount defa görüldü...</div>
+                    </article>
+                }
+            </div>
+        </div>
+       
+        
+            
+
+
+        <!-- Tags-->
+        <div class="sidebar-widget popular-tags">
+            <div class="sidebar-title">
+                <h2>Etiketler</h2>
+                <div class="separater"></div>
+            </div>
+            @if (Model.Tags != null)
+            {
+                if (Model.Tags.Count() == 0)
+                {
+                    <p>Henüz etiket bulunmamaktadır.</p>
+                }
+                else
+                {
+                    <div class="tag-list">
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <button data-id="@tag.Id" style="background-color:transparent;text-decoration:underline;cursor:pointer;" class="tag-button mr-3 mb-3">@tag.Name</button>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <p>Henüz etiket bulunmamaktadır.</p>
+            }
+        </div>
+
+    </aside>
+</div>
