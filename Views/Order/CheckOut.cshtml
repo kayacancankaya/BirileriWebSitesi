@@ -1,4 +1,4 @@
-﻿@model BirileriWebSitesi.Models.OrderAggregate.Order
+﻿@model BirileriWebSitesi.Models.ViewModels.CheckOutViewModel
 
 @section Title {
     <meta name="title" content="Kargo ve Fatura Bilgileri">
@@ -69,13 +69,13 @@
                     <div class="row clearfix">
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <input type="checkbox" id="is-billing-same" value="true"
-                            @(Model.ShipToAddress.IsBillingSame ? "checked=\"checked\"" : "")>        
+                            @(Model.Order.ShipToAddress.IsBillingSame ? "checked=\"checked\"" : "")>        
                             <label for="is-billing-same">Fatura adresi kargo adresi ile aynı</label>
                         </div>
 
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <input type="checkbox" id="is-corporate" value="true"
-                            @(Model.BillingAddress.IsCorporate ? "checked=\"checked\"" : "")>
+                            @(Model.Order.BillingAddress.IsCorporate ? "checked=\"checked\"" : "")>
                             <label for="is-corporate">Kurumsal Fatura</label>
                         </div>
                     </div>
@@ -84,55 +84,79 @@
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">İsim <sup>*</sup></div>
-                            <input type="text" id="first-name" value="@Model.ShipToAddress.FirstName" placeholder="İsminizi Giriniz...">
+                            <input type="text" id="first-name" value="@Model.Order.ShipToAddress.FirstName" placeholder="İsminizi Giriniz...">
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                         <div class="field-label">Soy İsim <sup>*</sup></div>
-                        <input type="text" id="last-name" value="@Model.ShipToAddress.LastName" placeholder="Soy İsim Giriniz...">
+                        <input type="text" id="last-name" value="@Model.Order.ShipToAddress.LastName" placeholder="Soy İsim Giriniz...">
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Email Adresi <sup>*</sup></div>
-                        <input type="text" id="email" value="@Model.ShipToAddress.EmailAddress" placeholder="Email Adresi Giriniz">
+                            <input type="text" id="email" value="@Model.Order.ShipToAddress.EmailAddress" placeholder="Email Adresi Giriniz">
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Telefon</div>
-                            <input type="text" id="phone" value="@Model.ShipToAddress.Phone" placeholder="Telefon Numarası Giriniz">
+                            <input type="text" id="phone" value="@Model.Order.ShipToAddress.Phone" placeholder="Telefon Numarası Giriniz">
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-12 col-md-12 col-sm-12">
                             <div class="field-label">Adres <sup>*</sup></div>
-                            <input type="text" id="address-detailed" value="@Model.ShipToAddress.AddressDetailed" placeholder="Açık Adres">
+                            <input type="text" id="address-detailed" value="@Model.Order.ShipToAddress.AddressDetailed" placeholder="Açık Adres">
                         </div>
 
 
-                        <!--Form Group-->
+                        <!-- Hidden inputs to store selected values  -->
+                        <input type="hidden" name="Order.ShipToAddress.City" id="shipping-city-input" value="@Model.Order.ShipToAddress.City" />
+                        <input type="hidden" name="Order.ShipToAddress.State" id="shipping-state-input" value="@Model.Order.ShipToAddress.State" />
+                        <input type="hidden" name="Order.ShipToAddress.Street" id="shipping-street-input" value="@Model.Order.ShipToAddress.Street" />
+
+                        <!-- City -->
                         <div class="form-group col-lg-12 col-md-12 col-sm-12">
                             <div class="field-label">Şehir <sup>*</sup></div>
-                            <input type="text" id="city" value="@Model.ShipToAddress.City" placeholder="Şehir">
+                            <select id="billing-city" class="form-control">
+                                <option value="0">-- Şehir seçin --</option>
+                                @foreach (var city in Model.Cities)
+                                {
+                                    <option value="@city.Id">@city.Name</option>
+                                }
+                            </select>
                         </div>
 
-                        <!--Form Group-->
+                        <!-- District -->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">İlçe <sup>*</sup></div>
-                            <input type="text" id="state" value="@Model.ShipToAddress.State" placeholder="İlçe">
+                            <select id="billing-state" class="form-control">
+                                <option value="0">-- İlçe seçin --</option>
+                                @*   @foreach (var district in Model.Districts)
+                                {
+                                    <option value="@district">@district</option>
+                                } *@
+                            </select>
                         </div>
-                        <!--Form Group-->
+
+                        <!-- Neighborhood -->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Mahalle <sup>*</sup></div>
-                            <input type="text" id="street" value="@Model.ShipToAddress.Street" placeholder="Mahalle">
+                            <select id="billing-street" class="form-control">
+                                <option value="0">-- Mahalle seçin --</option>
+                                @* @foreach (var neighborhood in Model.Streets)
+                                {
+                                    <option value="@neighborhood">@neighborhood</option>
+                                } *@
+                            </select>
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Posta Kodu</div>
-                        <input type="text" id="zip" value="@Model.ShipToAddress.ZipCode" placeholder="Posta Kodu">
+                            <input type="text" id="zip" value="@Model.Order.ShipToAddress.ZipCode" placeholder="Posta Kodu">
                         </div>
 
                     </div>
@@ -146,49 +170,72 @@
                     
                     <div class="row clearfix" id="is-corporate-main-div" >
                         <div id="is-corporate-div">
-                            @Html.Partial("_PartialIsCorporate",Model.BillingAddress)
+                            @Html.Partial("_PartialIsCorporate", Model.Order.BillingAddress)
                         </div>
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Email Adresi <sup>*</sup></div>
-                            <input type="text" id="billing-email" value="@Model.BillingAddress.EmailAddress" placeholder="Email Adresi Giriniz">
+                            <input type="text" id="billing-email" value="@Model.Order.BillingAddress.EmailAddress" placeholder="Email Adresi Giriniz">
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Telefon</div>
-                            <input type="text" id="billing-phone" value="@Model.BillingAddress.Phone" placeholder="Telefon Numarası Giriniz">
+                            <input type="text" id="billing-phone" value="@Model.Order.BillingAddress.Phone" placeholder="Telefon Numarası Giriniz">
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-12 col-md-12 col-sm-12">
                             <div class="field-label">Adres <sup>*</sup></div>
-                            <input type="text" id="billing-address-detailed" value="@Model.BillingAddress.AddressDetailed" placeholder="Açık Adres">
+                            <input type="text" id="billing-address-detailed" value="@Model.Order.BillingAddress.AddressDetailed" placeholder="Açık Adres">
                         </div>
 
 
-                        <!--Form Group-->
+                      <!-- Hidden inputs to store selected values  -->
+                        <input type="hidden" name="Order.BillingAddress.City" id="billing-city-input" value="@Model.Order.BillingAddress.City" />
+                        <input type="hidden" name="Order.BillingAddress.State" id="billing-state-input" value="@Model.Order.BillingAddress.State" />
+                        <input type="hidden" name="Order.BillingAddress.Street" id="billing-street-input" value="@Model.Order.BillingAddress.Street" />
+
+                        <!-- City -->
                         <div class="form-group col-lg-12 col-md-12 col-sm-12">
                             <div class="field-label">Şehir <sup>*</sup></div>
-                            <input type="text" id="billing-city" value="@Model.BillingAddress.City" placeholder="Şehir">
+                            <select id="billing-city" class="form-control">
+                                <option value="0">-- Şehir seçin --</option>
+                                @foreach (var city in Model.Cities)
+                                {
+                                    <option value="@city.Id">@city.Name</option>
+                                }
+                            </select>
                         </div>
 
-                        <!--Form Group-->
+                        <!-- District -->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">İlçe <sup>*</sup></div>
-                            <input type="text" id="billing-state" value="@Model.BillingAddress.State" placeholder="İlçe">
+                            <select id="billing-state" class="form-control">
+                                <option value="0">-- İlçe seçin --</option>
+                              @*   @foreach (var district in Model.Districts)
+                                {
+                                    <option value="@district">@district</option>
+                                } *@
+                            </select>
                         </div>
 
-                        <!--Form Group-->
+                        <!-- Neighborhood -->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Mahalle <sup>*</sup></div>
-                            <input type="text" id="billing-street" value="@Model.BillingAddress.Street" placeholder="Mahalle">
+                            <select id="billing-street" class="form-control">
+                                <option value="0">-- Mahalle seçin --</option>
+                                @* @foreach (var neighborhood in Model.Streets)
+                                {
+                                    <option value="@neighborhood">@neighborhood</option>
+                                } *@
+                            </select>
                         </div>
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Posta Kodu </div>
-                            <input type="text" id="billing-zip" value="@Model.BillingAddress.ZipCode" placeholder="Posta Kodu">
+                            <input type="text" id="billing-zip" value="@Model.Order.BillingAddress.ZipCode" placeholder="Posta Kodu">
                         </div>
                     </div>
                 </div>
@@ -202,7 +249,7 @@
                 <div class="form-group col-lg-12 col-md-12 col-sm-12">
                     <div class="field-label">Varsayılan Adres Yap</div>
                     <input type="checkbox" id="update-user-info" value="true"
-                    @(Model.UpdateUserInfo ? "checked=\"checked\"" : "")>
+                    @(Model.Order.UpdateUserInfo ? "checked=\"checked\"" : "")>
                 </div>
             </div>
         </div>
@@ -217,7 +264,7 @@
             </div>
             <ul>
 
-                @foreach(var item in Model.OrderItems)
+                @foreach (var item in Model.Order.OrderItems)
                 {
                     decimal subTotal = item.UnitPrice * item.Units;
                     <li class="clearfix order-item">
@@ -230,7 +277,7 @@
                     <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
                 }
                 <li class="clearfix">KARGO ÜCRETİ<span class="free">ÜCRETSİZ</span></li>
-                <li class="clearfix">TOPLAM<span>@Model.TotalAmount ₺</span></li>
+                <li class="clearfix">TOPLAM<span>@Model.Order.TotalAmount ₺</span></li>
             </ul>
         </div>
         <!--End Order Box-->
@@ -481,7 +528,120 @@
                 });
 
             });
-        });
+            // When Shipping City changes
+            document.getElementById("shipping-city").addEventListener("change", function () {
+                let value = this.value;
+                document.getElementById("shipping-city-input").value = value;
 
+                // Call server to get districts dynamically
+                if (value) {
+                    fetch(`/Checkout/GetDistricts?cityId=${value}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let stateSelect = document.getElementById("shipping-state");
+                            stateSelect.innerHTML = '<option value="0">-- İlçe seçin --</option>';
+
+                            data.forEach(d => {
+                                let opt = document.createElement("option");
+                                opt.value = d.id;
+                                opt.text = d.name;
+                                stateSelect.appendChild(opt);
+                            });
+
+                            // Reset hidden state + street
+                            document.getElementById("shipping-state-input").value = "";
+                            document.getElementById("shipping-street-input").value = "";
+                            document.getElementById("shipping-street").innerHTML = '<option value="">-- Mahalle seçin --</option>';
+                        });
+                }
+            });
+
+            // When Shipping District changes
+            document.getElementById("shipping-state").addEventListener("change", function () {
+                let value = this.value;
+                document.getElementById("shipping-state-input").value = value;
+
+                // Call server to get streets dynamically
+                if (value) {
+                    fetch(`/Checkout/GetStreets?districtId=${value}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let streetSelect = document.getElementById("shipping-street");
+                            streetSelect.innerHTML = '<option value="">-- Mahalle seçin --</option>';
+
+                            data.forEach(n => {
+                                let opt = document.createElement("option");
+                                opt.value = n.id;
+                                opt.text = n.name;
+                                streetSelect.appendChild(opt);
+                            });
+
+                            document.getElementById("shipping-street-input").value = "";
+                        });
+                }
+            });
+
+            // When Shipping Neighborhood changes
+            document.getElementById("shipping-street").addEventListener("change", function () {
+                document.getElementById("shipping-street-input").value = this.value;
+            });
+            // When Billing City changes
+            document.getElementById("billing-city").addEventListener("change", function () {
+                let value = this.value;
+                document.getElementById("billing-city-input").value = value;
+
+                // Call server to get districts dynamically
+                if (value) {
+                    fetch(`/Checkout/GetDistricts?cityId=${value}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let stateSelect = document.getElementById("billing-state");
+                            stateSelect.innerHTML = '<option value="">-- İlçe seçin --</option>';
+
+                            data.forEach(d => {
+                                let opt = document.createElement("option");
+                                opt.value = d.id;
+                                opt.text = d.name;
+                                stateSelect.appendChild(opt);
+                            });
+
+                            // Reset hidden state + street
+                            document.getElementById("billing-state-input").value = "";
+                            document.getElementById("billing-street-input").value = "";
+                            document.getElementById("billing-street").innerHTML = '<option value="">-- Mahalle seçin --</option>';
+                        });
+                }
+            });
+
+            // When Billing District changes
+            document.getElementById("billing-state").addEventListener("change", function () {
+                let value = this.value;
+                document.getElementById("billing-state-input").value = value;
+
+                // Call server to get streets dynamically
+                if (value) {
+                    fetch(`/Checkout/GetStreets?district=${value}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let streetSelect = document.getElementById("billing-street");
+                            streetSelect.innerHTML = '<option value="">-- Mahalle seçin --</option>';
+
+                            data.forEach(n => {
+                                let opt = document.createElement("option");
+                                opt.value = n.id;
+                                opt.text = n.name;
+                                streetSelect.appendChild(opt);
+                            });
+
+                            document.getElementById("billing-street-input").value = "";
+                        });
+                }
+            });
+
+            // When Billing Neighborhood changes
+            document.getElementById("billing-street").addEventListener("change", function () {
+                document.getElementById("billing-street-input").value = this.value;
+            });
+    });
     </script>
 }

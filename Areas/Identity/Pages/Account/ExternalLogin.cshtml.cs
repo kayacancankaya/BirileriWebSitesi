@@ -112,8 +112,8 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-        
-            
+            _logger.LogError("OnGetCallbackAsync called with returnUrl: {ReturnUrl} and remoteError: {RemoteError}", returnUrl, remoteError);
+
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
             {
@@ -124,6 +124,7 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
             if (info == null)
             {
                 ErrorMessage = "Dış Kaynaktan Oturum Açma Hatası Alındı.";
+                _logger.LogError("External login info is null. Redirecting to login page.");
                 return Redirect("/Identity/Account/Login");
             }
             
@@ -159,17 +160,18 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
                     await _basketService.TransferInquiryBasketAsync(inquiry, user.Id);
                     HttpContext.Response.Cookies.Delete("MyInquiry");
                 }
-              
-                  return Redirect("/Identity/Account/Manage/Index");
+                    _logger.LogError("Should navigate to manage page");
+                return Redirect("/Identity/Account/Manage/Index");
             }
-            if (result.IsLockedOut)
+            else if (result.IsLockedOut)
             {
-                 return Redirect("/Identity/Account/Lockout");
+                _logger.LogError("User account is locked out.");
+                return Redirect("/Identity/Account/Lockout");
             }
             else
             {
-                // If the user does not have an account, then ask the user to create an account.
-                
+                _logger.LogError("External login failed for user: {UserId}. User does not have an account.", info.ProviderKey);
+                // If the user does not have an account, then ask the user to create an account.  
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))

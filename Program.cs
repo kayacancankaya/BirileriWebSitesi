@@ -10,6 +10,8 @@ using System.Net;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Diagnostics;
 using BirileriWebSitesi.Areas.Identity;
+using BirileriWebSitesi.Apis.Interfaces;
+using BirileriWebSitesi.Apis.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +131,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IIyzipayPaymentService, IyziPayPaymentService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IBlogInterface, BlogService>();
+builder.Services.AddHttpClient<IEasyCargoService, EasyCargoService>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {

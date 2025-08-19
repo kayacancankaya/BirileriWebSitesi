@@ -10,6 +10,9 @@ using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Helpers;
 using BirileriWebSitesi.Models.OrderAggregate;
 using BirileriWebSitesi.Models.InquiryAggregate;
+using BirileriWebSitesi.Apis.Interfaces;
+using BirileriWebSitesi.Models.ViewModels;
+using BirileriWebSitesi.Apis.DTOs;
 
 namespace BirileriWebSitesi.Controllers
 {
@@ -24,9 +27,10 @@ namespace BirileriWebSitesi.Controllers
         private readonly IOrderService _orderService;
         private readonly IEmailService _emailService;
         private readonly IUserAuditService _userAuditService;
+        private readonly IEasyCargoService _easyCargoService;
         public OrderController(ILogger<CartController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager,
                                 IProductService productService, IBasketService basketService, IOrderService orderService,
-                                IUserAuditService userAuditService, IEmailService emailService)
+                                IUserAuditService userAuditService, IEmailService emailService, IEasyCargoService easyCargoService)
         {
             _logger = logger;
             _context = context;
@@ -36,6 +40,7 @@ namespace BirileriWebSitesi.Controllers
             _orderService = orderService;
             _userAuditService = userAuditService;
             _emailService = emailService;
+            _easyCargoService = easyCargoService;
         }
         [Authorize]
         public async Task<IActionResult> CheckOut()
@@ -124,8 +129,15 @@ namespace BirileriWebSitesi.Controllers
                     return RedirectToAction("Index", "Cart");
                 }
 
+                IEnumerable<CityDTO> cities = await _easyCargoService.GetCitiesAsync();
 
-                return View(order);
+                CheckOutViewModel checkOutViewModel = new CheckOutViewModel
+                {
+                    Order = order,
+                    Cities = cities
+                };
+
+                return View(checkOutViewModel);
 
             }
             catch (Exception ex)
@@ -425,5 +437,42 @@ namespace BirileriWebSitesi.Controllers
                 return Ok(new { success = false, message = "Sepet Temizlenirken Hata ile Karşılaşıldı." });
             }
         }
+       
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetDistricts(string cityId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cityId))
+                    return null;
+                IEnumerable<DistrictDTO> districts = await _easyCargoService.GetDistrictsAsync(cityId);
+                return Json(districts);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetStreets(string cityId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cityId))
+                    return null;
+                IEnumerable<DistrictDTO> districts = await _easyCargoService.GetDistrictsAsync(cityId);
+                return Json(districts);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return null;
+            }
+        }
+
     }
 }
