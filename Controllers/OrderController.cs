@@ -82,23 +82,24 @@ namespace BirileriWebSitesi.Controllers
                     isInBuyRegion = true;
 
                 Basket basket = await _basketService.GetBasketAsync(userID);
-                List<Models.OrderAggregate.OrderItem> orderItems = new();
+                List<OrderItem> orderItems = new();
                 float desi = 0;
                 float singleDesi = 0;
-                foreach (Models.BasketAggregate.BasketItem item in basket.Items)
+                foreach (BasketItem item in basket.Items)
                 {
                     if (item.Quantity <= 0)
                         continue;
                     if (string.IsNullOrEmpty(item.ProductCode))
                         continue;
-                    singleDesi = await _orderService.GetDesi(item);
-                    desi += singleDesi;
-                    Models.OrderAggregate.OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
+                    singleDesi = await _orderService.GetDesiAsync(item.ProductCode);
+                    desi += (singleDesi * item.Quantity);
+                    
+                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
 
                     orderItems.Add(orderItem);
                 }
-
-                Models.OrderAggregate.Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
+                
+                Address? shipToAddress = await _context.Addresses.Where(i => i.UserId == userID &&
                                                                                                    i.IsBilling == false &&
                                                                                                    i.SetAsDefault == true)
                                                                                         .OrderByDescending(i => i.Id)
@@ -114,7 +115,7 @@ namespace BirileriWebSitesi.Controllers
                     shipToAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, true, string.Empty, string.Empty, firstName, lastName, email, phone, false, string.Empty);
                 }
 
-                Models.OrderAggregate.Address? billingAddress = await _context.Addresses.Where(i => i.UserId == userID &&
+                Address? billingAddress = await _context.Addresses.Where(i => i.UserId == userID &&
                                                                                                       i.IsBilling == true &&
                                                                                                     i.SetAsDefault == true)
                                                                                         .OrderByDescending(i => i.Id)
@@ -146,7 +147,7 @@ namespace BirileriWebSitesi.Controllers
                     Order = order,
                     Cities = cities,
                     ShipmentCompanies = shipmentCompanies,
-                    Desi = desi
+                    Desi = 3.2f
                 };
 
                 return View(checkOutViewModel);
@@ -158,21 +159,21 @@ namespace BirileriWebSitesi.Controllers
                 return RedirectToAction("NotFound", "Home");
             }
         }
-        public IActionResult _PartialIsCorporate(Models.OrderAggregate.Address address)
+        public IActionResult _PartialIsCorporate(Address address)
         {
             try
             {
                 if (ModelState.IsValid)
                     return PartialView(address);
 
-                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(address);
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                Models.OrderAggregate.Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
+                Address emptyAddress = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, true, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty);
                 return PartialView(emptyAddress);
             }
         }
@@ -211,7 +212,7 @@ namespace BirileriWebSitesi.Controllers
                     return BadRequest(new { success = false, message = "Ürün Bilgileri Bulunamadı." });
                 if (string.IsNullOrEmpty(model.Notes))
                     model.Notes = string.Empty;
-                Models.OrderAggregate.Address ShipToAddress = new();
+                Address ShipToAddress = new();
                 ShipToAddress.UserId = buyerID;
                 ShipToAddress.FirstName = model.ShipToAddress.FirstName;
                 ShipToAddress.LastName = model.ShipToAddress.LastName;
@@ -226,7 +227,7 @@ namespace BirileriWebSitesi.Controllers
                 ShipToAddress.ZipCode = model.ShipToAddress.ZipCode;
                 ShipToAddress.IsBilling = model.ShipToAddress.IsBilling;
                 ShipToAddress.IsBillingSame = (bool)(model.ShipToAddress.IsBillingSame == null ? false : model.ShipToAddress.IsBillingSame);
-                Models.OrderAggregate.Address BillingAddress = new();
+                Address BillingAddress = new();
                 BillingAddress.UserId = buyerID;
                 BillingAddress.FirstName = model.BillingAddress.FirstName;
                 BillingAddress.LastName = model.BillingAddress.LastName;
@@ -246,11 +247,11 @@ namespace BirileriWebSitesi.Controllers
                 BillingAddress.VATstate = model.BillingAddress.VATstate;
                 BillingAddress.IsCorporate = (bool)(model.BillingAddress.IsCorporate == null ? false : model.BillingAddress.IsCorporate);
 
-                List<Models.OrderAggregate.OrderItem> orderItems = new();
+                List<OrderItem> orderItems = new();
                 decimal totalAmount = 0;
                 foreach (var item in model.OrderItems)
                 {
-                    Models.OrderAggregate.OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
                     totalAmount += (item.Units * item.UnitPrice);
                     orderItems.Add(orderItem);
                 }
@@ -488,16 +489,16 @@ namespace BirileriWebSitesi.Controllers
         
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> CalculateShipment(string code,string desi)
+        public async Task<IActionResult> CalculateShipment(string shipmentCompany,string desi)
         {
-            if (string.IsNullOrEmpty(code))
+            if (string.IsNullOrEmpty(shipmentCompany))
                 return Json(new { amount = 0f });
             try
             {
                 if(!Single.TryParse(desi,out float desiAmount))
                     return Json(new { amount = 0f });
-
-                float amount = await _easyCargoService.CalculateShipmentAsync(code,desiAmount);
+                int desiKg = (int)Math.Ceiling(desiAmount);
+                float amount = await _easyCargoService.CalculateShipmentAsync(shipmentCompany, desiKg);
 
                 return Json(new { amount });
 
@@ -511,4 +512,4 @@ namespace BirileriWebSitesi.Controllers
     }
 
 }
-}
+

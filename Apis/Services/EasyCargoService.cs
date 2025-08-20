@@ -179,5 +179,44 @@ namespace BirileriWebSitesi.Apis.Services
                 return Enumerable.Empty<ShipmentCompaniesDTO>(); 
             }
         }
+
+        public async Task<float> CalculateShipmentAsync(string shipmentCompany, int desiAmount)
+        {
+            try
+            {
+                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                string endpoint = $"{_baseUrl}handlers/fee/desiKg/{desiAmount}";
+                var response = await _http.GetAsync(endpoint);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        _logger.LogWarning("Empty response when fetching companies.");
+                        return 0;
+                    }
+                    ;
+                    var responseDTO = JsonConvert.DeserializeObject<IEnumerable<DesiResponseDTO>>(content);
+                    if(responseDTO == null || !responseDTO.Any())
+                    {
+                        _logger.LogWarning("No data returned from the shipment fee calculation.");
+                        return 0;
+                    }
+                    return responseDTO.Where(h=>h.HandlerCode == shipmentCompany).Select(p=>p.Price).FirstOrDefault();
+                }
+
+                else
+                {
+                    _logger.LogError($"Failed to fetch cities: {response.ReasonPhrase}");
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return 0;
+            }
+        }
     }
 }

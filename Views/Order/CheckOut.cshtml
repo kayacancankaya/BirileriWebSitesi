@@ -304,7 +304,6 @@
                         }
                     }
                     <input type="hidden" id="selectedShipmentCode" value="" />
-                    <input type="hidden" id="cargo-amount" value="" />
                     <input type="hidden" id="desi" value="@Model.Desi.ToString()" />
 
                 </div>
@@ -328,13 +327,14 @@
                         <input type="hidden" class="product-code" value="@item.ProductCode" />
                         <input type="hidden" class="product-name" value="@item.ProductName" />
                         <input type="hidden" class="unit-price" value="@item.UnitPrice" />
+                        <input type="hidden" id="cargo-amount" value="" />
                         Ürün Adı:<strong><span class="product-name">@item.ProductName </span> / Miktar: <span class="quantity">@item.Units</span>
                         </strong>
                     </li>
                     <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
                 }
-                <li class="clearfix">KARGO ÜCRETİ<span class="free">ÜCRETSİZ</span></li>
-                <li class="clearfix">TOPLAM<span>@Model.Order.TotalAmount ₺</span></li>
+                <li class="clearfix">KARGO ÜCRETİ<span class="free" id="cargo-price-span"></span></li>
+                <li class="clearfix">KDV DAHİL TOPLAM<span>@Model.Order.TotalAmount ₺</span></li>
             </ul>
         </div>
         <!--End Order Box-->
@@ -435,7 +435,7 @@
 
                 e.preventDefault();
                 var button = $(this);
-                let requiredFields = ["first-name", "last-name", "email", "city", "state", "address-detailed", "street"];
+                let requiredFields = ["first-name", "last-name", "email", "shipping-city", "shipping-state", "address-detailed", "shipping-street"];
                 var isBillingSame = $("#is-billing-same").is(":checked");
                 var isCorporate = $("#is-corporate").is(":checked");
                 if (!isBillingSame)
@@ -453,18 +453,28 @@
 
                 // if fields are filled
                 requiredFields.forEach(function (id) {
-                    let input = document.getElementById(id);
-                    if (input && input.value.trim() === "") {
+                    let field = document.getElementById(id);
+                    if (!field) return;
+
+                    let value = field.value.trim();
+
+                    // Special handling for <select>
+                    if (field.tagName === "SELECT" && value === "0") {
                         isValid = false;
-                        input.style.border = "1px solid red"; // Highlight empty fields
+                        field.style.border = "1px solid red"; // Highlight empty
+                    }
+                    // Handling for regular input
+                    else if (field.tagName !== "SELECT" && value === "") {
+                        isValid = false;
+                        field.style.border = "1px solid red";
                     } else {
-                        input.style.border = ""; // Reset style
+                        field.style.border = ""; // Reset style
                     }
                 });
+
                 if (!isValid) {
-                    e.preventDefault();
-                    showAlert(button,"Lütfen zorunlu alanları doldurun.","danger");
-                    return;
+                    alert("Lütfen tüm zorunlu alanları doldurun.");
+                    return false;
                 }
                
                 // Disable button and show loading
@@ -479,9 +489,9 @@
                     EmailAddress: $("#email").val(),
                     Phone: $("#phone").val(),
                     AddressDetailed: $("#address-detailed").val(),
-                    City: $("#city").val(),
-                    State: $("#state").val(),
-                    Street: $("#street").val(),
+                    City: $("#shipping-city-input").val(),
+                    State: $("#shipping-state-input").val(),
+                    Street: $("#shipping-street-input").val(),
                     ZipCode: $("#zip").val(),
                     IsBilling: false,
                     IsBillingSame: $("#is-billing-same").is(":checked"),
@@ -500,9 +510,9 @@
                         EmailAddress: $("#email").val(),
                         Phone: $("#phone").val(),
                         AddressDetailed: $("#address-detailed").val(),
-                        City: $("#city").val(),
-                        State: $("#state").val(),
-                        Street: $("#street").val(),
+                        City: $("#shipping-city-input").val(),
+                        State: $("#shipping-state-input").val(),
+                        Street: $("#shipping-street-input").val(),
                         ZipCode: $("#zip").val(),
                         IsBilling: true,
                         IsBillingSame: $("#is-billing-same").is(":checked"),
@@ -521,9 +531,9 @@
                         EmailAddress: $("#billing-email").val(),
                         Phone: $("#billing-phone").val(),
                         AddressDetailed: $("#billing-address-detailed").val(),
-                        City: $("#billing-city").val(),
-                        State: $("#billing-state").val(),
-                        Street: $("#billing-street").val(),
+                        City: $("#billing-city-input").val(),
+                        State: $("#billing-state-input").val(),
+                        Street: $("#billing-street-input").val(),
                         ZipCode: $("#billing-zip").val(),
                         IsBilling: true,
                         IsBillingSame: $("#is-billing-same").is(":checked"),
@@ -700,40 +710,40 @@
             document.getElementById("billing-street").addEventListener("change", function () {
                 document.getElementById("billing-street-input").value = this.value;
             });
+        
+        const $cards = $(".shipment-card");
+        const $hiddenInput = $("#selectedShipmentCode");
 
-            //cargo company 
-                const $cards = $(".shipment-card");
-                const $hiddenInput = $("#selectedShipmentCode");
-                    $cards.on("click", function () {
-                        const $clicked = $(this);
-                        const isSelected = $clicked.hasClass("selected");
+        $cards.on("click", function () {
+            const $clicked = $(this);
+            const isSelected = $clicked.hasClass("selected");
 
-                        // clear all selections
-                        $cards.removeClass("selected");
+            // clear all selections
+            $cards.removeClass("selected");
 
-                        if (!isSelected) {
-                            // select clicked one
-                            $clicked.addClass("selected");
-                            $hiddenInput.val($clicked.data("code"));
-                        } else {
-                            // unselect if same clicked again
-                            $hiddenInput.val("");
-                        }
+            if (!isSelected) {
+                // select clicked one
+                $clicked.addClass("selected");
+                $hiddenInput.val($clicked.data("code"));
+            } else {
+                // unselect if same clicked again
+                $hiddenInput.val("");
+            }
 
-                        // trigger custom event using jQuery
-                        $(document).trigger("shipmentSelectionChanged", [$hiddenInput.val()]);
-                    });
-                    // listen for the custom event
+            var desi = $("#desi").val();
+            var selectedCode = $hiddenInput.val();
+            console.log(desi);
+            console.log(selectedCode);
 
-        $(document).on("shipmentSelectionChanged", function (e, selectedCode) {
-                fetch(`/Order/CalculateShipment?code=${encodeURIComponent(selectedCode)&&desi=${encodeURIComponent(desi)}`)
+                fetch(`/Order/CalculateShipment?shipmentCompany=${selectedCode}&desi=${desi}`)
                 .then(res => {
                     if (!res.ok) throw new Error("Network response was not ok");
-                    return res.json();
+                    return res.json(); // <-- you forgot to return JSON here
                 })
                 .then(data => {
                     // data.amount beklenen float
                     $("#cargo-amount").val(data.amount);
+                    $("#cargo-price-span").text(data.amount + " ₺");
                 })
                 .catch(err => console.error(err));
         });

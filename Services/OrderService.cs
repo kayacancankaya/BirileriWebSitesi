@@ -398,7 +398,6 @@ namespace BirileriWebSitesi.Services
                 return false;
             }
         }
-
         public async Task<bool> UpdateOrderStatus(int orderID, string status, int paymentType)
         {
             try
@@ -458,7 +457,6 @@ namespace BirileriWebSitesi.Services
                 return new Dictionary<int, string>();
             }
         }
-
         public async Task<int> CancelOrderItemAsync(int orderId, string productCode)
         {
             try
@@ -580,7 +578,6 @@ namespace BirileriWebSitesi.Services
                 return -1;
             }
         }
-
         private async Task ProcessRefundToDb(Order order, OrderItem item)
         {
             try
@@ -613,7 +610,6 @@ namespace BirileriWebSitesi.Services
                 _logger.LogError(ex, "Cancel Order No Payment procedure failed for {OrderId}", order.Id);
             }
         }
-
         public async Task<bool> UpdateAddressAsync(Address address)
         {
             try
@@ -674,11 +670,51 @@ namespace BirileriWebSitesi.Services
                 return false;
             }
         }
-
-        public async Task<ProductDimensions> GetDimensionsAsync(float)
+        public async Task<float> GetDesiAsync(string productCode)
         {
+            if (string.IsNullOrEmpty(productCode))
+                return 0;
+            try
+            {
+                //check if product is bundled
+                var baseProductCode = await _context.ProductVariants
+                         .Where(p => p.ProductCode == productCode)
+                         .Select(p => p.BaseProduct)
+                         .FirstOrDefaultAsync();
+                if (string.IsNullOrEmpty(baseProductCode))
+                    return 0;
+                var product = await _context.Products
+                    .Where(p => p.ProductCode == baseProductCode)
+                    .FirstOrDefaultAsync();
+                if (product == null)
+                    return 0;
+                if (!Single.TryParse(product.Width.ToString(), out float length))
+                    length = 1;
+                if (!Single.TryParse(product.Height.ToString(), out float height))
+                    height = 1;
+                if (!Single.TryParse(product.Depth.ToString(), out float depth))
+                    depth = 1;
 
+                float desi = length * height * depth / 3000f;
+                string quantityCode = productCode.Substring(14, 3);
+                string? quantityStr = await _context.VariantAttributes
+                    .Where(v => v.VariantCode == "001" &&
+                                v.VariantAttributeCode == quantityCode)
+                    .Select(v => v.VariantAttributeName)
+                    .FirstOrDefaultAsync();
+                if (!Int32.TryParse(quantityStr.Substring(0, quantityStr.Length - 5), out int quantity))
+                    quantity = 1;
+                desi = desi * quantity;
+                return desi;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Get Desi failed for {ProductCode}", productCode);
+                return 0;
+            }
         }
+    
     }
 }
 
