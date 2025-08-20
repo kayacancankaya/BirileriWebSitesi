@@ -13,6 +13,7 @@ using BirileriWebSitesi.Models.InquiryAggregate;
 using BirileriWebSitesi.Apis.Interfaces;
 using BirileriWebSitesi.Models.ViewModels;
 using BirileriWebSitesi.Apis.DTOs;
+using System.Threading.Tasks;
 
 namespace BirileriWebSitesi.Controllers
 {
@@ -82,8 +83,16 @@ namespace BirileriWebSitesi.Controllers
 
                 Basket basket = await _basketService.GetBasketAsync(userID);
                 List<Models.OrderAggregate.OrderItem> orderItems = new();
+                float desi = 0;
+                float singleDesi = 0;
                 foreach (Models.BasketAggregate.BasketItem item in basket.Items)
                 {
+                    if (item.Quantity <= 0)
+                        continue;
+                    if (string.IsNullOrEmpty(item.ProductCode))
+                        continue;
+                    singleDesi = await _orderService.GetDesi(item);
+                    desi += singleDesi;
                     Models.OrderAggregate.OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
 
                     orderItems.Add(orderItem);
@@ -130,11 +139,14 @@ namespace BirileriWebSitesi.Controllers
                 }
 
                 IEnumerable<CityDTO> cities = await _easyCargoService.GetCitiesAsync();
+                IEnumerable<ShipmentCompaniesDTO> shipmentCompanies = await _easyCargoService.GetShipmentCompaniesAsync();
 
                 CheckOutViewModel checkOutViewModel = new CheckOutViewModel
                 {
                     Order = order,
-                    Cities = cities
+                    Cities = cities,
+                    ShipmentCompanies = shipmentCompanies,
+                    Desi = desi
                 };
 
                 return View(checkOutViewModel);
@@ -452,27 +464,51 @@ namespace BirileriWebSitesi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return null;
+                return Json(Enumerable.Empty<DistrictDTO>()); 
             }
         }
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetStreets(string cityId)
+        public async Task<IActionResult> GetStreets(string districtId)
         {
             try
             {
-                if (string.IsNullOrEmpty(cityId))
+                if (string.IsNullOrEmpty(districtId))
                     return null;
-                IEnumerable<DistrictDTO> districts = await _easyCargoService.GetDistrictsAsync(cityId);
-                return Json(districts);
+                IEnumerable<StreetDTO> streets = await _easyCargoService.GetStreetsAsync(districtId);
+                return Json(streets);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message.ToString());
-                return null;
+                return Json(Enumerable.Empty<StreetDTO>());
             }
         }
+        
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> CalculateShipment(string code,string desi)
+        {
+            if (string.IsNullOrEmpty(code))
+                return Json(new { amount = 0f });
+            try
+            {
+                if(!Single.TryParse(desi,out float desiAmount))
+                    return Json(new { amount = 0f });
 
+                float amount = await _easyCargoService.CalculateShipmentAsync(code,desiAmount);
+
+                return Json(new { amount });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return Json(new { amount = 0f });
+            }
+        }
     }
+
+}
 }

@@ -7,5 +7,6 @@ namespace BirileriWebSitesi.Apis.Interfaces
         public Task<IEnumerable<CityDTO>> GetCitiesAsync();
         public Task<IEnumerable<DistrictDTO>> GetDistrictsAsync(string cityId);
         public Task<IEnumerable<StreetDTO>> GetStreetsAsync(string districtId);
+        public Task<IEnumerable<ShipmentCompaniesDTO>> GetShipmentCompaniesAsync();
     }
 }

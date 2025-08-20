@@ -1,7 +1,9 @@
 ﻿using BirileriWebSitesi.Apis.DTOs;
 using BirileriWebSitesi.Apis.Interfaces;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace BirileriWebSitesi.Apis.Services
 {
@@ -23,8 +25,8 @@ namespace BirileriWebSitesi.Apis.Services
         {
             try
             {
-                _http.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                //_http.DefaultRequestHeaders.Authorization =
+                    //new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
                 string endpoint = $"https://turkiyeapi.dev/api/v1/provinces";
                 var response = await _http.GetAsync(endpoint);
@@ -32,73 +34,149 @@ namespace BirileriWebSitesi.Apis.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
+                    
                     if (string.IsNullOrWhiteSpace(content))
                     {
                         _logger.LogWarning("Empty response when fetching cities.");
                         return Enumerable.Empty<CityDTO>();
-                    }
+                    };
+                    var jObj = JObject.Parse(content);
+                    var cities = jObj["data"]
+                        .Select(c => new CityDTO
+                        {
+                            Id = (int)c["id"],
+                            Name = (string)c["name"] ?? string.Empty
+                        })
+                        .ToList();
 
-
-                    return Enumerable.Empty<CityDTO>();
+                    return cities;
                 }
                 else
                 {
                     _logger.LogError($"Failed to fetch cities: {response.ReasonPhrase}");
-                    return null;
+                    return Enumerable.Empty<CityDTO>(); ;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while fetching cities.");
-                return null;
+                return Enumerable.Empty<CityDTO>(); ;
             }
         }
         public async Task<IEnumerable<DistrictDTO>> GetDistrictsAsync(string cityId)
         {
             try
             {
-                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                string endpoint = $"{_baseUrl}country/90/city/{cityId}/districts";
+                int id = Convert.ToInt32(cityId);
+                //_http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                string endpoint = $"https://turkiyeapi.dev/api/v1/districts?provinceId={cityId}";
                 var response = await _http.GetAsync(endpoint);
                 if (response.IsSuccessStatusCode)
                 {
-                    var districts = await response.Content.ReadFromJsonAsync<IEnumerable<DistrictDTO>>();
-                    return districts ;
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        _logger.LogWarning("Empty response when fetching districts.");
+                        return Enumerable.Empty<DistrictDTO>();
+                    }
+                    ;
+                    var jObj = JObject.Parse(content);
+                    var districts = jObj["data"]
+                        .Select(c => new DistrictDTO
+                        {
+                            Id = (int)c["id"],
+                            Name = (string)c["name"] ?? string.Empty
+                        })
+                        .ToList();
+
+                    return districts;
                 }
                 else
                 {
-                    _logger.LogError($"Failed to fetch districts for city {cityId}: {response.ReasonPhrase}");
-                    return null;
+                    _logger.LogError($"Failed to fetch cities: {response.ReasonPhrase}");
+                    return Enumerable.Empty<DistrictDTO>(); 
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while fetching districts.");
-                return null;
+                return Enumerable.Empty<DistrictDTO>(); 
             }
         }
         public async Task<IEnumerable<StreetDTO>> GetStreetsAsync(string districtId)
         {
             try
             {
-                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                string endpoint = $"{_baseUrl}country/90/district/{districtId}/streets";
+                //_http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                string endpoint = $"https://turkiyeapi.dev/api/v1/neighborhoods?districtId={districtId}";
                 var response = await _http.GetAsync(endpoint);
                 if (response.IsSuccessStatusCode)
                 {
-                    var streets = await response.Content.ReadFromJsonAsync<IEnumerable<StreetDTO>>();
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        _logger.LogWarning("Empty response when fetching streets.");
+                        return Enumerable.Empty<StreetDTO>();
+                    }
+                    ;
+                    var jObj = JObject.Parse(content);
+                    var streets = jObj["data"]
+                        .Select(c => new StreetDTO
+                        {
+                            Id = (int)c["id"],
+                            Name = (string)c["name"] ?? string.Empty
+                        })
+                        .ToList();
+
                     return streets;
                 }
+
                 else
                 {
-                    _logger.LogError($"Failed to fetch streets for district {districtId}: {response.ReasonPhrase}");
-                    return null;
+                    _logger.LogError($"Failed to fetch cities: {response.ReasonPhrase}");
+                    return Enumerable.Empty<StreetDTO>(); 
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while fetching streets.");
-                return null;
+                return Enumerable.Empty<StreetDTO>(); 
+            }
+        }
+        public async Task<IEnumerable<ShipmentCompaniesDTO>> GetShipmentCompaniesAsync()
+        {
+            try
+            {
+                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                string endpoint = $"{_baseUrl}handlers";
+                var response = await _http.GetAsync(endpoint);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        _logger.LogWarning("Empty response when fetching companies.");
+                        return Enumerable.Empty<ShipmentCompaniesDTO>();
+                    }
+                    ;
+                    var companies = JsonConvert.DeserializeObject<IEnumerable<ShipmentCompaniesDTO>>(content);
+
+                    return companies ?? Enumerable.Empty<ShipmentCompaniesDTO>();
+                }
+
+                else
+                {
+                    _logger.LogError($"Failed to fetch cities: {response.ReasonPhrase}");
+                    return Enumerable.Empty<ShipmentCompaniesDTO>(); 
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching streets.");
+                return Enumerable.Empty<ShipmentCompaniesDTO>(); 
             }
         }
     }

@@ -7,5 +7,7 @@ namespace BirileriWebSitesi.Models.ViewModels
     {
         public Order? Order { get; set; }
         public IEnumerable<CityDTO>? Cities { get; set; }
+        public IEnumerable<ShipmentCompaniesDTO>? ShipmentCompanies { get; set; }
+        public float Desi { get; set; } = 0f;
     }
 }

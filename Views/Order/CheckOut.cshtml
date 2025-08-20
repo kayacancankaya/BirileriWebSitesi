@@ -1,68 +1,95 @@
 ﻿@model BirileriWebSitesi.Models.ViewModels.CheckOutViewModel
 
 @section Title {
-    <meta name="title" content="Kargo ve Fatura Bilgileri">
-    <title>Kargo ve Fatura Bilgileri</title>
+<meta name="title" content="Kargo ve Fatura Bilgileri">
+<title>Kargo ve Fatura Bilgileri</title>
 }
 @section Description {
-    <meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
+<meta name="description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz.">
 }
 @section Keywords {
-    <meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
+<meta name="keywords" content="Çin ithalat, toptan ürünler, perakende satış, marka patent, e-ticaret çözümleri, toptan spor malzemeleri ithalatı, marka desteği, toptan petshop ürünleri,
                                     toptan spor malzemesi">
 }
 @section CSS{
-    <style>
-        #proceed-to-payment {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #FFB22F; /* Blue background */
-            color: #000; /* White text */
-            text-decoration: none; /* Remove underline */
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-family: sans-serif;
-            text-align: center;
-            transition: background-color 0.3s ease;
-        }
-        
-            #proceed-to-payment:hover {
-            background-color: #D99E00;
-            color: #000; /* Darker on hover */
-        }
+<style>
+    #proceed-to-payment {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #FFB22F; /* Blue background */
+    color: #000; /* White text */
+    text-decoration: none; /* Remove underline */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: sans-serif;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    }
 
-        @@media (min-width: 780px) { 
+    #proceed-to-payment:hover {
+    background-color: #D99E00;
+    color: #000; /* Darker on hover */
+    }
+
+    @@media (min-width: 780px) { 
 
 
-            #billing-address-div {
-                padding-top: 20px;
-                padding-left: 10px;
+    #billing-address-div {
+    padding-top: 20px;
+    padding-left: 10px;
+    }
+    }
+    @@media (min-width: 780px) { 
+
+    #billing-address-div {
+    padding-top: 20px;
+    padding-left: 10px;
+    }
+    }
+            .shipment-card {
+                border: 2px solid #ddd;
+                border-radius: 12px;
+                padding: 15px;
+                text-align: center;
+                cursor: pointer;
+                transition: 0.3s;
             }
-        }
-        @@media (min-width: 780px) { 
 
-             #billing-address-div {
-                 padding-top: 20px;
-                padding-left: 10px;
+                .shipment-card.selected {
+                    border-color: #007bff;
+                    background-color: #f0f8ff;
+                    box-shadow: 0 0 10px rgba(0,123,255,0.2);
+                }
+
+            .shipment-logo {
+                max-width: 80px;
+                max-height: 40px;
+                object-fit: contain;
+                margin-bottom: 8px;
             }
-        }
-    </style>
+
+            .shipment-name {
+                font-size: 14px;
+                font-weight: 600;
+            }
+    
+</style>
 }
 
 
 <!--CheckOut Page-->
 <div class="checkout-page">
     <div class="auto-container">
-       
+
         <!--Checkout Details-->
         <div class="checkout-form">
 
             <div class="row clearfix">
                 <!--Ship to Address-->
                 <div class="column col-lg-6 col-md-12 col-sm-12">
-                    
+
                     <div class="checkout-title">
                         <h2>Kargo Bilgileri</h2>
                     </div>
@@ -89,8 +116,8 @@
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                        <div class="field-label">Soy İsim <sup>*</sup></div>
-                        <input type="text" id="last-name" value="@Model.Order.ShipToAddress.LastName" placeholder="Soy İsim Giriniz...">
+                            <div class="field-label">Soy İsim <sup>*</sup></div>
+                            <input type="text" id="last-name" value="@Model.Order.ShipToAddress.LastName" placeholder="Soy İsim Giriniz...">
                         </div>
 
                         <!--Form Group-->
@@ -116,6 +143,85 @@
                         <input type="hidden" name="Order.ShipToAddress.City" id="shipping-city-input" value="@Model.Order.ShipToAddress.City" />
                         <input type="hidden" name="Order.ShipToAddress.State" id="shipping-state-input" value="@Model.Order.ShipToAddress.State" />
                         <input type="hidden" name="Order.ShipToAddress.Street" id="shipping-street-input" value="@Model.Order.ShipToAddress.Street" />
+
+                        <!-- City -->
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                            <div class="field-label">Şehir <sup>*</sup></div>
+                            <select id="shipping-city" class="form-control">
+                                <option value="0">-- Şehir seçin --</option>
+                                @foreach (var city in Model.Cities)
+                                {
+                                    <option value="@city.Id">@city.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- District -->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">İlçe <sup>*</sup></div>
+                            <select id="shipping-state" class="form-control">
+                                <option value="0">-- İlçe seçin --</option>
+                                @*   @foreach (var district in Model.Districts)
+                                {
+                                    <option value="@district">@district</option>
+                                } *@
+                            </select>
+                        </div>
+
+                        <!-- Neighborhood -->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Mahalle <sup>*</sup></div>
+                            <select id="shipping-street" class="form-control">
+                                <option value="0">-- Mahalle seçin --</option>
+                                @* @foreach (var neighborhood in Model.Streets)
+                                {
+                                    <option value="@neighborhood">@neighborhood</option>
+                                } *@
+                            </select>
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Posta Kodu</div>
+                            <input type="text" id="zip" value="@Model.Order.ShipToAddress.ZipCode" placeholder="Posta Kodu">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!--Billing Address-->
+                <div class="column col-lg-6 col-md-12 col-sm-12 " id="billing-address-div">
+                    <div class="checkout-title">
+                        <h2>Fatura Bilgileri</h2>
+                    </div>
+
+                    <div class="row clearfix" id="is-corporate-main-div" >
+                        <div id="is-corporate-div">
+                            @Html.Partial("_PartialIsCorporate", Model.Order.BillingAddress)
+                        </div>
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Email Adresi <sup>*</sup></div>
+                            <input type="text" id="billing-email" value="@Model.Order.BillingAddress.EmailAddress" placeholder="Email Adresi Giriniz">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                            <div class="field-label">Telefon</div>
+                            <input type="text" id="billing-phone" value="@Model.Order.BillingAddress.Phone" placeholder="Telefon Numarası Giriniz">
+                        </div>
+
+                        <!--Form Group-->
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
+                            <div class="field-label">Adres <sup>*</sup></div>
+                            <input type="text" id="billing-address-detailed" value="@Model.Order.BillingAddress.AddressDetailed" placeholder="Açık Adres">
+                        </div>
+
+
+                        <!-- Hidden inputs to store selected values  -->
+                        <input type="hidden" name="Order.BillingAddress.City" id="billing-city-input" value="@Model.Order.BillingAddress.City" />
+                        <input type="hidden" name="Order.BillingAddress.State" id="billing-state-input" value="@Model.Order.BillingAddress.State" />
+                        <input type="hidden" name="Order.BillingAddress.Street" id="billing-street-input" value="@Model.Order.BillingAddress.Street" />
 
                         <!-- City -->
                         <div class="form-group col-lg-12 col-md-12 col-sm-12">
@@ -155,85 +261,6 @@
 
                         <!--Form Group-->
                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                            <div class="field-label">Posta Kodu</div>
-                            <input type="text" id="zip" value="@Model.Order.ShipToAddress.ZipCode" placeholder="Posta Kodu">
-                        </div>
-
-                    </div>
-                </div>
-                
-                <!--Billing Address-->
-                <div class="column col-lg-6 col-md-12 col-sm-12 " id="billing-address-div">
-                    <div class="checkout-title">
-                        <h2>Fatura Bilgileri</h2>
-                    </div>
-                    
-                    <div class="row clearfix" id="is-corporate-main-div" >
-                        <div id="is-corporate-div">
-                            @Html.Partial("_PartialIsCorporate", Model.Order.BillingAddress)
-                        </div>
-                        <!--Form Group-->
-                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                            <div class="field-label">Email Adresi <sup>*</sup></div>
-                            <input type="text" id="billing-email" value="@Model.Order.BillingAddress.EmailAddress" placeholder="Email Adresi Giriniz">
-                        </div>
-
-                        <!--Form Group-->
-                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                            <div class="field-label">Telefon</div>
-                            <input type="text" id="billing-phone" value="@Model.Order.BillingAddress.Phone" placeholder="Telefon Numarası Giriniz">
-                        </div>
-
-                        <!--Form Group-->
-                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
-                            <div class="field-label">Adres <sup>*</sup></div>
-                            <input type="text" id="billing-address-detailed" value="@Model.Order.BillingAddress.AddressDetailed" placeholder="Açık Adres">
-                        </div>
-
-
-                      <!-- Hidden inputs to store selected values  -->
-                        <input type="hidden" name="Order.BillingAddress.City" id="billing-city-input" value="@Model.Order.BillingAddress.City" />
-                        <input type="hidden" name="Order.BillingAddress.State" id="billing-state-input" value="@Model.Order.BillingAddress.State" />
-                        <input type="hidden" name="Order.BillingAddress.Street" id="billing-street-input" value="@Model.Order.BillingAddress.Street" />
-
-                        <!-- City -->
-                        <div class="form-group col-lg-12 col-md-12 col-sm-12">
-                            <div class="field-label">Şehir <sup>*</sup></div>
-                            <select id="billing-city" class="form-control">
-                                <option value="0">-- Şehir seçin --</option>
-                                @foreach (var city in Model.Cities)
-                                {
-                                    <option value="@city.Id">@city.Name</option>
-                                }
-                            </select>
-                        </div>
-
-                        <!-- District -->
-                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                            <div class="field-label">İlçe <sup>*</sup></div>
-                            <select id="billing-state" class="form-control">
-                                <option value="0">-- İlçe seçin --</option>
-                              @*   @foreach (var district in Model.Districts)
-                                {
-                                    <option value="@district">@district</option>
-                                } *@
-                            </select>
-                        </div>
-
-                        <!-- Neighborhood -->
-                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
-                            <div class="field-label">Mahalle <sup>*</sup></div>
-                            <select id="billing-street" class="form-control">
-                                <option value="0">-- Mahalle seçin --</option>
-                                @* @foreach (var neighborhood in Model.Streets)
-                                {
-                                    <option value="@neighborhood">@neighborhood</option>
-                                } *@
-                            </select>
-                        </div>
-
-                        <!--Form Group-->
-                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
                             <div class="field-label">Posta Kodu </div>
                             <input type="text" id="billing-zip" value="@Model.Order.BillingAddress.ZipCode" placeholder="Posta Kodu">
                         </div>
@@ -250,6 +277,36 @@
                     <div class="field-label">Varsayılan Adres Yap</div>
                     <input type="checkbox" id="update-user-info" value="true"
                     @(Model.Order.UpdateUserInfo ? "checked=\"checked\"" : "")>
+                </div>
+            </div>
+            <div class="row clearfix mt-3 mb-0">
+                <div class="checkout-title">
+                    <h2>Kargo Firması</h2>
+                </div>
+                <div class="row g-3" id="shipment-companies">
+                    @if(Model.ShipmentCompanies != null)
+                    {
+                        if(Model.ShipmentCompanies.Any())
+                        {
+                            
+                            @foreach(var company in Model.ShipmentCompanies)
+                            {
+                                if (company.Code == "YURTICI" || company.Code == "PTT" || company.Code == "HEPSIJET" || company.Code == "ARAS" || company.Code == "SURAT")
+                                {
+                                    <div class="col-6 col-md-4">
+                                        <div class="shipment-card" data-code="@company.Code">
+                                            <img src="@company.Logo" alt="@company.Name" class="shipment-logo" />
+                                            <div class="shipment-name">@company.Name</div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                    }
+                    <input type="hidden" id="selectedShipmentCode" value="" />
+                    <input type="hidden" id="cargo-amount" value="" />
+                    <input type="hidden" id="desi" value="@Model.Desi.ToString()" />
+
                 </div>
             </div>
         </div>
@@ -535,7 +592,8 @@
 
                 // Call server to get districts dynamically
                 if (value) {
-                    fetch(`/Checkout/GetDistricts?cityId=${value}`)
+
+                    fetch(`/Order/GetDistricts?cityId=${value}`)
                         .then(res => res.json())
                         .then(data => {
                             let stateSelect = document.getElementById("shipping-state");
@@ -563,7 +621,7 @@
 
                 // Call server to get streets dynamically
                 if (value) {
-                    fetch(`/Checkout/GetStreets?districtId=${value}`)
+                        fetch(`/Order/GetStreets?districtId=${value}`)
                         .then(res => res.json())
                         .then(data => {
                             let streetSelect = document.getElementById("shipping-street");
@@ -592,7 +650,7 @@
 
                 // Call server to get districts dynamically
                 if (value) {
-                    fetch(`/Checkout/GetDistricts?cityId=${value}`)
+                        fetch(`/Order/GetDistricts?cityId=${value}`)
                         .then(res => res.json())
                         .then(data => {
                             let stateSelect = document.getElementById("billing-state");
@@ -620,7 +678,7 @@
 
                 // Call server to get streets dynamically
                 if (value) {
-                    fetch(`/Checkout/GetStreets?district=${value}`)
+                        fetch(`/Order/GetStreets?district=${value}`)
                         .then(res => res.json())
                         .then(data => {
                             let streetSelect = document.getElementById("billing-street");
@@ -642,6 +700,44 @@
             document.getElementById("billing-street").addEventListener("change", function () {
                 document.getElementById("billing-street-input").value = this.value;
             });
+
+            //cargo company 
+                const $cards = $(".shipment-card");
+                const $hiddenInput = $("#selectedShipmentCode");
+                    $cards.on("click", function () {
+                        const $clicked = $(this);
+                        const isSelected = $clicked.hasClass("selected");
+
+                        // clear all selections
+                        $cards.removeClass("selected");
+
+                        if (!isSelected) {
+                            // select clicked one
+                            $clicked.addClass("selected");
+                            $hiddenInput.val($clicked.data("code"));
+                        } else {
+                            // unselect if same clicked again
+                            $hiddenInput.val("");
+                        }
+
+                        // trigger custom event using jQuery
+                        $(document).trigger("shipmentSelectionChanged", [$hiddenInput.val()]);
+                    });
+                    // listen for the custom event
+
+        $(document).on("shipmentSelectionChanged", function (e, selectedCode) {
+                fetch(`/Order/CalculateShipment?code=${encodeURIComponent(selectedCode)&&desi=${encodeURIComponent(desi)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error("Network response was not ok");
+                    return res.json();
+                })
+                .then(data => {
+                    // data.amount beklenen float
+                    $("#cargo-amount").val(data.amount);
+                })
+                .catch(err => console.error(err));
+        });
+                    
     });
     </script>
 }

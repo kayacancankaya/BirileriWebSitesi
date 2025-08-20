@@ -674,6 +674,11 @@ namespace BirileriWebSitesi.Services
                 return false;
             }
         }
+
+        public async Task<ProductDimensions> GetDimensionsAsync(float)
+        {
+
+        }
     }
 }
 
