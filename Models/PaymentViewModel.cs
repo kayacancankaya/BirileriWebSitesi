@@ -11,6 +11,7 @@ namespace BirileriWebSitesi.Models
         public int InstallmentAmount { get; set; } = 1;
         public int OrderId { get; set; } = 0;
         public int PaymentType { get; set; } = 1;
+        public decimal ShippingCost { get; set; } = decimal.Zero;
 
     }
 }

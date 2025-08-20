@@ -334,9 +334,11 @@
                     <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
                 }
                 <li class="clearfix">KARGO ÜCRETİ<span class="free" id="cargo-price-span"></span></li>
-                <li class="clearfix">KDV DAHİL TOPLAM<span>@Model.Order.TotalAmount ₺</span></li>
+                <li class="clearfix">KDV DAHİL TOPLAM<span id="total-price-span"></span></li>
             </ul>
         </div>
+
+        <input type="hidden" value="@Model.Order.TotalAmount" id="total-price-input" />
         <!--End Order Box-->
 
         <div class="lower-box text-right">
@@ -435,7 +437,7 @@
 
                 e.preventDefault();
                 var button = $(this);
-                let requiredFields = ["first-name", "last-name", "email", "shipping-city", "shipping-state", "address-detailed", "shipping-street"];
+                    let requiredFields = ["first-name", "last-name", "email", "shipping-city", "shipping-state","shipping-street", "address-detailed", "shipping-street"];
                 var isBillingSame = $("#is-billing-same").is(":checked");
                 var isCorporate = $("#is-corporate").is(":checked");
                 if (!isBillingSame)
@@ -471,11 +473,21 @@
                         field.style.border = ""; // Reset style
                     }
                 });
-
                 if (!isValid) {
                     alert("Lütfen tüm zorunlu alanları doldurun.");
                     return false;
                 }
+                var isCargoSelected = false;
+                $cards.each(function () {
+                    if ($(this).hasClass("selected")) {
+                        isCargoSelected = true;
+                    }
+                });
+                
+                if(!isCargoSelected) {
+                    alert("Lütfen bir kargo firması seçiniz.");
+                    return false;
+                };
                
                 // Disable button and show loading
                 $("#proceed-to-payment").text("İşlem Yapılıyor...").prop("disabled", true);
@@ -555,6 +567,7 @@
 
                     orderItems.push(item);
                 });
+                var shippingCost = parseFloat($("#cargo-amount").val()) || 0; // Default to 0 if not set
                 var notes = $("#other-notes").val();
                 var updateUserInfo = $("#update-user-info").is(":checked");
                 var data = {
@@ -562,7 +575,8 @@
                     BillingAddress: billingAddress,
                     OrderItems: orderItems,
                     Notes: notes,
-                    UpdateUserInfo: updateUserInfo
+                    UpdateUserInfo: updateUserInfo,
+                    ShippingCost: shippingCost
                 };
 
                 // Send AJAX request
@@ -732,20 +746,20 @@
 
             var desi = $("#desi").val();
             var selectedCode = $hiddenInput.val();
-            console.log(desi);
-            console.log(selectedCode);
-
-                fetch(`/Order/CalculateShipment?shipmentCompany=${selectedCode}&desi=${desi}`)
-                .then(res => {
-                    if (!res.ok) throw new Error("Network response was not ok");
-                    return res.json(); // <-- you forgot to return JSON here
-                })
-                .then(data => {
-                    // data.amount beklenen float
-                    $("#cargo-amount").val(data.amount);
-                    $("#cargo-price-span").text(data.amount + " ₺");
-                })
-                .catch(err => console.error(err));
+            var totalProductPrice = parseFloat($("#total-price-input").val());
+            fetch(`/Order/CalculateShipment?shipmentCompany=${selectedCode}&desi=${desi}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Network response was not ok");
+                return res.json(); // <-- you forgot to return JSON here
+            })
+            .then(data => {
+                // data.amount beklenen float
+                var totalPrice = (parseFloat(data.amount) + totalProductPrice).toFixed(2);
+                $("#cargo-amount").val(data.amount);
+                $("#cargo-price-span").text(data.amount + " ₺");
+                $("#total-price-span").text(totalPrice + " ₺");
+            })
+            .catch(err => console.error(err));
         });
                     
     });

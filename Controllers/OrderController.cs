@@ -147,7 +147,7 @@ namespace BirileriWebSitesi.Controllers
                     Order = order,
                     Cities = cities,
                     ShipmentCompanies = shipmentCompanies,
-                    Desi = 3.2f
+                    Desi = desi
                 };
 
                 return View(checkOutViewModel);
@@ -255,7 +255,7 @@ namespace BirileriWebSitesi.Controllers
                     totalAmount += (item.Units * item.UnitPrice);
                     orderItems.Add(orderItem);
                 }
-
+                totalAmount += model.ShippingCost;
                 //save order info
                 Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, true, 1);
 
@@ -273,6 +273,7 @@ namespace BirileriWebSitesi.Controllers
                 payment.OrderItems = orderItems;
                 payment.TotalAmount = totalAmount;
                 payment.OrderId = orderID;
+                payment.ShippingCost = model.ShippingCost;
 
                 HttpContext.Session.SetString("PaymentViewModel", JsonConvert.SerializeObject(payment));
 
@@ -458,7 +459,7 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 if (string.IsNullOrEmpty(cityId))
-                    return null;
+                    return Json(Enumerable.Empty<DistrictDTO>()); 
                 IEnumerable<DistrictDTO> districts = await _easyCargoService.GetDistrictsAsync(cityId);
                 return Json(districts);
             }
@@ -476,7 +477,7 @@ namespace BirileriWebSitesi.Controllers
             try
             {
                 if (string.IsNullOrEmpty(districtId))
-                    return null;
+                    return Json(Enumerable.Empty<StreetDTO>());
                 IEnumerable<StreetDTO> streets = await _easyCargoService.GetStreetsAsync(districtId);
                 return Json(streets);
             }

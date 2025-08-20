@@ -46,7 +46,7 @@ namespace BirileriWebSitesi.Controllers
                 var paymentJson = HttpContext.Session.GetString("PaymentViewModel");
 
                 if (string.IsNullOrEmpty(paymentJson))
-                    return RedirectToAction("Not Found"); // Or show a nice message
+                    return RedirectToAction("Not Found"); 
 
                 var paymentModel = JsonConvert.DeserializeObject<PaymentViewModel>(paymentJson);
                 HttpContext.Session.Remove("PaymentViewModel");

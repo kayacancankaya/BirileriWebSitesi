@@ -70,11 +70,12 @@
                     <td colspan="3">KDV</td>
                     <td>@tax.ToString("C2")</td>
                 </tr>
-                <tr>
-                    <td colspan="3">Kargo Ücreti</td>
-                    <td>0</td>
-                </tr>
             }
+
+            <tr>
+                <td colspan="3">Kargo Ücreti</td>
+                <td>@Model.ShippingCost</td>
+            </tr>
             <tr>
                 <td colspan="3"><strong>Genel Toplam</strong></td>
                 <td><strong>@Model.TotalAmount.ToString("C2")</strong></td>
