@@ -483,7 +483,9 @@
                         isCargoSelected = true;
                     }
                 });
-                
+                if($("#selectedShipmentCode").val() === "")
+                    isCargoSelected = false;
+
                 if(!isCargoSelected) {
                     alert("Lütfen bir kargo firması seçiniz.");
                     return false;
@@ -568,6 +570,7 @@
                     orderItems.push(item);
                 });
                 var shippingCost = parseFloat($("#cargo-amount").val()) || 0; // Default to 0 if not set
+                var shippingCode = $("#selectedShipmentCode").val();
                 var notes = $("#other-notes").val();
                 var updateUserInfo = $("#update-user-info").is(":checked");
                 var data = {
@@ -576,7 +579,8 @@
                     OrderItems: orderItems,
                     Notes: notes,
                     UpdateUserInfo: updateUserInfo,
-                    ShippingCost: shippingCost
+                    ShippingCost: shippingCost,
+                    ShippingCode: shippingCode,
                 };
 
                 // Send AJAX request

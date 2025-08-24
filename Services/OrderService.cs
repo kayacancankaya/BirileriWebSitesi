@@ -102,6 +102,11 @@ namespace BirileriWebSitesi.Services
                     order.ShipToAddress.SetAsDefault = true;
                     order.BillingAddress.SetAsDefault = true;
                 }
+
+                if (string.IsNullOrEmpty(order.ShipmentCode))
+                    return "Kargo Seçiniz..." ;
+                if (order.ShipmentCost == 0)
+                    return "Kargo Miktar 0 olamaz...";
                 //update address
                 //check if addresses exists
                 bool result = await CheckIfAddressExistsAsync(order.ShipToAddress);

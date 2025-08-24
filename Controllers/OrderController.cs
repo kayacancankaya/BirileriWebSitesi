@@ -193,6 +193,11 @@ namespace BirileriWebSitesi.Controllers
                     return BadRequest(new { success = false, message = "Sipariş Oluşturulurken Hata İle Karşılaşıldı.", errors });
                 }
 
+                if(string.IsNullOrEmpty(model.ShippingCode))
+                    return BadRequest(new { success = false, message = "Kargo Seçiniz..." });
+                if(model.ShippingCost == 0)
+                    return BadRequest(new { success = false, message = "Kargo Miktar 0 olamaz..." });
+               
                 string? buyerID = _userManager.GetUserId(User);
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
                 if (ip == "::1")
@@ -258,7 +263,8 @@ namespace BirileriWebSitesi.Controllers
                 totalAmount += model.ShippingCost;
                 //save order info
                 Order order = new(buyerID, ShipToAddress, BillingAddress, orderItems, true, true, 1);
-
+                order.ShipmentCode = model.ShippingCode;
+                order.ShipmentCost = model.ShippingCost;
                 string orderResult = await _orderService.SaveOrderInfoAsync(order);
                 int orderID = 0;
                 if (!Int32.TryParse(orderResult, out orderID))

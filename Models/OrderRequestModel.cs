@@ -19,6 +19,7 @@ namespace BirileriWebSitesi.Models
         public string? ExpYear { get; set; }
         public string? CVV { get; set; }
         public decimal ShippingCost { get; set; } = decimal.Zero;
+        public string ShippingCode { get; set; } = string.Empty;
     }
 
 }

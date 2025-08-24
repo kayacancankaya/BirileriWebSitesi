@@ -76,11 +76,15 @@
                 else
                 {
                     string paymentType = Model.Order.PaymentType == 1 ? "Kredi Kartı" : "Havale/EFT";
+                    decimal productPrice = Model.Order.TotalAmount - Model.Order.ShipmentCost;
                     <div class="card">
                         <div class="card-body">
                             <h4>Sipariş No: @Model.Order.Id</h4>
                             <p><strong>Tarih:</strong> @Model.Order.OrderDate.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Ürün Tutar:</strong> @productPrice.ToString("C") ₺</p>
+                            <p><strong>Kargo Tutarı:</strong> @Model.Order.ShipmentCost.ToString("C") ₺</p>
                             <p><strong>Toplam Tutar:</strong> @Model.Order.TotalAmount.ToString("C") ₺</p>
+                            <p><strong>Kargo Firması:</strong> @Model.Order.ShipmentCode</p>
                             <p><strong>Durum:</strong> <span style="@statusStyle">@statusText</span></p>
                             <p><strong>Ödeme Şekli:</strong> @paymentType </p>
                             @if (refundAvaiable)

@@ -76,6 +76,8 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public int PaymentType { get; set; } = 1;
         public int InstallmentAmount { get; set; } = 1;
         public int Status { get; set; } = (int)ApprovalStatus.Pending;
+        public decimal ShipmentCost { get; set; } = decimal.Zero;
+        public string ShipmentCode { get; set; } = string.Empty;
         public DateTime? ShipmentReadyDate { get; set; } = DateTime.Now.AddDays(2);
         public DateTime? ShipmentDate { get; set; } = null;
         public DateTime? DeliveryDate { get; set; } = null;
