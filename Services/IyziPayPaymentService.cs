@@ -101,6 +101,7 @@ namespace BirileriWebSitesi.Services
                 billingAddress.ZipCode = order.BillingAddress.ZipCode;
                 request.BillingAddress = billingAddress;
 
+                decimal unitShipmentCost = order.ShipmentCost / order.OrderItems.Count();
                 List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
                 foreach (var item in order.OrderItems)
                 {
@@ -110,7 +111,7 @@ namespace BirileriWebSitesi.Services
                     basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
                     basketItem.Category2 = string.Empty;
                     basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
-                    basketItem.Price = (item.UnitPrice * item.Units).ToString("0.00", CultureInfo.InvariantCulture);
+                    basketItem.Price = ((item.UnitPrice * item.Units) + unitShipmentCost).ToString("0.00", CultureInfo.InvariantCulture);
                     basketItems.Add(basketItem);
                 }
 
@@ -197,6 +198,8 @@ namespace BirileriWebSitesi.Services
                 billingAddress.ZipCode = order.BillingAddress.ZipCode;
                 request.BillingAddress = billingAddress;
 
+                decimal unitShipmentCost = order.ShipmentCost / order.OrderItems.Count();
+
                 List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
                 foreach (var item in order.OrderItems)
                 {
@@ -206,7 +209,7 @@ namespace BirileriWebSitesi.Services
                     basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
                     basketItem.Category2 = string.Empty;
                     basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
-                    basketItem.Price = (item.UnitPrice * item.Units).ToString("0.00", CultureInfo.InvariantCulture);
+                    basketItem.Price = ((item.UnitPrice * item.Units) + unitShipmentCost).ToString("0.00", CultureInfo.InvariantCulture);
                     basketItems.Add(basketItem);
                 }
 
@@ -255,7 +258,7 @@ namespace BirileriWebSitesi.Services
                 }
                 else
                 {
-                    request.CallbackUrl = "https://localhost:44332/Payment/Payment3dsCallBack";
+                    request.CallbackUrl = "https://localhost:5001/Payment/Payment3dsCallBack";
                 }
                 ThreedsInitialize threedsInit = await ThreedsInitialize.Create(request, options);
                 if (threedsInit.Status == "success")

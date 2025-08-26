@@ -44,7 +44,7 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         //https://msdn.microsoft.com/en-us/library/e78dcd75(v=vs.110).aspx
         [Required]
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
-        public decimal TotalAmount => Convert.ToDecimal(_orderItems.Sum(i => i.Units * i.UnitPrice));
+        public decimal TotalAmount => Convert.ToDecimal(_orderItems.Sum(i => i.Units * i.UnitPrice) + ShipmentCost);
         [ForeignKey(nameof(ShipToAddressId))]
         [JsonIgnore]
         public virtual Address? ShipToAddress { get; private set; }

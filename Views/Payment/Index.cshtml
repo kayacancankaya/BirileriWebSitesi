@@ -176,18 +176,18 @@
                                         <!-- Credit Card Fields  -->
                                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                                             <div class="field-label">Kart Sahibi:</div>
-                                            <input type="text" id="card-holder-name" class="no-arrow pl-1" style="width:300px;" placeholder="Kart Sahibi">
+                                            <input type="text" id="card-holder-name" class="no-arrow" style="width:300px;padding-left:5px;" placeholder="Kart Sahibi">
                                         </div>
                                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                                             <div class="field-label">Kart Numarası:</div>
-                                            <input type="number" id="credit-card-number" class="no-arrow pl-1" style="width:300px;" placeholder="Kart Numarası">
+                                            <input type="number" id="credit-card-number" class="no-arrow pl-1" style="width:300px;padding-left:5px;" placeholder="Kart Numarası">
                                         </div>
                                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
                                             <div class="field-label">Son Kullanma Tarihi:</div>
                                             <div class="exp-date-row">
-                                                <input type="number" id="expiry-date-month" style="max-width:30px; max-height:24px" class="pl-1 no-arrow" placeholder="AA">
+                                                <input type="number" id="expiry-date-month" style="max-width:30px; max-height:24px;padding-left:5px;" class="pl-1 no-arrow" placeholder="AA">
                                                 <p class="ml-2 mr-2" style="justify-content:center;">/</p>
-                                                <input type="number" id="expiry-date-year" style="max-width:60px;max-height:24px" class="pl-1 no-arrow" placeholder="YY">
+                                                <input type="number" id="expiry-date-year" style="max-width:60px;max-height:24px;padding-left:5px;" class="pl-1 no-arrow" placeholder="YY">
                                             </div>
                                         </div>
                                         <div class="form-group col-lg-6 col-md-6 col-sm-12">
@@ -215,7 +215,7 @@
                         </div>
                     </div>
                     <!--Legal Forms-->
-                    <div class="info-dropdowns">
+                    <div class="info-dropdowns" style="margin-left:30px;">
                         <div class="dropdown-item">
                              <input type="checkbox" checked class="dropdown-checkbox">
                        
@@ -277,7 +277,7 @@
                             </li>
                             <li class="clearfix">ALT TOPLAM <span>@subTotal</span></li>
                         }
-                        <li class="clearfix">KARGO ÜCRETİ<span class="free">ÜCRETSİZ</span></li>
+                        <li class="clearfix">KARGO ÜCRETİ<span class="free">@Model.ShippingCost ₺</span></li>
                         <li class="clearfix">TOPLAM<span id="final-price">@Model.TotalAmount ₺</span></li>
                     </ul>
                 </div>
@@ -364,7 +364,7 @@
                                     $("#installment").append(
                                         `<option value="${item.installmentNumber}"
                                         data-price="${item.price}"
-                                        data-total-price="${item.totalPrice}">${item.installmentNumber} Taksit - Ayda ${item.price}₺ - Toplam ${item.totalPrice}₺</option>`
+                                        data-total-price="${item.totalPrice}">  ${item.installmentNumber} Taksit - Ayda ${parseFloat(item.price).toFixed(2)}₺ - Toplam ${parseFloat(item.totalPrice).toFixed(2)}₺ </option>`
                                     );
                                 });
                                 $("#installment-div").show();
