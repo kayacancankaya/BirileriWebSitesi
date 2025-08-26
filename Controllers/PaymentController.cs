@@ -154,7 +154,10 @@ namespace BirileriWebSitesi.Controllers
                             await _inventoryService.UpdateInventoryAsync(order, 2);
 
                             if (!String.IsNullOrEmpty(model.EmailAddress))
-                                await _emailService.SendPaymentEmailAsync(model.EmailAddress, model.OrderId, "CreditCard");
+                            {
+                               string shipmentCompany = await _orderService.GetShipmentCompanyAsync(model.OrderId);
+                                await _emailService.SendPaymentEmailAsync(model.EmailAddress, model.OrderId, shipmentCompany, "CreditCard");
+                            }
 
                             return Ok(new { success = true, is3Ds = false, message = "Siparişiniz İşleme Alındı." });
                         }
@@ -173,7 +176,10 @@ namespace BirileriWebSitesi.Controllers
                     Order order = await _orderService.GetOrderAsync(model.OrderId);
                     await _inventoryService.UpdateInventoryAsync(order,2);
                     if(!String.IsNullOrEmpty(model.EmailAddress))
-                        await _emailService.SendPaymentEmailAsync(model.EmailAddress,model.OrderId,"BankAccount");
+                    {
+                        string shipmentCompany = await _orderService.GetShipmentCompanyAsync(model.OrderId);
+                        await _emailService.SendPaymentEmailAsync(model.EmailAddress, model.OrderId, shipmentCompany, "BankAccount");
+                    }
                     return Ok(new { success = true, is3Ds = false, message = "Banka Ödemesi ile Ödeme Tanımlanmıştır." });
                 }
             }
@@ -236,7 +242,10 @@ namespace BirileriWebSitesi.Controllers
                             .FirstOrDefaultAsync();
                     bool? customerMailSent = false;
                     if(!string.IsNullOrEmpty(mailAddress))
-                        customerMailSent = await _emailService.SendPaymentEmailAsync(mailAddress, Convert.ToInt32(payment.BasketId), "CreditCard");
+                    {
+                        string shipmentCompany = await _orderService.GetShipmentCompanyAsync(Convert.ToInt32(payment.BasketId));
+                        customerMailSent = await _emailService.SendPaymentEmailAsync(mailAddress, Convert.ToInt32(payment.BasketId), shipmentCompany, "CreditCard");
+                    }
                     else
                     {
                         TempData["SuccessMessage"] = "Siparişiniz başarıyla alındı ancak e-posta adresi bulunamadığından mail gönderilemedi. " +

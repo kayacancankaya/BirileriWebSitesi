@@ -49,7 +49,7 @@ namespace BirileriWebSitesi.Services
             }
             
         }
-        public async Task<bool> SendPaymentEmailAsync(string to, int orderID, string paymentType)
+        public async Task<bool> SendPaymentEmailAsync(string to, int orderID,string shipmentCompany, string paymentType)
         {
             try
             {
@@ -58,7 +58,8 @@ namespace BirileriWebSitesi.Services
                 email.To.Add(MailboxAddress.Parse(to));
                 string htmlMessage = string.Empty;
 
-                if(paymentType=="CreditCard")
+                string cargo = string.IsNullOrEmpty(shipmentCompany) ? string.Empty : $"<span style='color: green;font-weight:bold;'>{shipmentCompany}</span> firmasına";
+                if (paymentType=="CreditCard")
                 {
                     string subject = $"{orderID} - Ödeme Alındı";
                     email.Subject = subject;
@@ -68,7 +69,7 @@ namespace BirileriWebSitesi.Services
                             <td style='text-align:center;'>
                                 <h2 style='color:#007bff;'>Ödemeniz Alındı</h2>
                                 <p style='font-size:16px;'>Sipariş Numaranız: <strong>{orderID}</strong></p>
-                                <p style='font-size:16px;'>Ödemeniz başarıyla alınmıştır. Siparişiniz en geç 2 iş günü içinde hazırlanarak Aras Kargo’ya teslim edilecektir.</p>
+                                <p style='font-size:16px;'>Ödemeniz başarıyla alınmıştır. Siparişiniz en geç 2 iş günü içinde hazırlanarak {cargo} teslim edilecektir.</p>
                                 <p style='font-size:16px;'>Sipariş durumunuzu <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> takip edebilirsiniz.</p>
                             </td>
                         </tr>
@@ -88,7 +89,7 @@ namespace BirileriWebSitesi.Services
                                 <p style='font-size:16px;'>Sipariş Numaranız: <strong>{orderID}</strong></p>
                                 <p style='font-size:16px;'>Siparişiniz alınmıştır. Lütfen banka havale formunu 
                                 <a href='https://birilerigt.com/Identity/Account/Manage' style='color:#007bff;'>buradan</a> gönderiniz.</p>
-                                <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde Aras Kargo’ya teslim edilecektir.</p><br />
+                                <p style='font-size:16px;'>Form gönderildikten sonra siparişiniz işleme alınacak ve en geç 2 iş günü içinde {cargo} teslim edilecektir.</p><br />
                                  <span><strong>Banka Adı:</strong> T. Garanti Bankası A.Ş.</span><br />
                                 <span><strong>Şube:</strong> KARŞIYAKA ÇARŞI </span><br />
                                 <span><strong>Hesap No:</strong> 1596-6298952</span><br />

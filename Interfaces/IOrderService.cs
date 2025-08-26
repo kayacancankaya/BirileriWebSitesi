@@ -20,7 +20,7 @@ namespace BirileriWebSitesi.Interfaces
         Task<int> CancelOrderItemAsync(int orderId,string productCode);
         Task<bool> UpdateAddressAsync(Models.OrderAggregate.Address address);
         Task<bool> DeleteAddressAsync(int addressId);
-
         Task<float> GetDesiAsync(string productCode);
+        Task<string> GetShipmentCompanyAsync(int orderId);  
     }
 }

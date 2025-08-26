@@ -7,6 +7,7 @@ using Iyzipay.Request;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
 using System.Globalization;
 using OrderItem = BirileriWebSitesi.Models.OrderAggregate.OrderItem;
@@ -101,7 +102,6 @@ namespace BirileriWebSitesi.Services
                 billingAddress.ZipCode = order.BillingAddress.ZipCode;
                 request.BillingAddress = billingAddress;
 
-                decimal unitShipmentCost = order.ShipmentCost / order.OrderItems.Count();
                 List<Iyzipay.Model.BasketItem> basketItems = new List<BasketItem>();
                 foreach (var item in order.OrderItems)
                 {
@@ -111,8 +111,19 @@ namespace BirileriWebSitesi.Services
                     basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
                     basketItem.Category2 = string.Empty;
                     basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
-                    basketItem.Price = ((item.UnitPrice * item.Units) + unitShipmentCost).ToString("0.00", CultureInfo.InvariantCulture);
+                    basketItem.Price = (item.UnitPrice * item.Units).ToString("0.00", CultureInfo.InvariantCulture);
                     basketItems.Add(basketItem);
+                }
+                if(!string.IsNullOrEmpty(order.ShipmentCode))
+                {
+                    Iyzipay.Model.BasketItem cargoItem = new();
+                    cargoItem.Id = order.ShipmentCode;
+                    cargoItem.Name = order.ShipmentCode;
+                    cargoItem.Category1 = "Kargo";
+                    cargoItem.Category2 = string.Empty;
+                    cargoItem.ItemType = BasketItemType.PHYSICAL.ToString();
+                    cargoItem.Price = order.ShipmentCost.ToString("0.00", CultureInfo.InvariantCulture);
+                    basketItems.Add(cargoItem);
                 }
 
                 request.BasketItems = basketItems;
@@ -209,8 +220,19 @@ namespace BirileriWebSitesi.Services
                     basketItem.Category1 = item.ProductVariant.Product.Catalog.CatalogName;
                     basketItem.Category2 = string.Empty;
                     basketItem.ItemType = BasketItemType.PHYSICAL.ToString();
-                    basketItem.Price = ((item.UnitPrice * item.Units) + unitShipmentCost).ToString("0.00", CultureInfo.InvariantCulture);
+                    basketItem.Price = (item.UnitPrice * item.Units).ToString("0.00", CultureInfo.InvariantCulture);
                     basketItems.Add(basketItem);
+                }
+                if (!string.IsNullOrEmpty(order.ShipmentCode))
+                {
+                    Iyzipay.Model.BasketItem cargoItem = new();
+                    cargoItem.Id = order.ShipmentCode;
+                    cargoItem.Name = order.ShipmentCode;
+                    cargoItem.Category1 = "Kargo";
+                    cargoItem.Category2 = string.Empty;
+                    cargoItem.ItemType = BasketItemType.PHYSICAL.ToString();
+                    cargoItem.Price = order.ShipmentCost.ToString("0.00", CultureInfo.InvariantCulture);
+                    basketItems.Add(cargoItem);
                 }
 
                 request.BasketItems = basketItems;
@@ -301,6 +323,7 @@ namespace BirileriWebSitesi.Services
             {
                 Payment payment = await Payment.Create(request, options);
 
+                _logger.LogInformation(JsonConvert.SerializeObject(request));
                 return payment;
             }
             catch (Exception ex)

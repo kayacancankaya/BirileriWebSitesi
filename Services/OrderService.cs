@@ -104,7 +104,7 @@ namespace BirileriWebSitesi.Services
                 }
 
                 if (string.IsNullOrEmpty(order.ShipmentCode))
-                    return "Kargo Seçiniz..." ;
+                    return "Kargo Seçiniz...";
                 if (order.ShipmentCost == 0)
                     return "Kargo Miktar 0 olamaz...";
                 //update address
@@ -626,7 +626,7 @@ namespace BirileriWebSitesi.Services
                     existingAddress.SetAsDefault == false)
                 {
                     await _context.Addresses
-                        .Where(a => a.UserId == address.UserId && 
+                        .Where(a => a.UserId == address.UserId &&
                                     a.SetAsDefault &&
                                     a.Id != address.Id)
                         .ForEachAsync(a => a.SetAsDefault = false);
@@ -719,7 +719,51 @@ namespace BirileriWebSitesi.Services
                 return 0;
             }
         }
-    
+        public async Task<string> GetShipmentCompanyAsync(int orderId)
+        {
+            try
+            {
+                var shipmentCode = await _context.Orders
+                    .Where(o => o.Id == orderId)
+                    .Select(o => o.ShipmentCode)
+                    .FirstOrDefaultAsync();
+                if (string.IsNullOrEmpty(shipmentCode))
+                    return string.Empty;
+                string shipmentCompany = string.Empty;
+                switch (shipmentCompany)
+                {
+                    case "SURAT":
+                        shipmentCompany = "Sürat Kargo";
+                        break;
+                    case "YURTICI":
+                        shipmentCompany = "Yurtiçi Kargo";
+                        break;
+                    case "ARAS":
+                        shipmentCompany = "Aras Kargo";
+                        break;
+                    case "PTT":
+                        shipmentCompany = "PTT Kargo";
+                        break;
+                    case "HEPSIJET":
+                        shipmentCompany = "HepsiJET";
+                        break;
+                    case "KOLAYGELSIN":
+                        shipmentCompany = "KolayGelsin";
+                        break;
+                    case "MNG":
+                        shipmentCompany = "MNG Kargo";
+                        break;
+                    default:
+                        shipmentCompany = string.Empty;
+                        break;
+                }
+                return shipmentCompany ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                return string.Empty;
+            }
+        }
     }
 }
-
