@@ -12,15 +12,21 @@ namespace BirileriWebSitesi.Controllers
     public class SiteMapController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public SiteMapController(ApplicationDbContext context)
+        private readonly IConfiguration _configuration;
+        public SiteMapController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            string? baseUrl = _configuration["BaseUrl"];
+            if (_configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
+                baseUrl = $"{Request.Scheme}://{Request.Host}";
+            else
+                baseUrl = "https://birilerigt.com";
+
 
             XNamespace ns = "https://www.sitemaps.org/schemas/sitemap/0.9";
             var sitemap = new XElement(ns + "urlset");
@@ -72,17 +78,21 @@ namespace BirileriWebSitesi.Controllers
 
             // 3. Add dynamic blog posts from DB
             var allBlogPosts = await _context.BlogPosts.ToListAsync();
-            foreach (var post in allBlogPosts)
+            if(allBlogPosts != null)
             {
-                sitemap.Add(
-                    new XElement(ns + "url",
-                        new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
-                        new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                        new XElement(ns + "changefreq", "weekly"),
-                        new XElement(ns + "priority", "0.9")
-                    )
-                );
+                foreach (var post in allBlogPosts)
+                {
+                    sitemap.Add(
+                        new XElement(ns + "url",
+                            new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
+                            new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                            new XElement(ns + "changefreq", "weekly"),
+                            new XElement(ns + "priority", "0.9")
+                        )
+                    );
+                }
             }
+            
 
             // 🔹 4. Add dynamic catalog pages
             var catalogs = await _context.Catalogs.ToListAsync();
