@@ -103,84 +103,56 @@ namespace BirileriWebSitesi.Areas.Identity.Pages.Account
 
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
-            // Request a  to the external login provider.
-
-            var returningUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, returningUrl);
+            ReturnUrl = returnUrl ?? Url.Content("~/");
+            // Request a redirect to the external login provider.
+            var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl = ReturnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
         }
 
+
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-            _logger.LogError("OnGetCallbackAsync called with returnUrl: {ReturnUrl} and remoteError: {RemoteError}", returnUrl, remoteError);
-
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
             if (remoteError != null)
             {
-                ErrorMessage = $"Dış Kaynakta Hata İle Karşılaşıldı: {remoteError}";
-                return  Redirect("/Identity/Account/Login");
+                ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+                return Page();
             }
+
+            // Get the login info from external provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                ErrorMessage = "Dış Kaynaktan Oturum Açma Hatası Alındı.";
-                _logger.LogError("External login info is null. Redirecting to login page.");
-                return Redirect("/Identity/Account/Login");
+                return RedirectToPage("./Login");
             }
-            
-            // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
+
+            // Sign in the user with this external login provider if the user already has a login
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                //update last login date
-                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-
-                string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-                bool isProduction = environment == "Production";
-                if (isProduction)
-                {
-                    string ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-                    await _userAudit.UpdateLoginInfo(user.Id, DateTime.UtcNow, ip);
-                }
-               
-                //update user basket
-                string cart = Request.Cookies["MyCart"];
-                
-                if (!string.IsNullOrEmpty(cart))
-                {
-                    await _basketService.TransferBasketAsync(cart, user.Id);
-                    HttpContext.Response.Cookies.Delete("MyCart");
-                }
-
-                //update user inquiry basket
-                string inquiry = Request.Cookies["MyInquiry"];
-                
-                if (!string.IsNullOrEmpty(inquiry))
-                {
-                    await _basketService.TransferInquiryBasketAsync(inquiry, user.Id);
-                    HttpContext.Response.Cookies.Delete("MyInquiry");
-                }
-                    _logger.LogError("Should navigate to manage page");
-                return Redirect("/Identity/Account/Manage/Index");
-            }
-            else if (result.IsLockedOut)
-            {
-                _logger.LogError("User account is locked out.");
-                return Redirect("/Identity/Account/Lockout");
+                return LocalRedirect(returnUrl);
             }
             else
             {
-                _logger.LogError("External login failed for user: {UserId}. User does not have an account.", info.ProviderKey);
-                // If the user does not have an account, then ask the user to create an account.  
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                // If the user does not have an account, create one
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                if (email != null)
                 {
-                    Input = new InputModel
+                    var user = new IdentityUser { UserName = email, Email = email };
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (createResult.Succeeded)
                     {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
+                        createResult = await _userManager.AddLoginAsync(user, info);
+                        if (createResult.Succeeded)
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                            return LocalRedirect(returnUrl);
+                        }
+                    }
                 }
+
+                // If we got this far, something failed
                 return Page();
             }
         }
