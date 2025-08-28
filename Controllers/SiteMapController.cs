@@ -13,10 +13,12 @@ namespace BirileriWebSitesi.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
-        public SiteMapController(ApplicationDbContext context, IConfiguration configuration)
+        private readonly ILogger<SiteMapController> _logger;
+        public SiteMapController(ApplicationDbContext context, IConfiguration configuration, ILogger<SiteMapController> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -25,7 +27,9 @@ namespace BirileriWebSitesi.Controllers
             if (_configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
                 baseUrl = $"{Request.Scheme}://{Request.Host}";
             else
-                baseUrl = "https://birilerigt.com";
+                baseUrl = "https://birilerigt.com/";
+
+            _logger.LogError("Sitemap baseUrl: " + baseUrl);
 
 
             XNamespace ns = "https://www.sitemaps.org/schemas/sitemap/0.9";
@@ -50,67 +54,89 @@ namespace BirileriWebSitesi.Controllers
                     )
                 );
             }
-
+            _logger.LogError("Sitemap after static pages: " + sitemap.ToString());
             // 2. Add dynamic products or articles from DB
             var products = await _context.Products
                                                 .Include(p => p.ProductVariants)
                                                 .ToListAsync(); // Example: products table
-            foreach (var product in products)
+            if(products == null)
             {
-                if (!string.IsNullOrEmpty(product.ProductCode))
+                if(products.Count  > 0)
                 {
-                    foreach(var variant in product.ProductVariants)
+                    foreach (var product in products)
                     {
-                        if (!string.IsNullOrEmpty(variant.ProductCode))
+                        if (!string.IsNullOrEmpty(product.ProductCode))
                         {
-                            sitemap.Add(
-                            new XElement(ns + "url",
-                                new XElement(ns + "loc", $"{baseUrl}/Shop/ProductDetailed?productCode={variant.ProductCode}"),
-                                new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                                new XElement(ns + "changefreq", "weekly"),
-                                new XElement(ns + "priority", "0.9")
-                                )
-                            );
+                            if (product.ProductVariants == null)
+                                continue;
+                            if (product.ProductVariants.Count == 0)
+                                continue;
+                            foreach (var variant in product.ProductVariants)
+                            {
+                                if (!string.IsNullOrEmpty(variant.ProductCode))
+                                {
+                                    sitemap.Add(
+                                    new XElement(ns + "url",
+                                        new XElement(ns + "loc", $"{baseUrl}/Shop/ProductDetailed?productCode={variant.ProductCode}"),
+                                        new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                                        new XElement(ns + "changefreq", "weekly"),
+                                        new XElement(ns + "priority", "0.9")
+                                        )
+                                    );
+                                }
+                            }
                         }
-                    }                    
-                }            
+                    }
+                }
+                    
             }
-
+            _logger.LogError("Sitemap after products: " + sitemap.ToString());
             // 3. Add dynamic blog posts from DB
             var allBlogPosts = await _context.BlogPosts.ToListAsync();
             if(allBlogPosts != null)
             {
-                foreach (var post in allBlogPosts)
+                if(allBlogPosts.Count > 0)
                 {
-                    sitemap.Add(
-                        new XElement(ns + "url",
-                            new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
-                            new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                            new XElement(ns + "changefreq", "weekly"),
-                            new XElement(ns + "priority", "0.9")
-                        )
-                    );
+                    foreach (var post in allBlogPosts)
+                    {
+                        sitemap.Add(
+                            new XElement(ns + "url",
+                                new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
+                                new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                                new XElement(ns + "changefreq", "weekly"),
+                                new XElement(ns + "priority", "0.9")
+                            )
+                        );
+                    }
                 }
             }
-            
+            _logger.LogError("Sitemap after blog posts: " + sitemap.ToString());
 
             // 🔹 4. Add dynamic catalog pages
             var catalogs = await _context.Catalogs.ToListAsync();
-            foreach (var catalog in catalogs)
+            if(catalogs != null)
             {
-                // Important: URL-encode catalogName for safe links
-                var encodedName = Uri.EscapeDataString(catalog.CatalogName);
+                if(catalogs.Count > 0)
+                {
+                    foreach (var catalog in catalogs)
+                    {
+                        if (string.IsNullOrEmpty(catalog.CatalogName))
+                            continue;
+                        // Important: URL-encode catalogName for safe links
+                        var encodedName = Uri.EscapeDataString(catalog.CatalogName);
 
-                sitemap.Add(
-                    new XElement(ns + "url",
-                        new XElement(ns + "loc", $"{baseUrl}/Shop/Catalog?catalogName={encodedName}"),
-                        new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                        new XElement(ns + "changefreq", "weekly"),
-                        new XElement(ns + "priority", "0.8")
-                    )
-                );
+                        sitemap.Add(
+                            new XElement(ns + "url",
+                                new XElement(ns + "loc", $"{baseUrl}/Shop/Catalog?catalogName={encodedName}"),
+                                new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                                new XElement(ns + "changefreq", "weekly"),
+                                new XElement(ns + "priority", "0.8")
+                            )
+                        );
+                    }
+                }
             }
-
+            _logger.LogError("Sitemap after catalogs: " + sitemap.ToString());
             var xml = new XDocument(sitemap);
             return Content(xml.ToString(), "application/xml", Encoding.UTF8);
         }
