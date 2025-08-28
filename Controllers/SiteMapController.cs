@@ -92,25 +92,25 @@ namespace BirileriWebSitesi.Controllers
             }
             _logger.LogError("Sitemap after products: " + sitemap.ToString());
             // 3. Add dynamic blog posts from DB
-            var allBlogPosts = await _context.BlogPosts.ToListAsync();
-            if(allBlogPosts != null)
-            {
-                if(allBlogPosts.Count > 0)
-                {
-                    foreach (var post in allBlogPosts)
-                    {
-                        sitemap.Add(
-                            new XElement(ns + "url",
-                                new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
-                                new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                                new XElement(ns + "changefreq", "weekly"),
-                                new XElement(ns + "priority", "0.9")
-                            )
-                        );
-                    }
-                }
-            }
-            _logger.LogError("Sitemap after blog posts: " + sitemap.ToString());
+            //var allBlogPosts = await _context.BlogPosts.ToListAsync();
+            //if(allBlogPosts != null)
+            //{
+            //    if(allBlogPosts.Count > 0)
+            //    {
+            //        foreach (var post in allBlogPosts)
+            //        {
+            //            sitemap.Add(
+            //                new XElement(ns + "url",
+            //                    new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
+            //                    new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+            //                    new XElement(ns + "changefreq", "weekly"),
+            //                    new XElement(ns + "priority", "0.9")
+            //                )
+            //            );
+            //        }
+            //    }
+            //}
+            //_logger.LogError("Sitemap after blog posts: " + sitemap.ToString());
 
             // 🔹 4. Add dynamic catalog pages
             var catalogs = await _context.Catalogs.ToListAsync();
