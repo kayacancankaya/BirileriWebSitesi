@@ -21,7 +21,7 @@ namespace BirileriWebSitesi.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            string? baseUrl = _configuration["BaseUrl"];
+            string? baseUrl = string.Empty;
             if (_configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
                 baseUrl = $"{Request.Scheme}://{Request.Host}";
             else
