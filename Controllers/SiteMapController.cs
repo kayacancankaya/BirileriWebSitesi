@@ -1,0 +1,108 @@
+﻿using BirileriWebSitesi.Data;
+using BirileriWebSitesi.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace BirileriWebSitesi.Controllers
+{
+    [Route("sitemap.xml")]
+    public class SiteMapController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public SiteMapController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            XNamespace ns = "https://www.sitemaps.org/schemas/sitemap/0.9";
+            var sitemap = new XElement(ns + "urlset");
+
+            // 1. Add static pages
+            var staticPages = new[]
+            {
+            "/", "/Home/ContactUs","/Home/About","/Cart","/Cart/Inquiry","/Blog","/Home/Privacy","/Home/CookiePolicy","/Identity/Account/Login","/Identity/Account/Register","/Identity/Account/ForgotPassword","/Identity/Account/ResetPassword",
+            "/Identity/Account/Manage","/Identity/Account/Manage/Email","/Identity/Account/Manage/ChangePassword","/Identity/Account/Manage/ExternalLogins","/Identity/Account/Manage/PersonalData","/Identity/Account/Manage/DeletePersonalData",
+            "/Home/DistanceSellingAgreement","/Home/KVKK","/Home/NotFound","/Order/Checkout","/Shop"
+            };
+
+            foreach (var page in staticPages)
+            {
+                sitemap.Add(
+                    new XElement(ns + "url",
+                        new XElement(ns + "loc", $"{baseUrl}{page}"),
+                        new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                        new XElement(ns + "changefreq", "weekly"),
+                        new XElement(ns + "priority", "0.7")
+                    )
+                );
+            }
+
+            // 2. Add dynamic products or articles from DB
+            var products = await _context.Products
+                                                .Include(p => p.ProductVariants)
+                                                .ToListAsync(); // Example: products table
+            foreach (var product in products)
+            {
+                if (!string.IsNullOrEmpty(product.ProductCode))
+                {
+                    foreach(var variant in product.ProductVariants)
+                    {
+                        if (!string.IsNullOrEmpty(variant.ProductCode))
+                        {
+                            sitemap.Add(
+                            new XElement(ns + "url",
+                                new XElement(ns + "loc", $"{baseUrl}/Shop/ProductDetailed?productCode={variant.ProductCode}"),
+                                new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                                new XElement(ns + "changefreq", "weekly"),
+                                new XElement(ns + "priority", "0.9")
+                                )
+                            );
+                        }
+                    }                    
+                }            
+            }
+
+            // 3. Add dynamic blog posts from DB
+            var allBlogPosts = await _context.BlogPosts.ToListAsync();
+            foreach (var post in allBlogPosts)
+            {
+                sitemap.Add(
+                    new XElement(ns + "url",
+                        new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
+                        new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                        new XElement(ns + "changefreq", "weekly"),
+                        new XElement(ns + "priority", "0.9")
+                    )
+                );
+            }
+
+            // 🔹 4. Add dynamic catalog pages
+            var catalogs = await _context.Catalogs.ToListAsync();
+            foreach (var catalog in catalogs)
+            {
+                // Important: URL-encode catalogName for safe links
+                var encodedName = Uri.EscapeDataString(catalog.CatalogName);
+
+                sitemap.Add(
+                    new XElement(ns + "url",
+                        new XElement(ns + "loc", $"{baseUrl}/Shop/Catalog?catalogName={encodedName}"),
+                        new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                        new XElement(ns + "changefreq", "weekly"),
+                        new XElement(ns + "priority", "0.8")
+                    )
+                );
+            }
+
+            var xml = new XDocument(sitemap);
+            return Content(xml.ToString(), "application/xml", Encoding.UTF8);
+        }
+    }
+}

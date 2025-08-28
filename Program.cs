@@ -212,6 +212,18 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapGet("/robots.txt", async context =>
+{
+    context.Response.ContentType = "text/plain";
+
+    // Allow all crawlers
+    var robotsContent = @"User-agent: *
+Disallow:
+
+Sitemap: https://www.birilerigt.com/sitemap.xml";
+
+    await context.Response.WriteAsync(robotsContent);
+});
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
