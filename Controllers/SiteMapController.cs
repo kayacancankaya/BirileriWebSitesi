@@ -38,9 +38,8 @@ namespace BirileriWebSitesi.Controllers
             // 1. Add static pages
             var staticPages = new[]
             {
-            "/", "/Home/ContactUs","/Home/About","/Cart","/Cart/Inquiry","/Blog","/Home/Privacy","/Home/CookiePolicy","/Identity/Account/Login","/Identity/Account/Register","/Identity/Account/ForgotPassword","/Identity/Account/ResetPassword",
-            "/Identity/Account/Manage","/Identity/Account/Manage/Email","/Identity/Account/Manage/ChangePassword","/Identity/Account/Manage/ExternalLogins","/Identity/Account/Manage/PersonalData","/Identity/Account/Manage/DeletePersonalData",
-            "/Home/DistanceSellingAgreement","/Home/KVKK","/Home/NotFound","/Order/Checkout","/Shop"
+            "/", "/Home/ContactUs","/Home/About","/Cart","/Cart/Inquiry","/Blog","/Home/Privacy","/Home/CookiePolicy",
+            "/Home/DistanceSellingAgreement","/Home/KVKK","/Order/Checkout","/Shop"
             };
 
             foreach (var page in staticPages)
