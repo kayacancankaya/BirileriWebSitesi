@@ -19,18 +19,19 @@ namespace BirileriWebSitesi.Models.OrderAggregate
         public bool IsRefunded { get; set; } = false;
 
         public DateTime? RefundDate { get; set; } = null;
-
+        public string Slug { get; set; }  =string.Empty;
 
 
 #pragma warning disable CS8618 // Required by Entity Framework
         public OrderItem() { }
 
-        public OrderItem (string productCode, int quantity, decimal unitPrice, string productName)
+        public OrderItem (string productCode, int quantity, decimal unitPrice, string productName, string slug)
         {
            ProductCode = productCode;
            UnitPrice = unitPrice;
            Units = quantity;
             ProductName = productName;
+            Slug = slug;
         }
         public void AddQuantity(int quantity)
         {

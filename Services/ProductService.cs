@@ -91,5 +91,24 @@ namespace BirileriWebSitesi.Services
                 return string.Empty;
             }
         }
+        public async Task<string> GetProductSlugAsync(string productCode)
+        {
+            try
+            {
+                string? slug = string.Empty;
+                string? baseProductCode = string.Empty;
+                if (productCode.EndsWith('B'))
+                {
+                    if(productCode.Length>12) {
+                }
+
+                slug = await _context.Products.Where(p => p.ProductCode == productCode) .Select(p => p.Slug).FirstOrDefaultAsync();
+                return slug ?? string.Empty;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+        }
     }
 }

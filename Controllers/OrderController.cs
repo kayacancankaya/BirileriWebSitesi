@@ -93,8 +93,8 @@ namespace BirileriWebSitesi.Controllers
                         continue;
                     singleDesi = await _orderService.GetDesiAsync(item.ProductCode);
                     desi += (singleDesi * item.Quantity);
-                    
-                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName);
+                    string slug = await _productService.GetProductSlugAsync(item.ProductCode);
+                    OrderItem orderItem = new(item.ProductCode, item.Quantity, item.UnitPrice, item.ProductName,slug);
 
                     orderItems.Add(orderItem);
                 }
@@ -256,7 +256,8 @@ namespace BirileriWebSitesi.Controllers
                 decimal totalAmount = 0;
                 foreach (var item in model.OrderItems)
                 {
-                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName);
+                    string slug = await _productService.GetProductSlugAsync(item.ProductCode);
+                    OrderItem orderItem = new(item.ProductCode, item.Units, item.UnitPrice, item.ProductName, slug);
                     totalAmount += (item.Units * item.UnitPrice);
                     orderItems.Add(orderItem);
                 }

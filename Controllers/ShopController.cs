@@ -128,10 +128,11 @@ namespace BirileriWebSitesi.Controllers
                 return StatusCode(500, new { success = false, message = "Filtreleme işlemi esnasında hata ile Karşılaşıldı.Lütfen daha sonra tekrar deneyiniz." });
             }
         }
-        public async Task<IActionResult> ProductDetailed(string productCode)
+        public async Task<IActionResult> ProductDetailed(string name,string productCode)
         {
             try
             {
+
                 if (string.IsNullOrEmpty(productCode))
                     return RedirectToAction("NotFound", "Home");
 

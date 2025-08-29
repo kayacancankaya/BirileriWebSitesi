@@ -53,7 +53,8 @@ namespace BirileriWebSitesi.Services
 
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);    
-                basket.AddItem(productCode, price, quantity,userId,productName,imagePath);
+                string slug = await _productService.GetProductSlugAsync(productCode);
+                basket.AddItem(productCode, price, quantity,userId,productName,imagePath,slug);
                 var basketItem = basket.Items.Where(i => i.BuyerID == userId &&
                                                                         i.ProductCode == productCode)
                                                                     .FirstOrDefault();
@@ -99,7 +100,8 @@ namespace BirileriWebSitesi.Services
 
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);    
-                basket.AddItem(productCode, price, quantity,userId,productName,imagePath);
+                string slug = await _productService.GetProductSlugAsync(productCode);
+                basket.AddItem(productCode, price, quantity,userId,productName,imagePath,slug);
                 var basketItem = basket.Items.Where(i => i.BuyerID == userId &&
                                                                         i.ProductCode == productCode)
                                                                     .FirstOrDefault();
@@ -126,7 +128,8 @@ namespace BirileriWebSitesi.Services
             {
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);
-                basket.AddItem(productCode, price, quantity, "0", productName, imagePath);
+                string slug = await _productService.GetProductSlugAsync(productCode);
+                basket.AddItem(productCode, price, quantity, "0", productName, imagePath, slug);
                 foreach (var item in basket.Items)
                 {
                     if(item.ProductCode == productCode)
@@ -151,7 +154,8 @@ namespace BirileriWebSitesi.Services
             {
                 string productName = await _productService.GetProductNameAsync(productCode);
                 string imagePath = await _productService.GetImagePathAsync(productCode);
-                basket.AddItem(productCode, price, quantity, "0", productName, imagePath);
+                string slug = await _productService.GetProductSlugAsync(productCode);
+                basket.AddItem(productCode, price, quantity, "0", productName, imagePath, slug);
                 foreach (var item in basket.Items)
                 {
                     if (item.ProductCode == productCode)
@@ -508,7 +512,8 @@ namespace BirileriWebSitesi.Services
                     unitPrice = await _productService.GetPriceAsync(item.Key);
                     string productName = await _productService.GetProductNameAsync(productCode);
                     string imagePath = await _productService.GetImagePathAsync(productCode);
-                    basket.AddItem(item.Key, unitPrice, quantity, userID, productName, imagePath);
+                    string slug = await _productService.GetProductSlugAsync(productCode);
+                    basket.AddItem(item.Key, unitPrice, quantity, userID, productName, imagePath, slug);
                     basket = UpdateTotals(basket, item.Value, unitPrice * item.Value, "Add");
                     foreach (var basketItem in basket.Items)
                     {
@@ -569,7 +574,8 @@ namespace BirileriWebSitesi.Services
                      unitPrice = await _productService.GetPriceAsync(item.Key);
                     string productName = await _productService.GetProductNameAsync(productCode);
                     string imagePath = await _productService.GetImagePathAsync(productCode);
-                    basket.AddItem(item.Key, unitPrice, quantity, userID, productName, imagePath);
+                    string slug = await _productService.GetProductSlugAsync(productCode);
+                    basket.AddItem(item.Key, unitPrice, quantity, userID, productName, imagePath, slug);
                     basket = UpdateInquiryTotals(basket, item.Value, unitPrice * item.Value, "Add");
                     foreach (var basketItem in basket.Items)
                     {

@@ -18,13 +18,15 @@ namespace BirileriWebSitesi.Models.InquiryAggregate
         public string BuyerID { get; private set; }
         public string ProductName { get; set; }
         public string ImagePath { get; set; }
-        public InquiryItem(string productCode, int quantity, decimal unitPrice, string buyerID, string productName, string imagePath)
+        public string Slug { get; set; } = string.Empty;
+        public InquiryItem(string productCode, int quantity, decimal unitPrice, string buyerID, string productName, string imagePath, string slug)
         {
             ProductCode = productCode;
             UnitPrice = unitPrice;
             BuyerID = buyerID;
             ProductName = productName;
             ImagePath = imagePath;
+            Slug = slug;
             SetQuantity(quantity);
 
         }

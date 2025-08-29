@@ -21,13 +21,15 @@ namespace BirileriWebSitesi.Models.BasketAggregate
         public string BuyerID { get; private set; }
         public string ProductName { get; set; }
         public string ImagePath { get; set; }
-        public BasketItem(string productCode, int quantity, decimal unitPrice,string buyerID,string productName,string imagePath)
+        public string Slug { get; set; } = string.Empty;
+        public BasketItem(string productCode, int quantity, decimal unitPrice,string buyerID,string productName,string imagePath,string slug)
         {
             ProductCode = productCode;
             UnitPrice = unitPrice;
             BuyerID = buyerID;
             ProductName = productName;
             ImagePath = imagePath;
+            Slug = slug;
             SetQuantity(quantity);
 
         }

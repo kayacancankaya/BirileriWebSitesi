@@ -17,7 +17,7 @@
             <div class="swiper-slide">
                 <div class="post text-center p-2">
                     <figure class="post-thumb">
-                        <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">
+                        <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-name="@item.Slug" asp-route-productCode="@item.ProductCode">
                             <img loading="lazy" src="@Url.Content($"~/images/resource/products/{imagePath}/1.jpg")"
                                  alt="@item.ProductName"
                                  style="width: 180px; height: 180px; object-fit: cover;" />

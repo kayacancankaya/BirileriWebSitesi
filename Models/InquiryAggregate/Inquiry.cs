@@ -17,11 +17,11 @@ namespace BirileriWebSitesi.Models.InquiryAggregate
         {
             BuyerId = buyerId;
         }
-        public void AddItem(string productCode, decimal unitPrice, int quantity, string buyerID, string productName, string imagePath)
+        public void AddItem(string productCode, decimal unitPrice, int quantity, string buyerID, string productName, string imagePath,string slug)
         {
             if (!Items.Any(p => p.ProductCode == productCode))
             {
-                Items.Add(new InquiryItem(productCode, quantity, unitPrice, buyerID, productName, imagePath));
+                Items.Add(new InquiryItem(productCode, quantity, unitPrice, buyerID, productName, imagePath, slug));
                 return;
             }
             var existingItem = Items.First(p => p.ProductCode == productCode);

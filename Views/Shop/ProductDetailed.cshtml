@@ -12,9 +12,16 @@
     {
         userId = "0";
     }
-    
+    string webPath = "https://birilerigt.com/Shop/productDetailed?productCode=";
+    webPath += Model.Product.ProductCode.ToString();
 }
 @section Title {
+
+
+
+
+
+
     <meta name="title" content=@Model.Product.MetaTitle>
     <title>@Model.Product.MetaTitle</title>
 }
@@ -23,6 +30,22 @@
 }
 @section Keywords {
     <meta name="keywords" content=@Model.Product.MetaKeywords>
+}
+
+@section SocialMetas {
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="İthal Ürünler | Toptan ve Perakende Satış" />
+    <meta property="og:description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz." />
+    <meta property="og:url" content="@webPath" />
+    <meta property="og:image" content="https://birilerigt.com/images/logo-resim.png" /> <!-- put your logo or product image -->
+    <meta property="og:locale" content="tr_TR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="İthal Ürünler | Toptan ve Perakende Satış" />
+    <meta name="twitter:description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz." />
+    <meta name="twitter:image" content="https://birilerigt.com/images/logo-resim.png" />
 }
 @section CSS {
 

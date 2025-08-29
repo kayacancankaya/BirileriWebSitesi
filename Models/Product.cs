@@ -42,6 +42,7 @@ namespace BirileriWebSitesi.Models
         public bool IsActive { get; set; } = true;
         public int CreatedBy { get; set; } 
         public int? EditedBy { get; set; }
+        public string Slug { get; set; } = string.Empty;
 
         // Navigation Properties
         [ForeignKey(nameof(CatalogId))]

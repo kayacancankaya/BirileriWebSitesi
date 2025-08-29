@@ -28,7 +28,7 @@
                                 <td class="prod-column">
                                     <div class="column-box">
                                         <figure class="prod-thumb">
-                                            <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-productCode="@item.ProductCode">
+                                            <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-name="@item.Slug" asp-route-productCode="@item.ProductCode">
                                                 <img src="@Url.Content(string.Format("/images/resource/products/{0}/1.jpg", item.ImagePath))" loading="lazy" alt="@item.ProductName">
                                             </a>
                                         </figure>
