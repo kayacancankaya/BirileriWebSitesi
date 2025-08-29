@@ -27,7 +27,7 @@ namespace BirileriWebSitesi.Controllers
             if (_configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
                 baseUrl = $"{Request.Scheme}://{Request.Host}";
             else
-                baseUrl = "https://birilerigt.com/";
+                baseUrl = "https://birilerigt.com";
 
             _logger.LogError("Sitemap baseUrl: " + baseUrl);
 
