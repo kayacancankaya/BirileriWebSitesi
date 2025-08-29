@@ -59,7 +59,7 @@ namespace BirileriWebSitesi.Controllers
             var products = await _context.Products
                                                 .Include(p => p.ProductVariants)
                                                 .ToListAsync(); // Example: products table
-            if(products == null)
+            if(products != null)
             {
                 if(products.Count  > 0)
                 {
@@ -77,7 +77,7 @@ namespace BirileriWebSitesi.Controllers
                                 {
                                     sitemap.Add(
                                     new XElement(ns + "url",
-                                        new XElement(ns + "loc", $"{baseUrl}/Shop/ProductDetailed?productCode={variant.ProductCode}"),
+                                        new XElement(ns + "loc", $"{baseUrl}/Shop/ProductDetailed?name={product.Slug}&productCode={variant.ProductCode}"),
                                         new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
                                         new XElement(ns + "changefreq", "weekly"),
                                         new XElement(ns + "priority", "0.9")

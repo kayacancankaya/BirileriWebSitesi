@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using BirileriWebSitesi.Interfaces;
-using BirileriWebSitesi.Services;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;    
 
 namespace BirileriWebSitesi.Controllers
 {

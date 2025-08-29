@@ -97,12 +97,13 @@ namespace BirileriWebSitesi.Services
             {
                 string? slug = string.Empty;
                 string? baseProductCode = string.Empty;
-                if (productCode.EndsWith('B'))
-                {
-                    if(productCode.Length>12) {
-                }
-
-                slug = await _context.Products.Where(p => p.ProductCode == productCode) .Select(p => p.Slug).FirstOrDefaultAsync();
+                
+                if (productCode.Length > 12)
+                    baseProductCode = await _context.ProductVariants.Where(p => p.ProductCode == productCode).Select(b => b.BaseProduct).FirstOrDefaultAsync();
+                else
+                    baseProductCode = productCode;
+                
+                slug = await _context.Products.Where(p => p.ProductCode == baseProductCode).Select(p => p.Slug).FirstOrDefaultAsync();
                 return slug ?? string.Empty;
             }
             catch (Exception)

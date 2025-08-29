@@ -1,15 +1,8 @@
-﻿using Azure;
-using BirileriWebSitesi.Data;
+﻿using BirileriWebSitesi.Data;
 using BirileriWebSitesi.Interfaces;
 using BirileriWebSitesi.Models.BasketAggregate;
 using BirileriWebSitesi.Models.InquiryAggregate;
-using BirileriWebSitesi.Models.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using NuGet.ContentModel;
-using System;
-using System.Net;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BirileriWebSitesi.Services
 {
