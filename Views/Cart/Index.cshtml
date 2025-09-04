@@ -26,15 +26,158 @@
     <meta name="twitter:description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz." />
     <meta name="twitter:image" content="https://birilerigt.com/images/logo-resim.png" />
 }
+
 @section CSS {
-    <style>
-        *, *:before, *:after {
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
+<style>
+    :root {
+        --primary: #007bff;
+        --danger: #dc3545;
+        --light-gray: #f8f9fa;
+        --dark: #212529;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background: #fff;
+        margin: 0;
+        padding: 0;
+    }
+
+    .cart-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 15px;
+    }
+
+    /* Desktop Table */
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .cart-table th, .cart-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+    }
+
+    .cart-table th {
+        background: var(--light-gray);
+        font-weight: bold;
+    }
+
+    .prod-thumb img {
+        max-width: 70px;
+        border-radius: 6px;
+    }
+
+    .qty-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .qty-control input {
+        width: 50px;
+        text-align: center;
+        border: 1px solid #ccc;
+        margin: 0 5px;
+        border-radius: 4px;
+        padding: 5px;
+    }
+
+    .qty-control button {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .remove-btn {
+        color: var(--danger);
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    /* Totals Box */
+    .totals-box {
+        border: 1px solid #eee;
+        padding: 20px;
+        border-radius: 6px;
+        background: #fff;
+        max-width: 350px;
+        margin-left: auto;
+    }
+
+    .totals-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 15px 0;
+    }
+
+    .totals-box li {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+
+    .checkout-btn {
+        display: block;
+        text-align: center;
+        background: var(--primary);
+        color: #fff;
+        text-decoration: none;
+        padding: 12px;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+
+    /* Mobile Card Layout */
+    @@media (max-width: 768px) {
+        .cart-table, .cart-table thead, .cart-table tbody, .cart-table th, .cart-table td, .cart-table tr {
+            display: block;
+            width: 100%;
         }
-    </style>
+
+        .cart-table thead {
+            display: none;
+        }
+
+        .cart-table tr {
+            background: #fff;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .cart-table td {
+            border: none;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .cart-table td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .totals-box {
+            max-width: 100%;
+        }
+    }
+</style>
 }
+
+
 <!--Cart Section-->
 <section class="cart-section" id="cart-content">
     @Html.Partial("_PartialCart",Model)
@@ -142,7 +285,8 @@
                 },
                 async: true,
                 success: function (response) {
-                    $("#cart-content").html(response);
+                     $("#item-total-" + response.productCode).text(response.itemTotal);
+                    $("#cart-total").text(response.cartTotal);
                     initializeQuantitySpinner(); // Rebind after AJAX load
                 },
                 error: function (xhr) {

@@ -1,0 +1,25 @@
+﻿User-agent: *
+
+# Identity pages
+Disallow: /Identity/
+
+# Order, Cart, Email controllers
+Disallow: /Order/
+Disallow: /Cart/
+Disallow: /Email/
+
+# Language routes
+Disallow: /tr/
+Disallow: /en/
+
+# AJAX / partial endpoints
+Disallow: /Shop/InitializeCartNumber
+Disallow: /Shop/ShopFiltered
+Disallow: /Shop/_PartialRelatedProductsWidget
+Disallow: /Blog/LoadMorePosts
+
+# Allow everything else
+Allow: /
+
+# Sitemap
+Sitemap: https://birilerigt.com/sitemap.xml

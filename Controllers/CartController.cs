@@ -335,6 +335,8 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+                if (quantity < 0)
+                    quantity = 0;
                 string? userID = string.Empty;
                 Dictionary<int, string> result = new();
                 int totalProductCount = 0;
@@ -345,6 +347,7 @@ namespace BirileriWebSitesi.Controllers
                 }
 
                 string message = string.Empty;
+                Basket basket;
                 //cookie 
                 if (string.IsNullOrEmpty(userID))
                 {
@@ -366,21 +369,32 @@ namespace BirileriWebSitesi.Controllers
                     TempData["message"] = message;
                     TempData["message"] = totalProductCount;
                     Dictionary<string, int> products = CookieHelper.GetProductsFromCookie(result.Values.FirstOrDefault());
-                    Basket cookieBasket = new("0");
+                    basket = new("0");
                     foreach (var product in products)
                     {
                         decimal price = await _productService.GetPriceAsync(product.Key);
-                        await _basketService.AddItemToAnonymousBasketAsync(cookieBasket, product.Key, price, product.Value);
+                        await _basketService.AddItemToAnonymousBasketAsync(basket, product.Key, price, product.Value);
                     }
-                    return PartialView("_PartialCart", cookieBasket);
 
                 }
-                //db
-                Basket basket = await _basketService.SetQuantity(userID, productCode, quantity);
-                if (basket == null)
-                    basket = new(userID);
-
-                return PartialView("_PartialCart", basket);
+                else
+                {
+                    //db
+                    basket = await _basketService.SetQuantity(userID, productCode, quantity);
+                    if (basket == null)
+                        basket = new(userID);
+                }
+                // Get updated totals
+                var item = basket.Items.FirstOrDefault(x => x.ProductCode == productCode);
+                decimal itemTotal = item != null ? item.Quantity * item.UnitPrice : 0;
+                decimal cartTotal = basket.Items.Sum(x => x.Quantity * x.UnitPrice);
+                return Json(new
+                {
+                    success = true,
+                    productCode = productCode,
+                    itemTotal = itemTotal.ToString("C"),
+                    cartTotal = cartTotal.ToString("C")
+                });
             }
             catch (Exception ex)
             {
