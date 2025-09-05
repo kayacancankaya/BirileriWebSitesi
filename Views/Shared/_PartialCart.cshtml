@@ -1,8 +1,8 @@
 ﻿@model BirileriWebSitesi.Models.BasketAggregate.Basket
-<div class="cart-container">
 @if(Model.Items.Count > 0)
 {
     decimal itemTotal = 0;
+    <div class="cart-container">
 
                 <table class="cart-table">
                     <thead>
@@ -45,12 +45,6 @@
                         }
                     </tbody>
                 </table>
-                <div class="totals-box">
-                    <ul>
-                        <li><strong>Genel Toplam</strong><strong id="cart-total">@Model.TotalAmount ₺</strong></li>
-                    </ul>
-                    <a class="checkout-btn" asp-controller="Order" asp-action="CheckOut">Sepeti Onayla</a>
-                </div>
 
             @* <div class="cart-options clearfix">
                  <div class="pull-left">
@@ -69,6 +63,14 @@
                 </div> 
 
             </div> *@
+            
+</div>
+        <div class="totals-box">
+            <ul>
+                <li><strong>Genel Toplam</strong><strong id="cart-total">@Model.TotalAmount ₺</strong></li>
+            </ul>
+            <a class="checkout-btn" asp-controller="Order" asp-action="CheckOut">Sepeti Onayla</a>
+        </div>
 }
 else
 {
@@ -76,4 +78,3 @@ else
         <p>Sepetiniz Boş, <a type="button" asp-controller="Shop" asp-action="Index">alışverişe devam edin</a></p>
     </div>
 }
-</div>

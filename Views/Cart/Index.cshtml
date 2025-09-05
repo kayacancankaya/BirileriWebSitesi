@@ -138,8 +138,10 @@
     }
 
     /* Mobile Card Layout */
-    @@media (max-width: 768px) {
-        .cart-table, .cart-table thead, .cart-table tbody, .cart-table th, .cart-table td, .cart-table tr {
+        @@media (max-width: 768px) {
+            .cart-table, .cart-table thead, .cart-table tbody, .cart-table th, .cart-table td, .cart-table tr
+
+        {
             display: block;
             width: 100%;
         }
@@ -150,31 +152,64 @@
 
         .cart-table tr {
             background: #fff;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border: 1px solid #eee;
             border-radius: 6px;
             padding: 10px;
         }
 
+        /* Satırlar arası boşluğu azalt */
         .cart-table td {
             border: none;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
+            padding: 6px 0;
         }
 
-        .cart-table td::before {
-            content: attr(data-label);
-            font-weight: bold;
-            flex: 1;
-        }
+            .cart-table td::before {
+                content: attr(data-label);
+                display: block;
+                font-weight: bold;
+                margin-bottom: 2px;
+                color: #444;
+                font-size: 13px;
+            }
 
+            /* Ürün hücresi */
+            .cart-table td[data-label="Ürün"] {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+
+                .cart-table td[data-label="Ürün"] .prod-thumb img {
+                    max-width: 60px;
+                    border-radius: 4px;
+                }
+
+            /* Diğer hücreler (fiyat, miktar, toplam, sil) */
+            .cart-table td[data-label="Fiyat"],
+            .cart-table td[data-label="Miktar"],
+            .cart-table td[data-label="Toplam"],
+            .cart-table td[data-label="Sil"] {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 14px;
+                margin: 2px 0;
+            }
+
+        /* Totals-box en alta gelsin */
         .totals-box {
             max-width: 100%;
+            margin: 15px 0 0 0;
         }
-    }
-</style>
+
+        .checkout-btn {
+            width: 100%;
+        }
+
+        }
+    </style>
 }
 
 
