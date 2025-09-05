@@ -409,6 +409,8 @@ namespace BirileriWebSitesi.Controllers
         {
             try
             {
+                if (quantity < 0)
+                    quantity = 0;
                 string? userID = string.Empty;
                 Dictionary<int, string> result = new();
                 int totalProductCount = 0;
@@ -419,13 +421,14 @@ namespace BirileriWebSitesi.Controllers
                 }
 
                 string message = string.Empty;
+                Inquiry basket;
                 //cookie 
                 if (string.IsNullOrEmpty(userID))
                 {
                     string cart = Request.Cookies["MyInquiry"];
                     if (string.IsNullOrEmpty(cart))
                     {
-                        message = "İstek Sepet iBulunamadı";
+                        message = "İstek Sepeti Bulunamadı";
                         return BadRequest(new { message });
                     }
 
@@ -440,21 +443,32 @@ namespace BirileriWebSitesi.Controllers
                     TempData["message"] = message;
                     TempData["message"] = totalProductCount;
                     Dictionary<string, int> products = CookieHelper.GetProductsFromCookie(result.Values.FirstOrDefault());
-                    Inquiry cookieBasket = new("0");
+                    basket = new("0");
                     foreach (var product in products)
                     {
                         decimal price = await _productService.GetPriceAsync(product.Key);
-                        await _basketService.AddItemToAnonymousInquiryBasketAsync(cookieBasket, product.Key, price, product.Value);
+                        await _basketService.AddItemToAnonymousInquiryBasketAsync(basket, product.Key, price, product.Value);
                     }
-                    return PartialView("_PartialInquiry", cookieBasket);
 
                 }
-                //db
-                Inquiry basket = await _basketService.SetInquiryQuantity(userID, productCode, quantity);
-                if (basket == null)
-                    basket = new(userID);
-
-                return PartialView("_PartialInquiry", basket);
+                else
+                {
+                    //db
+                    basket = await _basketService.SetInquiryQuantity(userID, productCode, quantity);
+                    if (basket == null)
+                        basket = new(userID);
+                }
+                // Get updated totals
+                var item = basket.Items.FirstOrDefault(x => x.ProductCode == productCode);
+                decimal itemTotal = item != null ? item.Quantity * item.UnitPrice : 0;
+                decimal cartTotal = basket.Items.Sum(x => x.Quantity * x.UnitPrice);
+                return Json(new
+                {
+                    success = true,
+                    productCode = productCode,
+                    itemTotal = itemTotal.ToString("C"),
+                    cartTotal = cartTotal.ToString("C")
+                });
             }
             catch (Exception ex)
             {

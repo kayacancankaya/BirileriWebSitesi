@@ -1,0 +1,73 @@
+﻿
+        public async Task<IActionResult> CartItemAmountChanged(string productCode, int quantity)
+        {
+            try
+            {
+                if (quantity < 0)
+                    quantity = 0;
+                string? userID = string.Empty;
+                Dictionary<int, string> result = new();
+                int totalProductCount = 0;
+
+                if (User.Identity.IsAuthenticated)
+                {
+                    userID = _userManager.GetUserId(User);
+                }
+
+                string message = string.Empty;
+                Basket basket;
+                //cookie 
+                if (string.IsNullOrEmpty(userID))
+                {
+                    string cart = Request.Cookies["MyCart"];
+                    if (string.IsNullOrEmpty(cart))
+                    {
+                        message = "Sepet Bulunamadı";
+                        return BadRequest(new { message });
+                    }
+
+                    result = CookieHelper.UpdateCookie(productCode, quantity, cart);
+                    HttpContext.Response.Cookies.Append("MyCart", result.Values.FirstOrDefault());
+
+                    if (result.Values.FirstOrDefault() == "HATA")
+                    {
+                        message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
+                        return BadRequest(new { message });
+                    }
+                    TempData["message"] = message;
+                    TempData["message"] = totalProductCount;
+                    Dictionary<string, int> products = CookieHelper.GetProductsFromCookie(result.Values.FirstOrDefault());
+                    basket = new("0");
+                    foreach (var product in products)
+                    {
+                        decimal price = await _productService.GetPriceAsync(product.Key);
+                        await _basketService.AddItemToAnonymousBasketAsync(basket, product.Key, price, product.Value);
+                    }
+
+                }
+                else
+                {
+                    //db
+                    basket = await _basketService.SetQuantity(userID, productCode, quantity);
+                    if (basket == null)
+                        basket = new(userID);
+                }
+                // Get updated totals
+                var item = basket.Items.FirstOrDefault(x => x.ProductCode == productCode);
+                decimal itemTotal = item != null ? item.Quantity * item.UnitPrice : 0;
+                decimal cartTotal = basket.Items.Sum(x => x.Quantity * x.UnitPrice);
+                return Json(new
+                {
+                    success = true,
+                    productCode = productCode,
+                    itemTotal = itemTotal.ToString("C"),
+                    cartTotal = cartTotal.ToString("C")
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message.ToString());
+                string message = "Ürün Sepetten Çıkarılırken Hata ile Karşılaşıldı";
+                return BadRequest(new { message });
+            }
+        }

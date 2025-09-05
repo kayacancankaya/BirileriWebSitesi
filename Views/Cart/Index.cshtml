@@ -137,6 +137,13 @@
         font-weight: bold;
     }
 
+
+    .quantity-spinner{
+        width:60px !important;
+    }
+
+
+
     /* Mobile Card Layout */
         @@media (max-width: 768px) {
             .cart-table, .cart-table thead, .cart-table tbody, .cart-table th, .cart-table td, .cart-table tr
@@ -188,14 +195,18 @@
 
             /* Diğer hücreler (fiyat, miktar, toplam, sil) */
             .cart-table td[data-label="Fiyat"],
-            .cart-table td[data-label="Miktar"],
             .cart-table td[data-label="Toplam"],
+            .cart-table td[data-label="Miktar"],
             .cart-table td[data-label="Sil"] {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 font-size: 14px;
                 margin: 2px 0;
+            }
+
+            .qty-div{
+                margin-left: 500px;
             }
 
         /* Totals-box en alta gelsin */
@@ -208,6 +219,78 @@
             width: 100%;
         }
 
+        }
+
+        @@media (max-width: 700px) {
+            .qty-div {
+                margin-left: 500px;
+            }
+        }
+
+        @@media (max-width: 675px) {
+            .qty-div {
+                margin-left: 475px;
+            }
+        }
+
+        @@media (max-width: 650px) {
+            .qty-div {
+                margin-left: 450px;
+            }
+        }
+
+        @@media (max-width: 625px) {
+            .qty-div {
+                margin-left: 425px;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            .qty-div {
+                margin-left: 400px;
+            }
+        }
+
+        @@media (max-width: 575px) {
+            .qty-div {
+                margin-left: 375px;
+            }
+        }
+
+        @@media (max-width: 550px) {
+            .qty-div {
+                margin-left: 350px;
+            }
+        }
+
+        @@media (max-width: 525px) {
+            .qty-div {
+                margin-left: 325px;
+            }
+        }
+
+        @@media (max-width: 500px) {
+            .qty-div {
+                margin-left: 300px;
+            }
+        }
+
+        @@media (max-width: 425px) {
+            .qty-div {
+                margin-left: 275px;
+            }
+        }
+
+        @@media (max-width: 400px) {
+            .qty-div {
+                margin-left: 250px;
+            }
+        }
+
+        @@media (max-width: 300px) {
+            .qty-div {
+                margin-left: 200px;
+            }
         }
     </style>
 }
@@ -248,9 +331,11 @@
                     async:true,
                     success: function (response) {
                         $("#cart-content").html(response);
+                        initializeQuantitySpinner();
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
+                        initializeQuantitySpinner();
                         
                     }
                 });
@@ -294,6 +379,7 @@
                 "display": "flex",
                 "align-items": "center",
                 "justify-content": "center",
+                "height":"20px",
             });
 
             $(".bootstrap-touchspin-up").text("+");
@@ -303,8 +389,11 @@
                 "display": "flex",
                 "align-items": "center",
                 "justify-content": "center",
+                "height":"20px",
             });
-        };
+
+
+        }; 
         function handleQuantityChange() {
             var $input = $(this);
             var productCode = $input.data("productcode");
@@ -328,8 +417,10 @@
                     try {
                         var response = JSON.parse(xhr.responseText);
                         console.error(response.message || "Sunucu hatası");
+                        initializeQuantitySpinner();
                     } catch (e) {
                         console.error("Beklenmeyen bir hata oluştu");
+                        initializeQuantitySpinner();
                     }
                 }
             });

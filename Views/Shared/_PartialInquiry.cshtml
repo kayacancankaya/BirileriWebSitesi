@@ -2,69 +2,71 @@
 @if (Model.Items.Count > 0)
 {
     decimal itemTotal = 0;
-    <div class="auto-container">
+    <div class="cart-container">
 
-        <!--Cart Outer-->
-        <div class="cart-outer">
-            <div class="table-outer">
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Ürün</th>
+                    <th>Fiyat</th>
+                    <th>Miktar</th>
+                    <th>Toplam</th>
+                    <th>Sil</th>
+                </tr>
+            </thead>
 
-                <table class="cart-table">
-                    <thead class="cart-header">
-                        <tr>
-                            <th>Önizleme</th>
-                            <th class="prod-column">Ürün</th>
-                            <th class="price">Fiyat</th>
-                            <th>Miktar</th>
-                            <th>Toplam</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                    </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    itemTotal = item.Quantity * item.UnitPrice;
+                    <tr id="cart-item-@item.ProductCode">
+                        <td data-label="Ürün">
+                            <div class="prod-thumb" style="display:block;float:left;">
+                                <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-name="@item.Slug" asp-route-productCode="@item.ProductCode">
+                                    <img src="@Url.Content($"/images/resource/products/{item.ImagePath}/1.jpg")" alt="@item.ProductName" />
+                                </a>
+                            </div>
+                            <div>@item.ProductName</div>
+                        </td>
+                        <td data-label="Fiyat">@item.UnitPrice ₺</td>
 
-                    <tbody>
-                        @foreach (var item in Model.Items)
-                        {
-                            itemTotal = item.Quantity * item.UnitPrice;
-                            <tr>
-                                <td class="prod-column">
-                                    <div class="column-box">
-                                        <figure class="prod-thumb">
-                                            <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-name="@item.Slug" asp-route-productCode="@item.ProductCode">
-                                                <img src="@Url.Content(string.Format("/images/resource/products/{0}/1.jpg", item.ImagePath))" loading="lazy" alt="@item.ProductName">
-                                            </a>
-                                        </figure>
-                                    </div>
-                                </td>
-                                <td><h4 class="prod-title">@item.ProductName</h4></td>
-                                <td class="sub-total">@item.UnitPrice</td>
-                                <td class="qty"><div class="item-quantity" style="color:black"><input style="color:black" data-productCode="@item.ProductCode" class="quantity-spinner" type="text" value="@item.Quantity" name="quantity"></div></td>
-                                <td class="total">@itemTotal</td>
-                                <td><span class="alert-text"></span><a data-productcode="@item.ProductCode" class="remove-btn"><span class="fa fa-remove"></span></a></td>
-                            </tr>
-                        }
+                        <td data-label="Miktar" class="qty">
+                            <div style="display: flex; width: 100%;">
+                                <!-- Empty half -->
+                                <div style="flex: 1;"></div>
 
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                                <!-- Input half -->
+                                <div style="flex: 1; display: flex; justify-content: center;" class="qty-div">
+                                    <input type="text"
+                                           class="quantity-spinner text-center"
+                                           data-productCode="@item.ProductCode"
+                                           value="@item.Quantity"
+                                           name="quantity"
+                                           style="width: 60px; color: black;">
+                                </div>
+                            </div>
+                        </td>
 
-        <div class="row clearfix" style="margin-top:30px;">
-
-            <div class="column pull-right col-lg-6 col-md-6 col-sm-12">
-                <!--Totals Table-->
-                <ul class="totals-table">
-                    <li class="clearfix total"><span class="col">Toplam</span><span class="col ">@Model.TotalAmount ₺</span></li>
-                    <li class="text-right">
-                        <span class="alert-text"></span>
-                        <a class="theme-btn proceed-btn" id="checkout-inquiry" style="cursor:pointer;">İstek Gönder</a>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-
+                        <td data-label="Toplam" class="total" id="item-total-@item.ProductCode">@itemTotal ₺</td>
+                        <td data-label="Sil">
+                            <a data-productcode="@item.ProductCode" class="remove-btn">
+                                <span class="fa fa-remove"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+        </table>
     </div>
-
-}
+    <div class="container">
+        <div class="totals-box">
+            <ul>
+                <li><strong>Genel Toplam</strong><strong id="cart-total">@Model.TotalAmount ₺</strong></li>
+            </ul>
+            <a class="checkout-btn theme-btn proceed-btn" id="checkout-inquiry" style="cursor:pointer;">İstek Gönder</a>
+        </div>
+    </div>
+}   
 else
 {
     <div class="auto-container">

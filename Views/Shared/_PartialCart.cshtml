@@ -20,21 +20,32 @@
                             itemTotal = item.Quantity * item.UnitPrice;
                             <tr id="cart-item-@item.ProductCode">
                                 <td data-label="Ürün">
-                                    <div class="prod-thumb">
-                                        <img src="@Url.Content($"/images/resource/products/{item.ImagePath}/1.jpg")" alt="@item.ProductName" />
+                                    <div class="prod-thumb" style="display:block;float:left">
+                                        <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-name="@item.Slug" asp-route-productCode="@item.ProductCode">
+                                            <img src="@Url.Content($"/images/resource/products/{item.ImagePath}/1.jpg")" alt="@item.ProductName" />
+                                        </a>
                                     </div>
                                     <div>@item.ProductName</div>
                                 </td>
                                 <td data-label="Fiyat">@item.UnitPrice ₺</td>
 
                                 <td data-label="Miktar" class="qty">
-                                    <input style="color:black"
-                                           data-productCode="@item.ProductCode"
-                                           class="quantity-spinner"
-                                           type="text"
-                                           value="@item.Quantity"
-                                           name="quantity">
+                                    <div style="display: flex; width: 100%;">
+                                        <!-- Empty half -->
+                                        <div style="flex: 1;"></div>
+
+                                        <!-- Input half -->
+                                        <div style="flex: 1; display: flex; justify-content: center;" class="qty-div">
+                                            <input type="text"
+                                                   class="quantity-spinner text-center"
+                                                   data-productCode="@item.ProductCode"
+                                                   value="@item.Quantity"
+                                                   name="quantity"
+                                                   style="width: 60px; color: black;">
+                                        </div>
+                                    </div>
                                 </td>
+
                                 <td data-label="Toplam" class="total" id="item-total-@item.ProductCode">@itemTotal ₺</td>
                                 <td data-label="Sil">
                                     <a data-productcode="@item.ProductCode" class="remove-btn">
@@ -65,12 +76,14 @@
             </div> *@
             
 </div>
+    <div class="container">
         <div class="totals-box">
             <ul>
                 <li><strong>Genel Toplam</strong><strong id="cart-total">@Model.TotalAmount ₺</strong></li>
             </ul>
             <a class="checkout-btn" asp-controller="Order" asp-action="CheckOut">Sepeti Onayla</a>
         </div>
+    </div>
 }
 else
 {

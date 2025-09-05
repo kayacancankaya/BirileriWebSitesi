@@ -27,6 +27,267 @@
     <meta name="twitter:description" content="İthal ürünleri toptan ve perakende olarak satın alın. Katalog ürünleri, marka patent desteği ve e-ticaret çözümleri sunuyoruz." />
     <meta name="twitter:image" content="https://birilerigt.com/images/logo-resim.png" />
 }
+
+@section CSS {
+    <style>
+        :root {
+            --primary: #007bff;
+            --danger: #dc3545;
+            --light-gray: #f8f9fa;
+            --dark: #212529;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .cart-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        /* Desktop Table */
+        .cart-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+            .cart-table th, .cart-table td {
+                padding: 12px;
+                border-bottom: 1px solid #eee;
+                text-align: center;
+            }
+
+            .cart-table th {
+                background: var(--light-gray);
+                font-weight: bold;
+            }
+
+        .prod-thumb img {
+            max-width: 70px;
+            border-radius: 6px;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .qty-control input {
+                width: 50px;
+                text-align: center;
+                border: 1px solid #ccc;
+                margin: 0 5px;
+                border-radius: 4px;
+                padding: 5px;
+            }
+
+            .qty-control button {
+                background: var(--primary);
+                color: #fff;
+                border: none;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                cursor: pointer;
+            }
+
+        .remove-btn {
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        /* Totals Box */
+        .totals-box {
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 6px;
+            background: #fff;
+            max-width: 350px;
+            margin-left: auto;
+        }
+
+            .totals-box ul {
+                list-style: none;
+                padding: 0;
+                margin: 0 0 15px 0;
+            }
+
+            .totals-box li {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                font-size: 16px;
+            }
+
+        .checkout-btn {
+            display: block;
+            text-align: center;
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+
+        .quantity-spinner {
+            width: 60px !important;
+        }
+
+
+
+        /* Mobile Card Layout */
+        @@media (max-width: 768px) {
+            .cart-table, .cart-table thead, .cart-table tbody, .cart-table th, .cart-table td, .cart-table tr {
+                display: block;
+                width: 100%;
+            }
+
+                .cart-table thead {
+                    display: none;
+                }
+
+                .cart-table tr {
+                    background: #fff;
+                    margin-bottom: 12px;
+                    border: 1px solid #eee;
+                    border-radius: 6px;
+                    padding: 10px;
+                }
+                /* Satırlar arası boşluğu azalt */
+                .cart-table td {
+                    border: none;
+                    padding: 6px 0;
+                }
+
+                    .cart-table td::before {
+                        content: attr(data-label);
+                        display: block;
+                        font-weight: bold;
+                        margin-bottom: 2px;
+                        color: #444;
+                        font-size: 13px;
+                    }
+                    /* Ürün hücresi */
+                    .cart-table td[data-label="Ürün"] {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 8px;
+                    }
+
+                        .cart-table td[data-label="Ürün"] .prod-thumb img {
+                            max-width: 60px;
+                            border-radius: 4px;
+                        }
+                    /* Diğer hücreler (fiyat, miktar, toplam, sil) */
+                    .cart-table td[data-label="Fiyat"],
+                    .cart-table td[data-label="Toplam"],
+                    .cart-table td[data-label="Miktar"],
+                    .cart-table td[data-label="Sil"] {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: 14px;
+                        margin: 2px 0;
+                    }
+
+            .qty-div {
+                margin-left: 500px;
+            }
+            /* Totals-box en alta gelsin */
+            .totals-box {
+                max-width: 100%;
+                margin: 15px 0 0 0;
+            }
+
+            .checkout-btn {
+                width: 100%;
+            }
+        }
+
+        @@media (max-width: 700px) {
+            .qty-div {
+                margin-left: 500px;
+            }
+        }
+
+        @@media (max-width: 675px) {
+            .qty-div {
+                margin-left: 475px;
+            }
+        }
+
+        @@media (max-width: 650px) {
+            .qty-div {
+                margin-left: 450px;
+            }
+        }
+
+        @@media (max-width: 625px) {
+            .qty-div {
+                margin-left: 425px;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            .qty-div {
+                margin-left: 400px;
+            }
+        }
+
+        @@media (max-width: 575px) {
+            .qty-div {
+                margin-left: 375px;
+            }
+        }
+
+        @@media (max-width: 550px) {
+            .qty-div {
+                margin-left: 350px;
+            }
+        }
+
+        @@media (max-width: 525px) {
+            .qty-div {
+                margin-left: 325px;
+            }
+        }
+
+        @@media (max-width: 500px) {
+            .qty-div {
+                margin-left: 300px;
+            }
+        }
+
+        @@media (max-width: 425px) {
+            .qty-div {
+                margin-left: 275px;
+            }
+        }
+
+        @@media (max-width: 400px) {
+            .qty-div {
+                margin-left: 250px;
+            }
+        }
+
+        @@media (max-width: 300px) {
+            .qty-div {
+                margin-left: 200px;
+            }
+        }
+    </style>
+}
 <!--Cart Section-->
 <section class="cart-section" id="inquiry-content">
     @Html.Partial("_PartialInquiry", Model)
@@ -45,6 +306,7 @@
             $(".dropdown").removeClass("current");
             $(".inquiry").addClass("current");
             initializeQuantitySpinner();
+            $(".quantity-spinner").prop("readonly", false);
             $(document).on("click", ".remove-btn", function () {
                 var productCode = $(this).data("productcode");
                 var button = $(this);
@@ -59,9 +321,11 @@
                     async:true,
                     success: function (response) {
                         $("#inquiry-content").html(response);
+                        initializeQuantitySpinner();
                     },
                     error: function (xhr) {
                         var response = JSON.parse(xhr.responseText);
+                        initializeQuantitySpinner();
 
                     }
                 });
@@ -138,6 +402,7 @@
                 max: 999999,
                 step: 1,
                 verticalbuttons: true,
+                 forcestepdivisibility: 'none',
             });
             }
 
@@ -148,6 +413,7 @@
                 "display": "flex",
                 "align-items": "center",
                 "justify-content": "center",
+                "height":"20px",
             });
 
             $(".bootstrap-touchspin-up").text("+");
@@ -157,7 +423,10 @@
                 "display": "flex",
                 "align-items": "center",
                 "justify-content": "center",
+                "height":"20px",
             });
+
+
         };
         function handleQuantityChange() {
            var $input = $(this);
@@ -174,15 +443,18 @@
                },
                async: true,
                success: function (response) {
-                   $("#inquiry-content").html(response);
+                   $("#item-total-" + response.productCode).text(response.itemTotal);
+                    $("#cart-total").text(response.cartTotal);
                    initializeQuantitySpinner(); // Rebind after AJAX load
                },
                error: function (xhr) {
                    try {
                        var response = JSON.parse(xhr.responseText);
                        console.error(response.message || "Sunucu hatası");
+                       initializeQuantitySpinner();
                    } catch (e) {
                        console.error("Beklenmeyen bir hata oluştu");
+                       initializeQuantitySpinner();
                    }
                }
            });

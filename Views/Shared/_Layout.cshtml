@@ -277,21 +277,15 @@
                                         <a asp-controller="Home" asp-action="About">Hakkında</a>
                                     </li>
                                     <li class="dropdown cart mb-4">
-                                        <a asp-controller="Cart" asp-action="Index">
-                                            <div class="cart-container">
-                                                <span class="cart-icon" style="font-size:28px;">🛒</span>
+                                        <a asp-controller="Cart" asp-action="Index" class="d-inline-flex align-items-center">
+                                            <span class="cart-icon" style="font-size:28px;">🛒</span>
                                             <span class="cart-count" id="itemCount">0</span>
-                                            </div>
                                         </a>
                                     </li>
-                                    <li class="dropdown inquiry">
-                                        <a asp-controller="Cart" asp-action="Inquiry">
-                                            <div class="inquiry-container">
-                                                <span class="inquiry-icon" style="font-size:28px;">
-                                                    📝
-                                                </span>
-                                                <span class="inquiry-count" id="inquiryItemCount">0</span>
-                                            </div>
+                                    <li class="dropdown inquiry mb-4">
+                                        <a asp-controller="Cart" asp-action="Inquiry" class="d-inline-flex align-items-center">
+                                            <span class="cart-icon" style="font-size:28px;">📝</span>
+                                            <span class="inquiry-count" id="inquiryItemCount">0</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -700,6 +694,7 @@
             });
         </script>
     }
+    
     <script>
         $(document).ready(function () {
             let count = 0;
