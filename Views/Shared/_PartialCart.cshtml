@@ -7,18 +7,18 @@
                 <table class="cart-table">
                     <thead>
                         <tr>
-                            <th>Ürün</th>
-                            <th>Fiyat</th>
-                            <th>Miktar</th>
-                            <th>Toplam</th>
-                            <th>Sil</th>
+                            <th style="color:white;background-color:#222222;">Ürün</th>
+                            <th style="color:white;background-color:#222222;">Fiyat</th>
+                            <th style="color:white;background-color:#222222;">Miktar</th>
+                            <th style="color:white;background-color:#222222;">Toplam</th>
+                            <th style="color:white;background-color:#222222;">Sil</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
                             itemTotal = item.Quantity * item.UnitPrice;
-                            <tr id="cart-item-@item.ProductCode">
+                            <tr id="cart-item-@item.ProductCode" >
                                 <td data-label="Ürün">
                                     <div class="prod-thumb" style="display:block;float:left">
                                         <a asp-controller="Shop" asp-action="ProductDetailed" asp-route-name="@item.Slug" asp-route-productCode="@item.ProductCode">
@@ -81,7 +81,7 @@
             <ul>
                 <li><strong>Genel Toplam</strong><strong id="cart-total">@Model.TotalAmount ₺</strong></li>
             </ul>
-            <a class="checkout-btn" asp-controller="Order" asp-action="CheckOut">Sepeti Onayla</a>
+            <a class="checkout-btn" style="background-color:#FFB22F;color:black;" asp-controller="Order" asp-action="CheckOut">Sepeti Onayla</a>
         </div>
     </div>
 }
