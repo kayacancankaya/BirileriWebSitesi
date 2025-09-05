@@ -29,9 +29,6 @@ namespace BirileriWebSitesi.Controllers
             else
                 baseUrl = "https://birilerigt.com";
 
-            _logger.LogError("Sitemap baseUrl: " + baseUrl);
-
-
             XNamespace ns = "https://www.sitemaps.org/schemas/sitemap/0.9";
             var sitemap = new XElement(ns + "urlset");
 
@@ -53,7 +50,6 @@ namespace BirileriWebSitesi.Controllers
                     )
                 );
             }
-            _logger.LogError("Sitemap after static pages: " + sitemap.ToString());
             // 2. Add dynamic products or articles from DB
             var products = await _context.Products
                                                 .Include(p => p.ProductVariants)
@@ -89,28 +85,26 @@ namespace BirileriWebSitesi.Controllers
                 }
                     
             }
-            _logger.LogError("Sitemap after products: " + sitemap.ToString());
             // 3. Add dynamic blog posts from DB
-            //var allBlogPosts = await _context.BlogPosts.ToListAsync();
-            //if(allBlogPosts != null)
-            //{
-            //    if(allBlogPosts.Count > 0)
-            //    {
-            //        foreach (var post in allBlogPosts)
-            //        {
-            //            sitemap.Add(
-            //                new XElement(ns + "url",
-            //                    new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
-            //                    new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-            //                    new XElement(ns + "changefreq", "weekly"),
-            //                    new XElement(ns + "priority", "0.9")
-            //                )
-            //            );
-            //        }
-            //    }
-            //}
-            //_logger.LogError("Sitemap after blog posts: " + sitemap.ToString());
-
+            var allBlogPosts = await _context.BlogPosts.ToListAsync();
+            if(allBlogPosts != null)
+            {
+                if(allBlogPosts.Count > 0)
+                {
+                    foreach (var post in allBlogPosts)
+                    {
+                        sitemap.Add(
+                            new XElement(ns + "url",
+                                new XElement(ns + "loc", $"{baseUrl}/blog/BlogPost?path={post.Slug}"), // matches your BlogPost(string path)
+                                new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                                new XElement(ns + "changefreq", "weekly"),
+                                new XElement(ns + "priority", "0.9")
+                            )
+                        );
+                    }
+                }
+            }
+            
             // 🔹 4. Add dynamic catalog pages
             var catalogs = await _context.Catalogs.ToListAsync();
             if(catalogs != null)
@@ -135,7 +129,6 @@ namespace BirileriWebSitesi.Controllers
                     }
                 }
             }
-            _logger.LogError("Sitemap after catalogs: " + sitemap.ToString());
             var xml = new XDocument(sitemap);
             return Content(xml.ToString(), "application/xml", Encoding.UTF8);
         }
